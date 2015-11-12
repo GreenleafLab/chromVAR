@@ -1,28 +1,55 @@
 
-compute_gc_bias <- function(seqs){
-  nucfreqs <- Biostrings::letterFrequency(seqs, c("A","C","G","T"))
-  gc <- apply(nucfreqs, 1, function(x) sum(x[2:3])/sum(x))
-  return(gc)
-}
+setGeneric("compute_bias", function(object, genome= BSgenome.Hsapiens.UCSC.hg19) standardGeneric("compute_bias"))
+
+setMethod("compute_bias","GenomicRanges",
+          function(object, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19){
+            seqs = Biostrings::getSeq(genome, object)
+            nucfreqs <- Biostrings::letterFrequency(seqs, c("A","C","G","T"))
+            gc <- apply(nucfreqs, 1, function(x) sum(x[2:3])/sum(x))
+            S4Vectors::mcols(object)$bias <- gc
+            return(object)
+          })
+
+setMethod("compute_bias","fragmentCounts",
+          function(object, genome = BSgenome.Hsapiens.UCSC.hg19){
+            seqs = Biostrings::getSeq(genome, object@peaks)
+            nucfreqs <- Biostrings::letterFrequency(seqs, c("A","C","G","T"))
+            gc <- apply(nucfreqs, 1, function(x) sum(x[2:3])/sum(x))
+            S4Vectors::mcols(object@peaks)$bias <- gc
+            return(object)
+          })
 
 
-add_bias_bins <- function(motif_mat, bias, counts, nbins = 20){
-  #add bias bins
-  bias_quantiles = quantile(bias, seq(0,1,1/nbins))
-  bias_cut = cut(bias, breaks = bias_quantiles)
-  bias_bins = split(1:length(bias), bias_cut)
-  bias_bin_names = sapply(1:nbins, function(x) paste("bias_bin_",x,sep="",collapse=""))
-  bias_mat = sparseMatrix(i = unlist(bias_bins), j = unlist(lapply(1:nbins, function(x) rep(x,length(bias_bins[[x]])))),
-                          x = 1, dims = c(length(bias),nbins), dimnames = list(NULL,bias_bin_names))
-  motif_mat = cBind(motif_mat, bias_mat)
+make_bias_bins <- function(counts_mat, nbins = 25){
+  npeaks = length(counts_mat@peaks)
+  #make bias bins
+  bias_quantiles = quantile(counts_mat@peaks$bias, seq(0,1,1/nbins))
+  bias_cut = cut(counts_mat@peaks$bias, breaks = bias_quantiles)
+  bias_bins = split(1:npeaks, bias_cut)
+  names(bias_bins) = sapply(1:nbins, function(x) paste("bias_bin_",x,sep="",collapse=""))
   #make count bins
-  pseudo_counts = counts + runif(length(counts),min = 0, max = 0.1)
+  pseudo_counts = counts_mat@fragments_per_peak + runif(npeaks,min = 0, max = 0.1)
   count_quantiles = quantile(pseudo_counts, seq(0,1,1/nbins))
   count_cut = cut(pseudo_counts, breaks = count_quantiles)
-  count_bins = split(1:length(counts), count_cut)
-  count_bin_names = sapply(1:nbins, function(x) paste("count_bin_",x,sep="",collapse=""))
-  count_mat = sparseMatrix(i = unlist(count_bins), j = unlist(lapply(1:nbins, function(x) rep(x,length(count_bins[[x]])))),
-                          x = 1, dims = c(length(bias),nbins), dimnames = list(NULL,count_bin_names))
-  motif_mat = cBind(motif_mat, count_mat)
-  return(motif_mat)
+  count_bins = split(1:npeaks, count_cut)
+  names(count_bins) = sapply(1:nbins, function(x) paste("count_bin_",x,sep="",collapse=""))
+  #make bias / count bins
+  nbins = round(sqrt(nbins))
+  bias_quantiles = quantile(counts_mat@peaks$bias, seq(0,1,1/nbins))
+  bias_cut = cut(counts_mat@peaks$bias, breaks = bias_quantiles)
+  tmp_bias_bins = split(1:npeaks, bias_cut)
+  count_quantiles = quantile(pseudo_counts, seq(0,1,1/nbins))
+  count_cut = cut(pseudo_counts, breaks = count_quantiles)
+  tmp_count_bins = split(1:npeaks, count_cut)
+  bias_count_bins = sapply(1:nbins, function(x) sapply(1:nbins, function(y) intersect(tmp_bias_bins[[y]], tmp_count_bins[[x]])))
+  names(bias_count_bins) = sapply(1:nbins, function(x) sapply(1:nbins, function(y) paste("bias_count_bin_",x,"_",y,sep="",collapse="")))
+  return(c(bias_bins, count_bins, bias_count_bins))
 }
+
+make_permuted_sets <- function(counts_mat, motif_indices, window = 10, BPPARAM = BPPARAM){
+  bg <- getBackgroundPeakSets(counts_mat, niterations = 1, window = window, BPPARAM = BPPARAM)
+  sets <- lapply(1:length(motif_indices), function(x) bg@background_peaks[motif_indices[[x]],1])
+  names(sets) <- sapply(names(motif_indices), function(x) paste("permuted_",x,collapse=""))
+  return(sets)
+}
+
