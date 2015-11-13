@@ -32,7 +32,7 @@ merge_lists <- function(..., by = c("order","name")){
         return(output)
       } else{
         unames = unique(names(output))
-        output = lapply(lapply(unames, function(x) l[names(l) == x]), unlist, recursive= FALSE, use.names=F)
+        output = lapply(lapply(unames, function(x) input[names(input) == x]), unlist, recursive= FALSE, use.names=F)
         names(output) = unames
         return(output)
       }
@@ -52,19 +52,9 @@ merge_lists <- function(..., by = c("order","name")){
 
 
 
-read_peaks <- function(filename, extra_cols = c(), extra_names = c()){
-  bed <- readr::read_tsv(file = filename, col_names = FALSE)[, c(1:3, extra_cols)]
-  colnames(bed) <- c("chr", "start", "end", extra_names)
-  bed[,"end"] <- bed[,"end"] - 1
-  bed <- GenomicRanges::makeGRangesFromDataFrame(bed, keep.extra.columns = TRUE)
-  if (sum(GenomicRanges::width(bed) == GenomicRanges::width(bed[1])) != length(bed)){
-    stop("All peaks in bed file must be of equal width!")
-  }
-  return(bed)
-}
 
-compute_gc_content <- function(seqs){
-  nucfreqs <- Biostrings::letterFrequency(seqs, c("A","C","G","T"))
-  gc <- apply(nucfreqs, 1, function(x) sum(x[2:3])/sum(x))
-  return(gc)
-}
+
+
+
+
+

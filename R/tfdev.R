@@ -1,16 +1,15 @@
-#' tfdev: A package for determining deviation of chromatin accessibility for transcription factors
+#' tfdev: A package for computing variabilitiy across sets of peaks.
 #'
-#' The tfdev package contains several classes.
-#' The main function is calculateTFVariance.
-#' 
-#' @section tfdev classes:
-#' The classes..
+#' The package provides three categories of important functions:
+#' functions!
 #' 
 #' @section tfdev functions:
 #' The functions ...
-#' 
+#'
+#' @section tfdev classes:
+#' the classes ...
 #'
 #' @docType package
-#' @name tfdev
+#' @name foo
 NULL
 #> NULL

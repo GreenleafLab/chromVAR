@@ -50,7 +50,7 @@ get_motifs <- function(species = "Hsapiens", dataSource = "JASPAR"){
 
   if (length(dataSource)==1){
     data_indices <- grep(dataSource, S4Vectors::values(MotifDb::MotifDb)$dataSource)
-  } else if (length(dataSrouce>1)){
+  } else if (length(dataSource>1)){
     data_indices <- do.call(union,lapply(dataSource, function(x) grep(x, S4Vectors::values(MotifDb::MotifDb)$dataSource)))
   } else{
     data_indices <- species_indices }

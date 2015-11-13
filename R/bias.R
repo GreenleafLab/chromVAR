@@ -1,6 +1,10 @@
+#' @include fragmentCounts.R
+NULL
 
-setGeneric("compute_bias", function(object, genome= BSgenome.Hsapiens.UCSC.hg19) standardGeneric("compute_bias"))
 
+setGeneric("compute_bias", function(object, ...) standardGeneric("compute_bias"))
+
+#' @export
 setMethod("compute_bias","GenomicRanges",
           function(object, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19){
             seqs = Biostrings::getSeq(genome, object)
@@ -19,7 +23,7 @@ setMethod("compute_bias","fragmentCounts",
             return(object)
           })
 
-
+#' @export
 make_bias_bins <- function(counts_mat, nbins = 25){
   npeaks = length(counts_mat@peaks)
   #make bias bins
@@ -46,6 +50,7 @@ make_bias_bins <- function(counts_mat, nbins = 25){
   return(c(bias_bins, count_bins, bias_count_bins))
 }
 
+#' @export
 make_permuted_sets <- function(counts_mat, motif_indices, window = 10, BPPARAM = BPPARAM){
   bg <- getBackgroundPeakSets(counts_mat, niterations = 1, window = window, BPPARAM = BPPARAM)
   sets <- lapply(1:length(motif_indices), function(x) bg@background_peaks[motif_indices[[x]],1])

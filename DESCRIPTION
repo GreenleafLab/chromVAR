@@ -1,9 +1,44 @@
 Package: tfdev
 Type: Package
-Title: What the package does (short line)
-Version: 1.0
+Title: Chromatin Variation Across Annotations
+Version: 0.0.0
 Date: 2015-08-28
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Authors@R: c(
+    person("Alicia", "Schep", email = "aschep@stanford.edu", role = c("aut","cre")),
+    person("Jason", "Buenrostro", email = "jbuenros@stanford.edu", role = "ctb"),
+    person("Stanford University", role = "cph"))
+Description: Determine variation in chromatin accessibility across sets of
+    annotations or peaks. Designed primarily for single-cell or sparse chromatin
+    accessibility, e.g. from scATAC-seq or sparse ATAC or DNAse-seq experiments.
+License: MIT + file LICENSE
+Imports:
+    Matrix,
+    GenomicRanges,
+    IRanges,
+    ggplot2,
+    BiocParallel,
+    BiocGenerics,
+    Biostrings,
+    MotifDb,
+    Rsamtools,
+    S4Vectors,
+    gtools,
+    plyr
+Suggests: 
+    BSgenome.Hsapiens.UCSC.hg19,
+    readr
+Collate:
+    'backgroundPeaks.R'
+    'fragmentCounts.R'
+    'bias.R'
+    'classes.R'
+    'compute_variability.R'
+    'deviationResult.R'
+    'deviationResultSet.R'
+    'kmer.R'
+    'legacy.R'
+    'motifs.R'
+    'old.R'
+    'peaks.R'
+    'tfdev.R'
+    'utils.R'
