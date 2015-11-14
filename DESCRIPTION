@@ -24,7 +24,7 @@ Imports:
     S4Vectors,
     gtools,
     plyr
-Suggests: 
+Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     readr
 Collate:

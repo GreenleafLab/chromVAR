@@ -1,5 +1,12 @@
-#' An S4 class that holds fragment counts across peak regions
-#'
+#' fragmentCounts
+#' 
+#' fragmentCounts is a class to store fragment counts for genomic regions across samples. 
+#' The class is specifically designed to be able to handle sparse data, as would 
+#' arise from single-cell ATAC-seq experiment.  The counts slot holds the count data as
+#' a Matrix (from package Matrix); the specific class of the Matrix is determined by
+#' sparsity of the data.  The fragmentCounts class also stores the genomic regions that
+#' correspond to the rows of the counts matrix. Optionally, the class can store sample meta data
+#' as a data.frame with rows corresponding to samples.   
 #' @slot counts Matrix of fragment counts, with each row representing a peak, each column a sample
 #' @slot peaks GRanges object with peaks for each row of counts
 #' @slot total_fragments total fragments within peaks
@@ -9,10 +16,6 @@
 #' @slot npeak number of peaks
 #' @slot sample_meta optional data.frame with meta data for samples, with rows corresponding to samples
 #' @slot depth total read depth for each sample
-#' @importClassesFrom Matrix Matrix
-#' @importClassesFrom GenomicRanges GenomicRanges
-#'
-#' @export
 fragmentCounts <- setClass("fragmentCounts",
                            slots = c(counts = 'Matrix',
                                      peaks = 'GenomicRanges',
@@ -26,26 +29,17 @@ fragmentCounts <- setClass("fragmentCounts",
                            ))
 
 
-#' Fragment Counts Constructor
-#'
-#' makes fragmentCounts object using counts Matrix and peaks.  
-#' generally not for use by end-user.
-#' @param counts A Matrix with fragment counts-- rows should correspond to peaks, columns to samples
-#' @param peaks GRanges with peaks
-#' @rdname fragmentCounts
-#' @export
-fragmentCounts <- function(counts, peaks, depth){
-  total_fragments = sum(counts)
-  fragments_per_sample = colSums(counts)
-  fragments_per_peak = rowSums(counts)
-  nsample = ncol(counts)
-  npeak = nrow(counts)
-  return(new("fragmentCounts", counts = counts, peaks = peaks,
-             fragments_per_sample = fragments_per_sample, 
-             fragments_per_peak = fragments_per_peak,
-             nsample = nsample, npeak = npeak,
-             depth = depth))
-}
+setMethod("initialize",
+          "fragmentCounts",
+          function(.Object, ...){
+            .Object <- callNextMethod()
+            .Object@total_fragments <- sum(.Object@counts)
+            .Object@fragments_per_sample <- colSums(.Object@counts)
+            .Object@fragments_per_peak <- rowSums(.Object@counts)
+            .Object@nsample <- ncol(.Object@counts)
+            .Object@npeak <- nrow(.Object@counts)
+            .Object
+          })
 
 
 setMethod("show",
@@ -114,9 +108,9 @@ setMethod("[", signature = signature(x = "fragmentCounts", i = "missing"),
 getFragmentCountsByRG <- function(bam, peaks, BPPARAM = BiocParallel::bpparam()){
 
   rg_fragments <- bamToFragmentsByRG(bam, BPPARAM)
-  depth <- lapply(rg_fragments, length)
-  counts_mat <- Matrix::Matrix(simplify2array(BiocParallel::bplapply(rg_fragments,
-                                                         function(fragments) GenomicRanges::countOverlaps(peaks, fragments, type="any", ignore.strand=T),
+  depth <- sapply(rg_fragments, length)
+  counts_mat <- Matrix(simplify2array(BiocParallel::bplapply(rg_fragments,
+                                                         function(fragments) countOverlaps(peaks, fragments, type="any", ignore.strand=T),
                                                          BPPARAM = BPPARAM)))
 
   counts <- fragmentCounts(counts = counts_mat,
@@ -141,10 +135,10 @@ getFragmentCounts <- function(bams, peaks){
   for (i in 1:length(bams)){
     fragments = bamToFragments(bams[i])
     depth[i] = length(fragments)
-    mat[,i] = GenomicRanges::countOverlaps(peaks, fragments, type="any", ignore.strand=T)
+    mat[,i] = countOverlaps(peaks, fragments, type="any", ignore.strand=T)
   }
   
-  counts_mat = Matrix::Matrix(mat)
+  counts_mat = Matrix(mat)
   
   counts <- fragmentCounts(counts = counts_mat,
                            peaks = peaks,
@@ -157,38 +151,37 @@ getFragmentCounts <- function(bams, peaks){
 left_right_to_grglist <- function(left, right){
   stopifnot(length(left) == length(right))
   if (length(left) == 0){
-    return(GenomicRanges::GenomicRangesList())
+    return(GenomicRangesList())
   }
   x = c(left,right)[as.vector(matrix(seq_len(2L * length(left)), nrow=2L, byrow=TRUE))]
   p = IRanges::PartitioningByEnd(cumsum(rep(2,length(x)/2)))
   out = BiocGenerics::relist(x,p)
   return(out)
 }
-
+  
 
 #' @export
 bamToFragmentsByRG <- function(bamfile, BPPARAM = BiocParallel::bpparam()){
 
   scanned <- Rsamtools::scanBam(bamfile,
-                                param = Rsamtools::ScanBamParam(flag = Rsamtools::scanBamFlag(isMinusStrand=FALSE, isProperPair = TRUE),
+                                param = Rsamtools::ScanBamParam(flag = Rsamtools::scanBamFlag(isMinusStrand=FALSE, 
+                                                                                              isProperPair = TRUE),
                                                                          what = c("rname","pos","isize"),
                                                                          tag = "RG"))[[1]]
   RG_tags <- gtools::mixedsort(unique(scanned$tag$RG), decreasing = TRUE)
 
   out <- BiocParallel::bplapply(RG_tags, function(RG){
     match_RG = which(scanned$tag$RG == RG)
-    scanned_left <- as(GenomicRanges::GRanges(seq = scanned$rname[match_RG],
-                                              IRanges::IRanges(start = scanned$pos[match_RG], width = 1), strand = "+"),
-                       "GAlignments")
-    scanned_right <- as(GenomicRanges::GRanges(seq = scanned$rname[match_RG],
-                                               IRanges::IRanges(start = scanned$pos[match_RG] + abs(scanned$isize[match_RG]) - 1, width = 1), strand = "-"),
-                        "GAlignments")
-    ##Convert to GRangesList
-    left_right_to_grglist(scanned_left, scanned_right)
-    #grl <- GenomicAlignments::grglist(c(scanned_left, scanned_right)[as.vector(matrix(seq_len(2L * length(scanned_left)), nrow=2L, byrow=TRUE))],
-    #                                  order.as.in.query=TRUE,
-    #                                  drop.D.ranges=FALSE)
-    #GenomicAlignments:::shrinkByHalf(grl)
+    scanned_left <- GRanges(seq = scanned$rname[match_RG],
+                                           IRanges::IRanges(start = scanned$pos[match_RG],
+                                                            width = 1),
+                                           strand = "+")
+    scanned_right <- GRanges(seq = scanned$rname[match_RG],
+                                            IRanges::IRanges(start = scanned$pos[match_RG] + 
+                                                               abs(scanned$isize[match_RG]) - 1,
+                                                             width = 1),
+                                            strand = "-")
+    return(left_right_to_grglist(scanned_left, scanned_right))
   }, BPPARAM = BPPARAM)
 
   names(out) = RG_tags
@@ -200,15 +193,9 @@ bamToFragmentsByRG <- function(bamfile, BPPARAM = BiocParallel::bpparam()){
 bamToFragments <- function(bamfile){
 
   scanned <- Rsamtools::scanBam(bamfile, param = Rsamtools::ScanBamParam(flag = Rsamtools::scanBamFlag(isMinusStrand=FALSE, isProperPair = TRUE), what = c("rname","pos","isize")))[[1]]
-
-  scanned_left <- as(GenomicRanges::GRanges(seq = scanned$rname, IRanges::IRanges(start = scanned$pos, width = 1), strand = "+"), "GAlignments")
-  scanned_right <- as(GenomicRanges::GRanges(seq = scanned$rname, IRanges::IRanges(start = scanned$pos + abs(scanned$isize) - 1, width = 1), strand = "-"), "GAlignments")
-  ##Convert to GRangesList
-  left_right_to_grglist(scanned_left, scanned_right)
-  #grl <- GenomicAlignments::grglist(c(scanned_left, scanned_right)[as.vector(matrix(seq_len(2L * length(scanned_left)), nrow=2L, byrow=TRUE))],
-  #                                  order.as.in.query=TRUE,
-  #                                  drop.D.ranges=FALSE)
-  #out <- GenomicAlignments:::shrinkByHalf(grl)
+  scanned_left <- GRanges(seq = scanned$rname, IRanges::IRanges(start = scanned$pos, width = 1), strand = "+")
+  scanned_right <- GRanges(seq = scanned$rname, IRanges::IRanges(start = scanned$pos + abs(scanned$isize) - 1, width = 1), strand = "-")
+  out <- left_right_to_grglist(scanned_left, scanned_right)
 
   return(out)
 
@@ -223,10 +210,9 @@ bamToFragments <- function(bamfile){
 #' @export          
 filterFragmentCounts <- function(counts_mat, min_in_peaks = 0.25, min_fragments = 5000){
   stopifnot(inherits(counts_mat, "fragmentCounts"))
-  stopifnot((sum(counts_mat@depth) > sum(counts_mat@fragments_per_cell)) == counts_mat@nsample)
-  keep <- intersect(which(counts_mat@fragments_per_cell >= min_fragments), 
-                    which(counts_mat@fragments_per_sample/counts_mat@depth >= min_in_peaks))
-            
+  stopifnot(sum(counts_mat@depth > counts_mat@fragments_per_sample) == counts_mat@nsample)
+  keep <- intersect(which(counts_mat@fragments_per_sample >= min_fragments), 
+                    which(counts_mat@fragments_per_sample/counts_mat@depth >= min_in_peaks))            
   counts_mat <- counts_mat[,keep]            
   return(counts_mat)
 }

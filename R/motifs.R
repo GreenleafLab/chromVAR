@@ -6,7 +6,7 @@ get_nuc_freqs <- function(seqs){
   return(nucFreqs)
 }
 
-
+#' @export
 get_motif_matches <- function(motif, seqs, nucfreqs = get_nuc_freqs(seqs), min.score = "90%", max.matches = length(seqs)/5){
 
   #concatenate sequences to speed up motif matching
@@ -37,7 +37,7 @@ get_motif_matches <- function(motif, seqs, nucfreqs = get_nuc_freqs(seqs), min.s
     return(data.frame("id"=NULL,"max_score"=NULL))
   }}
 
-
+#' @export
 get_motifs <- function(species = "Hsapiens", dataSource = "JASPAR"){
 
   if (length(species)!=1){
@@ -64,7 +64,7 @@ get_motifs <- function(species = "Hsapiens", dataSource = "JASPAR"){
   return(motifs)
 }
 
-
+#' @export
 get_motif_indices <- function(motifs, peaks, genome =  BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, BPPARAM = BiocParallel::bpparam(), min.score = "90%",
                               max.matches = length(peaks)/5, min.matches = 50){
 

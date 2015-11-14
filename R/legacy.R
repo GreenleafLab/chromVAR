@@ -63,7 +63,7 @@ sampleBackgroundPeaks0 <- function(object, annotation_vector, counts_mat, reads,
   sampling_vec = mean_smooth(annotation_vector[object@counts_sort], object@window)
   sampling_vec = sampling_vec[object@counts_sort_rev] / sum(sampling_vec)
             
-  sampled_peaks = sparseMatrix(i= rep(1:niterations, each=annotation_count),
+  sampled_peaks = Matrix::sparseMatrix(i= rep(1:niterations, each=annotation_count),
                                j = sample(1:object@npeaks, size = annotation_count * niterations,
                                           prob = sampling_vec, replace = TRUE),
                                dims = c(niterations, object@npeaks), 
@@ -101,14 +101,13 @@ compute_variability0 <- function(motif_indices,
   
   bg_param = setBackgroundParameters(counts_mat = counts_mat, window = window)
   
-  results = deviationResultSet(results = BiocParallel::bplapply(motif_indices, 
+  results = deviationResultSet(BiocParallel::bplapply(motif_indices, 
                                                                 compute_deviations0, 
                                                                 counts_mat, 
                                                                 bg_param, 
                                                                 niterations, 
                                                                 metric, 
-                                                                BPPARAM = BPPARAM),
-                               tfs = names(motif_indices))
+                                                                BPPARAM = BPPARAM))
       
   return(results)
 }

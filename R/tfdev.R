@@ -3,12 +3,13 @@
 #' The package provides three categories of important functions:
 #' functions!
 #' 
-#' @section tfdev functions:
+#' @section Functions:
 #' The functions ...
 #'
-#' @section tfdev classes:
+#' @section Classes:
 #' the classes ...
-#'
+#' @import Matrix
+#' @import GenomicRanges
 #' @docType package
 #' @name foo
 NULL

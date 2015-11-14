@@ -20,8 +20,8 @@ read_peaks <- function(filename, extra_cols = c(), extra_names = c()){
   }
   colnames(bed) <- c("chr", "start", "end", extra_names)
   bed[,"end"] <- bed[,"end"] - 1
-  bed <- GenomicRanges::makeGRangesFromDataFrame(bed, keep.extra.columns = TRUE)
-  if (sum(GenomicRanges::width(bed) == GenomicRanges::width(bed[1])) != length(bed)){
+  bed <- makeGRangesFromDataFrame(bed, keep.extra.columns = TRUE)
+  if (sum(width(bed) == width(bed[1])) != length(bed)){
     stop("All peaks in bed file must be of equal width!")
   }
   return(bed)

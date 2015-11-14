@@ -2,7 +2,6 @@
 #'
 #' @slot peaks
 #' @slot background_peaks
-#' @importClassesFrom GenomicRanges GenomicRanges
 backgroundPeaks <- setClass("backgroundPeaks",
                             slots = c(peaks = 'GenomicRanges',
                                       background_peaks = 'matrix'
@@ -13,7 +12,7 @@ sampleBackgroundPeaks <- function(object, peak_set, counts_mat, niterations = 50
   
   stopifnot(inherits(object, "backgroundPeaks"))
 
-  sample_mat = Matrix::sparseMatrix(j = as.vector(object@background_peaks[peak_set,1:niterations]), i = rep(1:niterations, each = length(peak_set)), x=1, dims = c(niterations, length(counts_mat@peaks)))
+  sample_mat = sparseMatrix(j = as.vector(object@background_peaks[peak_set,1:niterations]), i = rep(1:niterations, each = length(peak_set)), x=1, dims = c(niterations, length(counts_mat@peaks)))
 
   sampled_counts =  as.matrix(t(sample_mat %*% counts_mat@counts))
 

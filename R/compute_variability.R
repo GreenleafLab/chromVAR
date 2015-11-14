@@ -44,7 +44,7 @@ compute_deviations <- function(peak_set, counts_mat, bg_peaks, niterations = 50,
   metric = match.arg(metric)
 
   tf_count = length(peak_set)
-  tf_vec = Matrix::sparseMatrix(j = peak_set, i = rep(1,tf_count), x = 1, 
+  tf_vec = sparseMatrix(j = peak_set, i = rep(1,tf_count), x = 1, 
                         dims = c(1, length(counts_mat@peaks)))
 
   observed = as.matrix(tf_vec %*% counts_mat@counts)
@@ -127,7 +127,7 @@ compute_var_metrics <- function(observed, sampled_counts, counts_mat,
                    sampled_deviation[bootstrap_indexes[(1 + (x-1)*length(normdev)):(x*length(normdev))],]))
     normvar_error = quantile(bootstrap_normvars, c(0.025, 0.975))
 
-    res = deviationResult(normalized_deviations = as.numeric(normdev), 
+    res = deviationResult(deviations = as.numeric(normdev), 
                           variability = normvar, 
                           variability_bounds = normvar_error,
                           metric = "old")

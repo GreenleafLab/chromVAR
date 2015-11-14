@@ -24,7 +24,7 @@ setMethod("show",
           definition = function(object){
             cat("An object of class ", class(object), "\n", sep = "")
             cat("Deviations for ", object@tf, " for ",
-                length(object@normalized_deviations), " cells/samples. \n", sep = "")
+                length(object@deviations), " cells/samples. \n", sep = "")
             invisible(NULL)
           })
 
@@ -77,8 +77,8 @@ setMethod("differentialSamples", "deviationResult",
           function(object, fdr = 0.1){
             fdrs = deviationFDR(object)
             sig = which(fdrs < fdr)
-            up = intersect(sig, which(object@normalized_deviations > 0))
-            down = intersect(sig, which(object@normalized_deviations < 0))
+            up = intersect(sig, which(object@deviations > 0))
+            down = intersect(sig, which(object@deviations < 0))
             return(list(up = up, down = down))
           })
 
