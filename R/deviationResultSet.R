@@ -15,7 +15,7 @@ setMethod("show",
 
 #' @describeIn metric  returns name of metric used
 #' @export
-setMethod("metric", "deviationResult",
+setMethod("metric", "deviationResultSet",
           function(object){object[[1]]@metric})
 
 

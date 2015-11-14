@@ -4,13 +4,14 @@
 \name{metric}
 \alias{metric}
 \alias{metric,deviationResult-method}
+\alias{metric,deviationResultSet-method}
 \title{metric}
 \usage{
 metric(object, ...)
 
 \S4method{metric}{deviationResult}(object)
 
-\S4method{metric}{deviationResult}(object)
+\S4method{metric}{deviationResultSet}(object)
 }
 \arguments{
 \item{object}{either deviationResult or deviationResultSet object}
@@ -22,7 +23,7 @@ Accessor for which variability metric was used.
 \itemize{
 \item \code{deviationResult}: returns name of metric used
 
-\item \code{deviationResult}: returns name of metric used
+\item \code{deviationResultSet}: returns name of metric used
 }}
 \seealso{
 \code{\link{variability}}
