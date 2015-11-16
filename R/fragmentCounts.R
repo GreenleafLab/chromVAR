@@ -7,6 +7,8 @@
 #' sparsity of the data.  The fragmentCounts class also stores the genomic regions that
 #' correspond to the rows of the counts matrix. Optionally, the class can store sample meta data
 #' as a data.frame with rows corresponding to samples.   
+#' @section Accessors:
+#' Accessors are available for counts, peaks, and meta.
 #' @slot counts Matrix of fragment counts, with each row representing a peak, each column a sample
 #' @slot peaks GRanges object with peaks for each row of counts
 #' @slot total_fragments total fragments within peaks
@@ -28,7 +30,7 @@ fragmentCounts <- setClass("fragmentCounts",
                                      depth = 'numeric'
                            ))
 
-
+#' @rdname fragmentCounts-class
 setMethod("initialize",
           "fragmentCounts",
           function(.Object, ...){
@@ -41,7 +43,7 @@ setMethod("initialize",
             .Object
           })
 
-
+#' @rdname fragmentCounts-class
 setMethod("show",
           signature="fragmentCounts",
           definition = function(object){
@@ -62,48 +64,59 @@ setValidity("fragmentCounts", function(object) {
   if (valid) TRUE else msg})
 
 
-setMethod("[", signature = signature(x = "fragmentCounts", j = "missing"),
-          definition = function(x, i, j) {
-            x@counts = x@counts[i, ]
-            x@fragments_per_sample = colSums(x@counts)
-            x@fragments_per_peak = rowSums(x@counts)
-            x@peaks = x@peaks[i]
-            x@total_fragments = sum(x@counts)
-            x@npeak = lenth(x@peaks)
-            return(x)
-          })
+# setMethod("[", signature = signature(x = "fragmentCounts", j = "missing"),
+#           definition = function(x, i, j) {
+#             x@counts = x@counts[i, ]
+#             x@fragments_per_sample = colSums(x@counts)
+#             x@fragments_per_peak = rowSums(x@counts)
+#             x@peaks = x@peaks[i]
+#             x@total_fragments = sum(x@counts)
+#             x@npeak = length(x@peaks)
+#             return(x)
+#           })
 
+#' @rdname fragmentCounts-class
 setMethod("[", signature = signature(x = "fragmentCounts"),
           definition = function(x, i ,j ) {
+            if (missing(i)){
+              i = 1:x@npeak
+            }
+            if (missing(j)){
+              j = 1:x@nsample
+            }
             x@counts = x@counts[i,j]
             x@fragments_per_sample = colSums(x@counts)
             x@fragments_per_peak = rowSums(x@counts)
             x@peaks = x@peaks[i]
             x@total_fragments = sum(x@counts)
-            x@npeak = lenfth(x@peaks)
+            x@npeak = length(x@peaks)
             x@nsample = ncol(x@counts)
             x@sample_meta = x@sample_meta[j,]
             x@depth = x@depth[j]
             return(x)
           })
 
-setMethod("[", signature = signature(x = "fragmentCounts", i = "missing"),
-          definition = function(x, i ,j ) {
-            x@counts = x@counts[,j]
-            x@fragments_per_sample = colSums(x@counts)
-            x@fragments_per_peak = rowSums(x@counts)
-            x@total_fragments = sum(x@counts)
-            x@nsample = ncol(x@counts)
-            x@sample_meta = x@sample_meta[j,]
-            x@depth = x@depth[j]
-            return(x)
-})
+# 
+# setMethod("[", signature = signature(x = "fragmentCounts", i = "missing"),
+#           definition = function(x, i ,j ) {
+#             x@counts = x@counts[,j]
+#             x@fragments_per_sample = colSums(x@counts)
+#             x@fragments_per_peak = rowSums(x@counts)
+#             x@total_fragments = sum(x@counts)
+#             x@nsample = ncol(x@counts)
+#             x@sample_meta = x@sample_meta[j,]
+#             x@depth = x@depth[j]
+#             return(x)
+# })
 
 
+#' getFragmentCountsByRG
+#' 
 #' make fragmentCounts object using bam file with RG tags 
-#'
 #' @param bam filename for bam file with aligned reads
 #' @param peaks GRanges object with peaks 
+#' @return \code{\link{fragmentCounts}} object
+#' @seealso \code{\link{getFragmentCounts}}, \code{\link{fragmentCounts}}, \code{\link{filterFragmentCounts}}
 #' @export
 getFragmentCountsByRG <- function(bam, peaks, BPPARAM = BiocParallel::bpparam()){
 
@@ -122,10 +135,13 @@ getFragmentCountsByRG <- function(bam, peaks, BPPARAM = BiocParallel::bpparam())
 
 
 
+#' getFragmentCounts
+#' 
 #' make fragmentCounts object using multiple bam files
-#'
 #' @param bams filenames for bam file with aligned reads
 #' @param peaks GRanges object with peaks 
+#' @return \code{\link{fragmentCounts}} object
+#' @seealso \code{\link{getFragmentCountsByRG}}, \code{\link{fragmentCounts}}, \code{\link{filterFragmentCounts}}
 #' @export
 getFragmentCounts <- function(bams, peaks){
 
@@ -172,11 +188,11 @@ bamToFragmentsByRG <- function(bamfile, BPPARAM = BiocParallel::bpparam()){
 
   out <- BiocParallel::bplapply(RG_tags, function(RG){
     match_RG = which(scanned$tag$RG == RG)
-    scanned_left <- GRanges(seq = scanned$rname[match_RG],
+    scanned_left <- GRanges(seqnames = scanned$rname[match_RG],
                                            IRanges::IRanges(start = scanned$pos[match_RG],
                                                             width = 1),
                                            strand = "+")
-    scanned_right <- GRanges(seq = scanned$rname[match_RG],
+    scanned_right <- GRanges(seqnames = scanned$rname[match_RG],
                                             IRanges::IRanges(start = scanned$pos[match_RG] + 
                                                                abs(scanned$isize[match_RG]) - 1,
                                                              width = 1),
@@ -193,8 +209,8 @@ bamToFragmentsByRG <- function(bamfile, BPPARAM = BiocParallel::bpparam()){
 bamToFragments <- function(bamfile){
 
   scanned <- Rsamtools::scanBam(bamfile, param = Rsamtools::ScanBamParam(flag = Rsamtools::scanBamFlag(isMinusStrand=FALSE, isProperPair = TRUE), what = c("rname","pos","isize")))[[1]]
-  scanned_left <- GRanges(seq = scanned$rname, IRanges::IRanges(start = scanned$pos, width = 1), strand = "+")
-  scanned_right <- GRanges(seq = scanned$rname, IRanges::IRanges(start = scanned$pos + abs(scanned$isize) - 1, width = 1), strand = "-")
+  scanned_left <- GRanges(seqnames = scanned$rname, IRanges::IRanges(start = scanned$pos, width = 1), strand = "+")
+  scanned_right <- GRanges(seqnames = scanned$rname, IRanges::IRanges(start = scanned$pos + abs(scanned$isize) - 1, width = 1), strand = "-")
   out <- left_right_to_grglist(scanned_left, scanned_right)
 
   return(out)
@@ -202,11 +218,14 @@ bamToFragments <- function(bamfile){
 }
 
 
+#' filterFragmentCounts
+#' 
 #' Filter Fragment Counts by quality
-#'
 #' @param counts_mat fragmentCounts object
 #' @param min_in_peaks minimum fraction of fragments within peaks (default = 0.25)
 #' @param min_fragments minimum fragments in peaks (default = 5000)
+#' @return \code{\link{fragmentCounts}} object
+#' @seealso \code{\link{getFragmentCounts}}, \code{\link{getFragmentCountsByRG}}, \code{\link{fragmentCounts}}
 #' @export          
 filterFragmentCounts <- function(counts_mat, min_in_peaks = 0.25, min_fragments = 5000){
   stopifnot(inherits(counts_mat, "fragmentCounts"))

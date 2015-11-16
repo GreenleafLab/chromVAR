@@ -2,7 +2,7 @@
 % Please edit documentation in R/fragmentCounts.R
 \name{filterFragmentCounts}
 \alias{filterFragmentCounts}
-\title{Filter Fragment Counts by quality}
+\title{filterFragmentCounts}
 \usage{
 filterFragmentCounts(counts_mat, min_in_peaks = 0.25, min_fragments = 5000)
 }
@@ -13,7 +13,13 @@ filterFragmentCounts(counts_mat, min_in_peaks = 0.25, min_fragments = 5000)
 
 \item{min_fragments}{minimum fragments in peaks (default = 5000)}
 }
+\value{
+\code{\link{fragmentCounts}} object
+}
 \description{
 Filter Fragment Counts by quality
+}
+\seealso{
+\code{\link{getFragmentCounts}}, \code{\link{getFragmentCountsByRG}}, \code{\link{fragmentCounts}}
 }
 

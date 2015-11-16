@@ -1,5 +1,6 @@
-#' An S4 class that holds background peak set
+#' backgroundPeaks
 #'
+#' backgroundPeaks is a class to store background peaks. The associated peaks are also stored
 #' @slot peaks
 #' @slot background_peaks
 backgroundPeaks <- setClass("backgroundPeaks",
@@ -7,10 +8,19 @@ backgroundPeaks <- setClass("backgroundPeaks",
                                       background_peaks = 'matrix'
                             ))
 
+#' sampleBackgroundPeaks
+#' 
+#' gets sample counts for background sets for a given peak set
+#' @param object backgroundPeaks object
+#' @param peak_set list of peak indices
+#' @param counts_mat fragmentCounts object
+#' @param niterations number of background sets to sample
+#' @return matrix with sampled counts for background sets
 #' @export
 sampleBackgroundPeaks <- function(object, peak_set, counts_mat, niterations = 50){
   
   stopifnot(inherits(object, "backgroundPeaks"))
+  stopifnot(niterations <= ncol(object@background_peaks))
 
   sample_mat = sparseMatrix(j = as.vector(object@background_peaks[peak_set,1:niterations]), i = rep(1:niterations, each = length(peak_set)), x=1, dims = c(niterations, length(counts_mat@peaks)))
 
@@ -20,7 +30,19 @@ sampleBackgroundPeaks <- function(object, peak_set, counts_mat, niterations = 50
 }
 
 
-
+#' getBackgroundPeakSets
+#' 
+#' Function to get a set of background peaks for each peak based on GC content and # of counts
+#' across all samples
+#' @param counts_mat a fragmentCounts object
+#' @param niterations number of background peaks to sample
+#' @param window window size around peak in which to sample a background peak
+#' @param BPPARAM multiprocessing parameter for use by BiocParallel
+#' @param for_set computing background peaks for a set of peaks? affect whether sampling is done with replacement
+#' @return backgroundPeaks object
+#' @details Background peaks are chosen by finding the window nearest neighbors to a peak in terms of 
+#' GC content and # of fragments across samples using the Mahalanobis distance.  From those nearest
+#' neighbors, niterations peaks are sampled from that background.
 #' @export
 getBackgroundPeakSets <- function(counts_mat, niterations = 50, window = 1000, BPPARAM = BiocParallel::bpparam(), for_set = TRUE){
   stopifnot(inherits(counts_mat,"fragmentCounts"))
@@ -52,7 +74,7 @@ getBackgroundPeakSets <- function(counts_mat, niterations = 50, window = 1000, B
   return(background_peaks)
 }
 
-
+# internal function, not exported
 add_reflections <- function(x, window = 1000, as_ranks = FALSE){
   if (as_ranks){
     r = x

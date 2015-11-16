@@ -2,7 +2,7 @@
 % Please edit documentation in R/fragmentCounts.R
 \name{getFragmentCountsByRG}
 \alias{getFragmentCountsByRG}
-\title{make fragmentCounts object using bam file with RG tags}
+\title{getFragmentCountsByRG}
 \usage{
 getFragmentCountsByRG(bam, peaks, BPPARAM = BiocParallel::bpparam())
 }
@@ -11,7 +11,13 @@ getFragmentCountsByRG(bam, peaks, BPPARAM = BiocParallel::bpparam())
 
 \item{peaks}{GRanges object with peaks}
 }
+\value{
+\code{\link{fragmentCounts}} object
+}
 \description{
 make fragmentCounts object using bam file with RG tags
+}
+\seealso{
+\code{\link{getFragmentCounts}}, \code{\link{fragmentCounts}}, \code{\link{filterFragmentCounts}}
 }
 

@@ -4,9 +4,9 @@
 \name{backgroundPeaks-class}
 \alias{backgroundPeaks}
 \alias{backgroundPeaks-class}
-\title{An S4 class that holds background peak set}
+\title{backgroundPeaks}
 \description{
-An S4 class that holds background peak set
+backgroundPeaks is a class to store background peaks. The associated peaks are also stored
 }
 \section{Slots}{
 

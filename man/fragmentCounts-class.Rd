@@ -2,9 +2,19 @@
 % Please edit documentation in R/fragmentCounts.R
 \docType{class}
 \name{fragmentCounts-class}
+\alias{[,fragmentCounts,ANY,ANY,ANY-method}
 \alias{fragmentCounts}
 \alias{fragmentCounts-class}
+\alias{initialize,fragmentCounts-method}
+\alias{show,fragmentCounts-method}
 \title{fragmentCounts}
+\usage{
+\S4method{initialize}{fragmentCounts}(.Object, ...)
+
+\S4method{show}{fragmentCounts}(object)
+
+\S4method{[}{fragmentCounts,ANY,ANY,ANY}(x, i, j)
+}
 \description{
 fragmentCounts is a class to store fragment counts for genomic regions across samples.
 The class is specifically designed to be able to handle sparse data, as would
@@ -35,4 +45,8 @@ as a data.frame with rows corresponding to samples.
 
 \item{\code{depth}}{total read depth for each sample}
 }}
+\section{Accessors}{
+
+Accessors are available for counts, peaks, and meta.
+}
 

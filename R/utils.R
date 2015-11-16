@@ -1,3 +1,5 @@
+###Set of internal utilities
+
 '%ni%' = Negate('%in%')
 
 mean_smooth <- function(X, window){

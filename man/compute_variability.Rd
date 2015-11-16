@@ -8,17 +8,17 @@ compute_variability(motif_indices, counts_mat, bg_peaks, niterations = 50,
   metric = c("z-score", "old"), BPPARAM = BiocParallel::bpparam())
 }
 \arguments{
-\item{motif_indices}{}
+\item{motif_indices}{list of indices representing different sets of peaks}
 
-\item{counts_mat}{}
+\item{counts_mat}{fragmentCounts object}
 
-\item{bg_peaks}{}
+\item{bg_peaks}{backgroundPeaks object}
 
-\item{niterations}{}
+\item{niterations}{number of background sets to sample}
 
-\item{metric}{}
+\item{metric}{which metric to use? default is z-score}
 
-\item{BPPARAM}{}
+\item{BPPARAM}{multi-processing argument to pass to \code{\link[BiocParallel]{bplapply}}}
 }
 \value{
 \code{\link{deviationResultSet}}

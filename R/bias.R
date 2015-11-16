@@ -15,7 +15,7 @@ setMethod("compute_bias","GenomicRanges",
           })
 
 setMethod("compute_bias","fragmentCounts",
-          function(object, genome = BSgenome.Hsapiens.UCSC.hg19){
+          function(object, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19){
             seqs = Biostrings::getSeq(genome, object@peaks)
             nucfreqs <- Biostrings::letterFrequency(seqs, c("A","C","G","T"))
             gc <- apply(nucfreqs, 1, function(x) sum(x[2:3])/sum(x))

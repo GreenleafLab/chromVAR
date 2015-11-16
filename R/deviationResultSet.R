@@ -56,7 +56,6 @@ setMethod("plot_variability", "deviationResultSet",
                                 min = variability_bounds(object, lower = T),
                                 max = variability_bounds(object, lower = F),
                                 tf = names(object),
-                                #type = "Data",
                                 ranks = rank(-1 * variability(object)))
 
             ylab = ifelse(metric(object) == "z-score","SD of Z-scores", "Normalized Variability")

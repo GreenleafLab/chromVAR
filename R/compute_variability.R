@@ -2,12 +2,12 @@
 #' compute_variability
 #' 
 #' Computes variability across sets of annotations
-#' @param motif_indices
-#' @param counts_mat
-#' @param bg_peaks
-#' @param niterations
-#' @param metric
-#' @param BPPARAM
+#' @param motif_indices list of indices representing different sets of peaks
+#' @param counts_mat fragmentCounts object
+#' @param bg_peaks backgroundPeaks object
+#' @param niterations number of background sets to sample
+#' @param metric which metric to use? default is z-score
+#' @param BPPARAM multi-processing argument to pass to \code{\link[BiocParallel]{bplapply}}
 #' @return  \code{\link{deviationResultSet}}
 #' @seealso \code{\link{deviationResultSet}}, \code{\link{variability}}, \code{\link{plot_variability}}
 #' @export
@@ -30,11 +30,11 @@ compute_variability <- function(motif_indices, counts_mat, bg_peaks, niterations
 #' compute_deviations
 #' 
 #' Computes deviations across samples for a set of annotations
-#' @param peak_set
-#' @param counts_mat
-#' @param bg_peaks
-#' @param niterations
-#' @param metric
+#' @param peak_set vector of indices for peaks in set
+#' @param counts_mat fragmentCounts object
+#' @param bg_peaks backgroundPeaks object
+#' @param niterations number of background sets to sample
+#' @param metric which metric to use?  default is z-score
 #' @return  \code{\link{deviationResult}}
 #' @seealso \code{\link{deviationResult}}, \code{\link{compute_variability}}
 #' @export
@@ -60,7 +60,7 @@ compute_deviations <- function(peak_set, counts_mat, bg_peaks, niterations = 50,
 }
 
 
-
+# not exported
 compute_var_metrics <- function(observed, sampled_counts, counts_mat,
                                 metric = c("z-score","old")){
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/fragmentCounts.R
 \name{getFragmentCounts}
 \alias{getFragmentCounts}
-\title{make fragmentCounts object using multiple bam files}
+\title{getFragmentCounts}
 \usage{
 getFragmentCounts(bams, peaks)
 }
@@ -11,7 +11,13 @@ getFragmentCounts(bams, peaks)
 
 \item{peaks}{GRanges object with peaks}
 }
+\value{
+\code{\link{fragmentCounts}} object
+}
 \description{
 make fragmentCounts object using multiple bam files
+}
+\seealso{
+\code{\link{getFragmentCountsByRG}}, \code{\link{fragmentCounts}}, \code{\link{filterFragmentCounts}}
 }
 

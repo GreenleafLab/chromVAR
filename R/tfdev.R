@@ -1,4 +1,4 @@
-#' tfdev: A package for computing variabilitiy across sets of peaks.
+#' tfdev: A package for computing variability across sets of peaks.
 #'
 #' The package provides three categories of important functions:
 #' functions!
@@ -11,6 +11,6 @@
 #' @import Matrix
 #' @import GenomicRanges
 #' @docType package
-#' @name foo
+#' @name tfdev
 NULL
 #> NULL
