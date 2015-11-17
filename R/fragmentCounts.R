@@ -64,17 +64,6 @@ setValidity("fragmentCounts", function(object) {
   if (valid) TRUE else msg})
 
 
-# setMethod("[", signature = signature(x = "fragmentCounts", j = "missing"),
-#           definition = function(x, i, j) {
-#             x@counts = x@counts[i, ]
-#             x@fragments_per_sample = colSums(x@counts)
-#             x@fragments_per_peak = rowSums(x@counts)
-#             x@peaks = x@peaks[i]
-#             x@total_fragments = sum(x@counts)
-#             x@npeak = length(x@peaks)
-#             return(x)
-#           })
-
 #' @rdname fragmentCounts-class
 setMethod("[", signature = signature(x = "fragmentCounts"),
           definition = function(x, i ,j ) {
@@ -95,19 +84,6 @@ setMethod("[", signature = signature(x = "fragmentCounts"),
             x@depth = x@depth[j]
             return(x)
           })
-
-# 
-# setMethod("[", signature = signature(x = "fragmentCounts", i = "missing"),
-#           definition = function(x, i ,j ) {
-#             x@counts = x@counts[,j]
-#             x@fragments_per_sample = colSums(x@counts)
-#             x@fragments_per_peak = rowSums(x@counts)
-#             x@total_fragments = sum(x@counts)
-#             x@nsample = ncol(x@counts)
-#             x@sample_meta = x@sample_meta[j,]
-#             x@depth = x@depth[j]
-#             return(x)
-# })
 
 
 #' getFragmentCountsByRG

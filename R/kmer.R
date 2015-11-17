@@ -1,173 +1,69 @@
-# 
-# remove_rc <- function(seqs){
-#   temp <- cbind(as.character(seqs), as.character(Biostrings::reverseComplement(seqs)))
-#   temp[temp[,1] > temp[,2],1] <- temp[temp[,1] > temp[,2],2]
-#   Biostrings::DNAStringSet(unique(temp[,1]))
-# }
-# 
-# get_kmer_indices <- function(bed, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, k = 6){
-# 
-#   seqs <- Biostrings::getSeq(genome,bed)
-# 
-#   kmers = Biostrings::DNAStringSet(Biostrings::mkAllStrings(c("A","C","G","T"),width = k))
-#   #kmers = remove_rc(all_kmers)
-# 
-#   pd = Biostrings::PDict(kmers)
-#   indices  = Biostrings::vwhichPDict(kmers,seqs)
-# 
-#   indices = sapply(as.character(kmers), function(x) sapply(indices, function(y) x %in% y))
-# 
-#   rc_kmers = as.character(Biostrings::reverseComplement(kmers))
-#   names(indices[rc_kmers > names(indices)]) = rc_kmers[rc_kmers > names(indices)]
-# 
-# 
-# 
-#   indices_rc  = Biostrings::vwhichPDict(pd, Biostrings::reverseComplement(seqs))
-# 
-#   indices_all = merge_lists(indices, indices_rc, by = "order")
-# 
-#   return(indices_all)
-# 
-# }
-# 
-# 
-# 
-# compute_kmer_assoc <- function(bed, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, k = 6){
-#   seqs <- Biostrings::getSeq(genome,bed)
-#   rc_seqs <- Biostrings::reverseComplement(seqs)
-#   assoc <- Biostrings::oligonucleotideFrequency(seqs, k) + Biostrings::oligonucleotideFrequency(rc_seqs,k)
-#   kmer_indices <- lapply(1:ncol(assoc), function(x) which(assoc[,x]>0))
-#   names(kmer_indices) <- colnames(assoc)
-#   ###Reduce by removing reverse complements
-#   kmer = Biostrings::DNAStringSet(names(kmer_indices))
-#   rc_kmer = Biostrings::reverseComplement(kmer)
-#   dups = sapply(1:length(kmer_indices), function(i) kmer[i] %in% rc_kmer[1:(i-1)])
-#   kmer_indices = kmer_indices[which(!dups)]
-#   return(kmer_indices)
-# }
-# 
-# 
-# 
-# 
-# 
-# make_gapped_kmer <-function(k, m){
-# 
-#   all_kmer = Biostrings::DNAStringSet(Biostrings::mkAllStrings(c("A","C","G","T"),width = k))
-#   all_lmer = Biostrings::DNAStringSet(Biostrings::mkAllStrings(c("A","C","G","T"),width = k+m))
-# 
-#   Ns = paste(rep("N",m),collapse="")
-# 
-#   gapped_kmer = replaceAt(all_kmer,1,value=Ns)
-# 
-#   for (i in 2:(k+1)){
-#     gapped_kmer = c(gapped_kmer,replaceAt(all_kmer,i,value=Ns))
-#   }
-# 
-#   gapped_kmer = remove_rc(gapped_kmer)
-# 
-#   pd = PDict(all_lmer)
-#   mapping  = vwhichPDict(pd,gapped_kmer,fixed = "pattern")
-#   mapping.rc  = vwhichPDict(pd,Biostrings::reverseComplement(gapped_kmer),fixed = "pattern")
-# 
-#   #rows are kmer, col are wc-kmer
-#   kmer.match.mat = sparseMatrix(i = c(unlist(mapping),unlist(mapping.rc)),
-#                                 j = c(unlist(sapply(1:length(mapping), function(x) rep(x,length(mapping[[x]])))),
-#                                       unlist(sapply(1:length(mapping.rc), function(x) rep(x,length(mapping.rc[[x]]))))),
-#                                 x = 1, dims = c(length(all_lmer),length(gapped_kmer)), use.last.ij = TRUE,
-#                                 dimnames = list(as.character(all_lmer), as.character(gapped_kmer))
-#   )
-# 
-#   kmer.col.mat = rep(colnames(kmer.match.mat),2)
-#   names(kmer.col.mat) = c(colnames(kmer.match.mat), as.character(Biostrings::reverseComplement(gapped_kmer)))
-# 
-#   kmerMapping(k = k, m = m, l = k + m, mapping = kmer.match.mat, colMapping = kmer.col.mat)
-# 
-# }
-# 
-# 
-# 
-# make_wildcard_kmer <-function(k, m, adjacent_n = TRUE){
-# 
-#   all_kmer = Biostrings::DNAStringSet(Biostrings::mkAllStrings(c("A","C","G","T"),width = k))
-# 
-#   wc_kmer = Biostrings::DNAStringSet(Biostrings::mkAllStrings(c("A","C","G","T","N"),width = k))
-# 
-#   #reduce the space
-#   wc_kmer = wc_kmer[which(letterFrequency(wc_kmer,"N")<=m)]
-#   wc_kmer = wc_kmer[which(letterFrequency(subseq(wc_kmer,start=1,end=1),"N")==0)]
-# 
-#   if (adjacent_n){
-#     for (i in 2:m){
-#       mult = which(letterFrequency(wc_kmer,"N") < i)
-#       consec = which(vcountPattern(paste(rep("N",i),collapse=""),wc_kmer)>=1)
-#       wc_kmer = wc_kmer[c(mult,consec)]
-#     }
-#   }
-# 
-#   wc_kmer <- remove_rc(wc_kmer)
-# 
-#   pd = PDict(all_kmer)
-#   mapping  = vwhichPDict(pd,wc_kmer,fixed = "pattern")
-#   mapping.rc  = vwhichPDict(pd,Biostrings::reverseComplement(wc_kmer),fixed = "pattern")
-# 
-#   #rows are kmer, col are wc-kmer
-#   kmer.match.mat = sparseMatrix(i = c(unlist(mapping),unlist(mapping.rc)),
-#                                 j = c(unlist(sapply(1:length(mapping), function(x) rep(x,length(mapping[[x]])))),
-#                                       unlist(sapply(1:length(mapping.rc), function(x) rep(x,length(mapping.rc[[x]]))))),
-#                                 x = 1, dims = c(length(all_kmer),length(wc_kmer)), use.last.ij = TRUE,
-#                                 dimnames = list(as.character(all_kmer), as.character(wc_kmer))
-#                                 )
-# 
-#   kmer.col.mat = rep(colnames(kmer.match.mat),2)
-#   names(kmer.col.mat) = c(colnames(kmer.match.mat), as.character(Biostrings::reverseComplement(wc_kmer)))
-# 
-#   kmerToWildcard(k = k, m = m, mapping = kmer.match.mat, colMapping = kmer.col.mat)
-# 
-# }
-# 
-# 
-# get_gapped_kmer_counts <- function(seqs, kmer_mapping, verbose = F){
-#   seqs = as.character(seqs)
-#   seq_kmer_mat = sparseMatrix(i={},j={}, dims = c(length(seqs), ncol(kmer_mapping@mapping)), dimnames=list(NULL,colnames(kmer_mapping@mapping)))
-#   add_kmer_mat = sparseMatrix(i={},j={}, dims = c(length(seqs), ncol(kmer_mapping@mapping)), dimnames=list(NULL,colnames(kmer_mapping@mapping)))
-#   blocks = 20
-#   if (verbose){print(paste("Scanning across ", nchar(seqs[1])," bases per peak for kmers",collapse=""))}
-#   for (i in 1:(nchar(seqs[1]) - kmer_mapping@l + 1)){
-#     if (i %% blocks == 0){
-#       if (verbose){print(paste("Scanned ",i," bases"))}
-#       seq_kmer_mat = seq_kmer_mat + add_kmer_mat
-#       add_kmer_mat = sparseMatrix(i={},j={}, dims = c(length(seqs), ncol(kmer_mapping@mapping)), dimnames=list(NULL,colnames(kmer_mapping@mapping)))
-#     }
-#     add_kmer_mat = add_kmer_mat + kmer_mapping[substr(seqs,i,i+(kmer_mapping@l-1))]
-#   }
-#   seq_kmer_mat = seq_kmer_mat + add_kmer_mat
-#   seq_kmer_mat
-# }
-# 
-# 
-# pd = Biostrings::DNAStringSet(Biostrings::mkAllStrings(c("A","C","G","T"),width = k))
-# kmer_matchs = vwhichPDict(pd,seqs)
-# 
-# 
-# 
-# 
-# get_enriched_kmer<- function(seqs, genome, seq_kmer_mat){
-# 
-# 
-# }
-# 
-# 
-# 
-#   wc_kmer_ac = as.character(wc_kmer)
-#   #kmer.col.mat = rep(colnames(kmer.match.mat),2)
-#   #names(kmer.col.mat) = c(colnames(kmer.match.mat), as.character(Biostrings::reverseComplement(wc_kmer)))
-#   seq_kmer_mat = sparseMatrix(i={},j={}, dims = c(length(seqs), length(wc_kmer)),dimnames=list(NULL,wc_kmer_ac))
-#   seqs_ac = as.character(seqs)
-#   for (i in 1:(width(seqs[1])-k + 1)){
-#     seq_kmer_mat = seq_kmer_mat + kmer.match.mat[substr(seqs_ac,i,i+(k-1)),wc_kmer_ac]
-#   }
-#   seq_kmer_mat
-# }
+
+get_kmer_indices <- function(peaks, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, k = 6){
+  
+  if (k > 8){
+    stop("k must be less than 8")
+  }
+  if (k < 5){
+    stop("k must be greater than or equal to 5")
+  }
+  seqs <- Biostrings::getSeq(genome, peaks)
+  kmers <- Biostrings::DNAStringSet(Biostrings::mkAllStrings(c("A","C","G","T"),width = k))
+  pd <- Biostrings::PDict(kmers)
+  indices  <- Biostrings::vwhichPDict(pd,seqs)
+  
+  tmp <- data.frame(peak_ix = unlist(lapply(1:length(indices), function(x) rep(x, length(indices[[x]])))), kmer_ix = factor(unlist(indices), levels = 1:length(kmers), ordered=T))
+  out <- split(tmp$peak_ix,tmp$kmer_ix)
+  names(out) <- as.character(kmers)
+  
+  #remove reverse complements
+  tmp <- cbind(names(out), as.character(Biostrings::reverseComplement(kmers)))
+  names(out)[tmp[,1] > tmp[,2]] <- tmp[tmp[,1] > tmp[,2],2]
+  out <- merge_lists(out, by = "name")
+  
+  return(out)
+}
+
+get_gapped_kmer_indices <- function(peaks, k, m){
+  
+  l = k + m
+  lmer_indices = get_kmer_indices(peaks, k = l)
+
+  all_kmer = Biostrings::DNAStringSet(Biostrings::mkAllStrings(c("A","C","G","T"),width = k))
+
+  Ns = paste(rep("N",m),collapse="")
+
+  gapped_kmer = Biostrings::replaceAt(all_kmer,1,value=Ns)
+
+  for (i in 2:(k+1)){
+    gapped_kmer = c(gapped_kmer,Biostrings::replaceAt(all_kmer,i,value=Ns))
+  }
+
+  gapped_kmer = remove_rc(gapped_kmer)
+
+  pd = Biostrings::PDict(Biostrings::DNAStringSet(names(lmer_indices)))
+  mapping  = Biostrings::vwhichPDict(pd,gapped_kmer,fixed = "pattern")
+  mapping.rc  = Biostrings::vwhichPDict(pd,Biostrings::reverseComplement(gapped_kmer),fixed = "pattern")
+
+  mapping = merge_lists(mapping, mapping.rc)
+  
+  out <- lapply(1:length(mapping), function(x) unique(unlist(lmer_indices[mapping[[x]]],use.names=FALSE)))
+  
+  names(out) <- as.character(gapped_kmer)
+  
+  return(out)
+}
+
+
+remove_rc <- function(seqs){
+  temp <- cbind(as.character(seqs), as.character(Biostrings::reverseComplement(seqs)))
+  temp[temp[,1] > temp[,2],1] <- temp[temp[,1] > temp[,2],2]
+  Biostrings::DNAStringSet(unique(temp[,1]))
+}
+
+
+
+
 # 
 # 
 # ###Find kmer that are over-represented

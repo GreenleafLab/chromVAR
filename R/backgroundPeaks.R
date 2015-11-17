@@ -22,7 +22,10 @@ sampleBackgroundPeaks <- function(object, peak_set, counts_mat, niterations = 50
   stopifnot(inherits(object, "backgroundPeaks"))
   stopifnot(niterations <= ncol(object@background_peaks))
 
-  sample_mat = sparseMatrix(j = as.vector(object@background_peaks[peak_set,1:niterations]), i = rep(1:niterations, each = length(peak_set)), x=1, dims = c(niterations, length(counts_mat@peaks)))
+  sample_mat = sparseMatrix(j = as.vector(object@background_peaks[peak_set,1:niterations]), 
+                            i = rep(1:niterations, each = length(peak_set)), 
+                            x=1, 
+                            dims = c(niterations, length(counts_mat@peaks)))
 
   sampled_counts =  as.matrix(t(sample_mat %*% counts_mat@counts))
 
@@ -74,7 +77,8 @@ getBackgroundPeakSets <- function(counts_mat, niterations = 50, window = 1000, B
   return(background_peaks)
 }
 
-# internal function, not exported
+
+# not exported
 add_reflections <- function(x, window = 1000, as_ranks = FALSE){
   if (as_ranks){
     r = x

@@ -10,6 +10,7 @@
 #' the classes ...
 #' @import Matrix
 #' @import GenomicRanges
+#' @import methods
 #' @docType package
 #' @name tfdev
 NULL

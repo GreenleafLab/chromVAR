@@ -1,5 +1,4 @@
-### Old method for computing background, and associated functions...
-
+# Old method for computing background, and associated functions...
 
 # deviationBackgroundParameters class and associated methods--------------------
 

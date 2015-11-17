@@ -48,6 +48,7 @@ setMethod("variability_bounds", "deviationResultSet",
 setGeneric("plot_variability", function(object, ...) standardGeneric("plot_variability"))
 
 #' @rdname plot_variability
+#' @import ggplot2
 #' @export
 setMethod("plot_variability", "deviationResultSet",
           function(object, top = 3, xlab = "Sorted TFs"){
@@ -60,12 +61,12 @@ setMethod("plot_variability", "deviationResultSet",
 
             ylab = ifelse(metric(object) == "z-score","SD of Z-scores", "Normalized Variability")
             
-            out = ggplot2::ggplot(res_df, ggplot2::aes(x = ranks, y = var, min = min, max = max)) + ggplot2::geom_point()+ ggplot2::geom_errorbar() +
+            out = ggplot2::ggplot(res_df, ggplot2::aes_string(x = "ranks", y = "var", min = "min", max = "max")) + ggplot2::geom_point()+ ggplot2::geom_errorbar() +
               ggplot2::xlab(xlab) + ggplot2::ylab(ylab) + ggplot2::scale_y_continuous(expand=c(0,0),limits=c(0,max(res_df$max)*1.05))
 
             if (!is.na(top) && top > 0){
-              top_df = subset(res_df, ranks <= top)
-              out = out + ggplot2::geom_text(data = top_df, ggplot2::aes(x = ranks, y = var, label = tf), size = 2, hjust=-0.15,col = "Black")
+              top_df = res_df[res_df$ranks <= top,]
+              out = out + ggplot2::geom_text(data = top_df, ggplot2::aes_string(x = "ranks", y = "var", label = "tf"), size = 2, hjust=-0.15,col = "Black")
             }
 
             return(out)

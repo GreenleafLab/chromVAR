@@ -2,9 +2,16 @@
 NULL
 
 
+#' compute_bias
+#' 
+#' Computes GC content for peaks
+#' @param object GenomicRanges or fragmentCounts
 setGeneric("compute_bias", function(object, ...) standardGeneric("compute_bias"))
 
-#' @export
+#' @param genome BSgenome object, e.g. BSgenome.Hsapiens.UCSC.hg19
+#' @return If object is GenomicRanges, returns GenomicRanges with additional meta-data
+#'  column named "gc" with gc content
+#' @rdname compute_bias
 setMethod("compute_bias","GenomicRanges",
           function(object, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19){
             seqs = Biostrings::getSeq(genome, object)
@@ -14,6 +21,10 @@ setMethod("compute_bias","GenomicRanges",
             return(object)
           })
 
+#' @inheritParams compute_bias
+#' @return If object is fragmentCounts, returns fragmentCounts with additional meta-data
+#'  column for peaks slot named "gc" with gc content
+#' @rdname compute_bias
 setMethod("compute_bias","fragmentCounts",
           function(object, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19){
             seqs = Biostrings::getSeq(genome, object@peaks)
@@ -23,6 +34,7 @@ setMethod("compute_bias","fragmentCounts",
             return(object)
           })
 
+#' @keywords internal
 #' @export
 make_bias_bins <- function(counts_mat, nbins = 25){
   npeaks = length(counts_mat@peaks)
@@ -50,6 +62,7 @@ make_bias_bins <- function(counts_mat, nbins = 25){
   return(c(bias_bins, count_bins, bias_count_bins))
 }
 
+#' @keywords internal
 #' @export
 make_permuted_sets <- function(counts_mat, motif_indices, window = 10, BPPARAM = BPPARAM){
   bg <- getBackgroundPeakSets(counts_mat, niterations = 1, window = window, BPPARAM = BPPARAM)

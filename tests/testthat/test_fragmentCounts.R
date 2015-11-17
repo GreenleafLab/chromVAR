@@ -51,7 +51,23 @@ test_that("can subset fragmentCounts by numeric j", {
   expect_equal(ncol(counts@counts),3)
 })
 
+test_that("can subset fragmentCounts by numeric i", {
+  counts <- readRDS("counts_rg.rds") 
+  counts <- counts[1:3,]
+  expect_is(counts, "fragmentCounts")
+  expect_equal(counts@npeak, 3)
+  expect_equal(nrow(counts@counts),3)
+})
 
+test_that("can subset fragmentCounts by numeric i,j", {
+  counts <- readRDS("counts_rg.rds") 
+  counts <- counts[1:3,1:3]
+  expect_is(counts, "fragmentCounts")
+  expect_equal(counts@npeak, 3)
+  expect_equal(nrow(counts@counts),3)
+  expect_equal(counts@nsample, 3)
+  expect_equal(ncol(counts@counts),3)
+})
 
 
 
