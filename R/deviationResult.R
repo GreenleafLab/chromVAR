@@ -6,7 +6,8 @@
 #' @slot variability_bounds
 #' @slot name
 #' @slot metric
-#' @slot pvalues
+#' @slot p_deviations
+#' @slot p_variability
 #'
 #' @aliases deviations, variability, variability_bounds, name, metric, pvalues
 deviationResult <- setClass("deviationResult",
@@ -15,7 +16,8 @@ deviationResult <- setClass("deviationResult",
                                       variability_bounds = 'numeric',
                                       name = 'character',
                                       metric = 'character',
-                                      pvalues = 'numeric'))
+                                      p_deviations = 'numeric',
+                                      p_variability = 'numeric'))
 
 
 
@@ -23,15 +25,20 @@ setMethod("show",
           signature="deviationResult",
           definition = function(object){
             cat("An object of class ", class(object), "\n", sep = "")
-            cat("Deviations for ", object@tf, " for ",
+            if (nchar(object) >= 1){
+              cat("Deviations for ", object@name, " for ",
                 length(object@deviations), " cells/samples. \n", sep = "")
+            } else{
+              cat("Deviations for ",
+                  length(object@deviations), " cells/samples. \n", sep = "")
+            }
             invisible(NULL)
           })
 
 #' metric
 #' 
 #' Accessor for which variability metric was used.
-#' @param object either deviationResult or deviationResultSet object
+#' @param object either \code{\link{deviationResult}} or \code{\link{deviationResultSet}} object
 #' @seealso \code{\link{variability}} 
 setGeneric("metric", function(object, ...) standardGeneric("metric"))
 
@@ -45,7 +52,7 @@ setMethod("metric", "deviationResult",
 #' 
 #' Accessor for variability metric in deviationResult or deviationResultSet.
 #' Use \code{\link{metric}} to find metric
-#' @param object either deviationResult or deviationResultSet object
+#' @param object either \code{\link{deviationResult}} or \code{\link{deviationResultSet}} object
 #' @seealso \code{\link{metric}}, \code{\link{variability_bounds}} 
 setGeneric("variability", function(object, ...) standardGeneric("variability"))
 
@@ -56,10 +63,10 @@ setMethod("variability", "deviationResult",
 
 #' variability_bounds
 #' 
-#' Accessor for variability error in deviationResult or deviationResultSet.
-#' variability error is computed by bootstrapping the samples and determining a 95% confidence interval
-#' @param object either deviationResult or deviationResultSet object
-#' @param lower return lowerbounds?  only applicable if object is deviationResultSet
+#' Accessor for variability bounds in deviationResult or deviationResultSet.
+#' The bounds on the variability metric are computed by bootstrapping the 
+#' samples and determining a 95 percent confidence interval
+#' @param object either \code{\link{deviationResult}} or \code{\link{deviationResultSet}} object
 #' @seealso \code{\link{metric}}, \code{\link{variability}} 
 setGeneric("variability_bounds", function(object, ...) standardGeneric("variability_bounds"))
 
@@ -69,14 +76,42 @@ setGeneric("variability_bounds", function(object, ...) standardGeneric("variabil
 setMethod("variability_bounds", "deviationResult",
           function(object){object@variability_bounds})
 
+#' get_pvalues
+#' 
+#' Accessor for p values
+#' @param object either \code{\link{deviationResult}} or \code{\link{deviationResultSet}} object
+#' @seealso \code{\link{metric}}, \code{\link{variability}}, \code{\link{deviations}}
+setGeneric("get_pvalues", function(object, ...) standardGeneric("get_pvalues"))
 
+#' @param what return p values for deviations or variability?
+#' @describeIn get_pvalues returns p values for either deviations or variability
+#' @export
+setMethod("get_pvalues", "deviationResult",
+          function(object, what = c("deviations","variability")){
+            stopifnot(metric(object)!="old")
+            what = match.arg(what)
+            if (what == "deviations"){
+              return(object@p_deviations)
+            } else if (what == "variability"){
+              return(object@p_variability)
+            }
+          })
 
-setGeneric("differentialSamples", function(object, fdr = 0.1) standardGeneric("differentialSamples"))
+#' differential_samples
+#' 
+#' get differential_samples
+#' @param object \code{\link{deviationResult}} object
+#' @seealso \code{\link{get_pvalues}}, \code{\link{metric}},
+#' \code{\link{variability}}, \code{\link{deviations}}
+setGeneric("differential_samples", function(object, ...) standardGeneric("differential_samples"))
 
-setMethod("differentialSamples", "deviationResult",
-          function(object, fdr = 0.1){
-            fdrs = deviationFDR(object)
-            sig = which(fdrs < fdr)
+#' @param cutoff p-value cutoff for differential samples
+#' @rdname differential_samples
+#' @export
+setMethod("differential_samples", "deviationResult",
+          function(object, cutoff = 0.05){
+            fdrs = get_pvalues(object, what = "deviations")
+            sig = which(fdrs <= cutoff)
             up = intersect(sig, which(object@deviations > 0))
             down = intersect(sig, which(object@deviations < 0))
             return(list(up = up, down = down))

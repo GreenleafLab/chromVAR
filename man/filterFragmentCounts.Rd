@@ -4,7 +4,7 @@
 \alias{filterFragmentCounts}
 \title{filterFragmentCounts}
 \usage{
-filterFragmentCounts(counts_mat, min_in_peaks = 0.25, min_fragments = 5000)
+filterFragmentCounts(counts_mat, min_in_peaks = 0.25, min_fragments = 2500)
 }
 \arguments{
 \item{counts_mat}{fragmentCounts object}

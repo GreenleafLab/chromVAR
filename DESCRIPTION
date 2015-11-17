@@ -33,7 +33,6 @@ Collate:
     'backgroundPeaks.R'
     'fragmentCounts.R'
     'bias.R'
-    'classes.R'
     'compute_variability.R'
     'deviationResult.R'
     'deviationResultSet.R'

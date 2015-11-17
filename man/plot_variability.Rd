@@ -8,21 +8,44 @@
 \usage{
 plot_variability(object, ...)
 
-\S4method{plot_variability}{deviationResultSet}(object, top = 3,
-  xlab = "Sorted TFs")
+\S4method{plot_variability}{deviationResultSet}(object, xlab = "Sorted TFs",
+  label_type = c("top", "names", "none"), label_option = NULL,
+  only = FALSE)
 }
 \arguments{
-\item{object}{deviationResultSet object}
-
-\item{top}{number of top results to label}
+\item{object}{\code{\link{deviationResultSet}} object}
 
 \item{xlab}{label for x-axis (default is "sorted bins")}
+
+\item{label_type}{which points to label? See Details.}
+
+\item{label_option}{See Details.}
+
+\item{only}{FALSE, p-value cutoff, or number of points.  See Details.}
 }
 \value{
 ggplot
 }
 \description{
 Plots variability for deviationResultSet
+}
+\details{
+Labelling of points is controlled by label_type and label_options.
+label_type can be either "top", "names", or "none".  If "top", the top k most
+variable points are labelled with their names. k can be set by passing an integer
+value to label_option.  By default, k will be 3.  Specific points chosen by
+the user can be labelled by setting label_type to "name".  The names of the points
+to label should then be passed to label_option.  Either character vectors of the
+names can be given, or a numeric vector of the indices. If no input is given
+to label_option when label_type is "name", all points are labelled. If
+label_type is "none", no labelling is performed.\cr \cr
+Rather than plotting all results, you can also plot
+only significant results, a certain number of top results, or results by index
+or name.  For plotting only significant results, pass a numeric greater than
+0 and less than 1 to the argument only.  For plotting only the top points,
+pass a numeric value greater than 1 to the argument only.  For plotting results
+by index or name, give a vector of indices or names.  If only is FALSE
+(the default), then all results are plotted.
 }
 \seealso{
 \code{\link{metric}}, \code{\link{variability}}

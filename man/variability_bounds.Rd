@@ -14,15 +14,14 @@ variability_bounds(object, ...)
 \S4method{variability_bounds}{deviationResultSet}(object, lower = T)
 }
 \arguments{
-\item{object}{either deviationResult or deviationResultSet object}
-
-\item{lower}{return lowerbounds?  only applicable if object is deviationResultSet}
+\item{object}{either \code{\link{deviationResult}} or \code{\link{deviationResultSet}} object}
 
 \item{lower}{return lower bound?  if FALSE, returns upper bound}
 }
 \description{
-Accessor for variability error in deviationResult or deviationResultSet.
-variability error is computed by bootstrapping the samples and determining a 95% confidence interval
+Accessor for variability bounds in deviationResult or deviationResultSet.
+The bounds on the variability metric are computed by bootstrapping the
+samples and determining a 95 percent confidence interval
 }
 \section{Methods (by class)}{
 \itemize{

@@ -1,11 +1,11 @@
 #' @include fragmentCounts.R
 NULL
 
-
 #' compute_bias
 #' 
 #' Computes GC content for peaks
 #' @param object GenomicRanges or fragmentCounts
+#' @export
 setGeneric("compute_bias", function(object, ...) standardGeneric("compute_bias"))
 
 #' @param genome BSgenome object, e.g. BSgenome.Hsapiens.UCSC.hg19

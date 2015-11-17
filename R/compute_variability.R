@@ -11,17 +11,18 @@
 #' @return  \code{\link{deviationResultSet}}
 #' @seealso \code{\link{deviationResultSet}}, \code{\link{variability}}, \code{\link{plot_variability}}
 #' @export
-compute_variability <- function(motif_indices, counts_mat, bg_peaks, niterations = 50,
+compute_variability <- function(motif_indices, counts_mat, bg_peaks, 
+                                niterations = 50,
                                 metric = c("z-score","old"),
                                 BPPARAM = BiocParallel::bpparam()){
 
   metric = match.arg(metric)
 
-  results = deviationResultSet(BiocParallel::bplapply(motif_indices, 
-                                                                compute_deviations, 
-                                                                counts_mat, bg_peaks,
-                                                                niterations, metric, 
-                                                                BPPARAM = BPPARAM))
+  results = deviationResultSet(BiocParallel::bplapply(motif_indices,
+                                                      compute_deviations,
+                                                      counts_mat, bg_peaks,
+                                                      niterations, metric,
+                                                      BPPARAM = BPPARAM))
 
   return(results)
 }
@@ -53,7 +54,8 @@ compute_deviations <- function(peak_set, counts_mat, bg_peaks, niterations = 50,
                                          counts_mat = counts_mat,
                                                   niterations = niterations)
 
-  res <- compute_var_metrics(observed, sampled_counts, counts_mat, metric = metric)
+  res <- compute_var_metrics(observed, sampled_counts, counts_mat,
+                             metric = metric)
 
   return(res)
 
@@ -72,7 +74,8 @@ compute_var_metrics <- function(observed, sampled_counts, counts_mat,
     expected_sampled_prob = colSums(sampled_counts)/counts_mat@total_fragments
 
     expected =  counts_mat@fragments_per_sample * expected_prob
-    expected_sampled_counts =  outer(counts_mat@fragments_per_sample, expected_sampled_prob)
+    expected_sampled_counts =  outer(counts_mat@fragments_per_sample,
+                                     expected_sampled_prob)
 
     raw_deviation = (observed - expected) / sqrt(expected * (1 - expected_prob))
     sampled_deviation = (sampled_counts - expected_sampled_counts) / 
@@ -91,27 +94,38 @@ compute_var_metrics <- function(observed, sampled_counts, counts_mat,
 
     sd_normdev = sd(normdev)
 
-    bootstrap_indexes = sample(1:length(normdev),length(normdev)*1000,replace=T)
+    bootstrap_indexes = sample(1:length(normdev), 
+                               length(normdev)*1000,
+                               replace=TRUE)
     bootstrap_sds = sapply(1:1000, function(x) 
-      sd(normdev[bootstrap_indexes[(1 + (x-1)*length(normdev)):(x*length(normdev))]]))
+      sd(normdev[bootstrap_indexes[(1 + (x-1)*length(normdev)):
+                                     (x*length(normdev))]]))
     sd_error = quantile(bootstrap_sds, c(0.025, 0.975))
 
+    p_sd = pchisq((length(normdev)-1) * (sd_normdev**2), 
+                  df = (length(normdev)-1), 
+                  lower.tail = FALSE)
+    
     res = deviationResult(deviations = as.numeric(normdev), 
                           variability = sd_normdev, 
                           variability_bounds = sd_error,
-                          pvalues = fdrs,
+                          p_deviations = fdrs,
+                          p_variability = p_sd,
                           metric = "z-score")
 
   } else if (metric == 'old'){
 
     expected =  sum(observed)*counts_mat@fragments_per_sample / 
       counts_mat@total_fragments
-    expected_sampled_counts =  outer(counts_mat@fragments_per_sample / counts_mat@total_fragments, 
+    expected_sampled_counts =  outer(counts_mat@fragments_per_sample / 
+                                       counts_mat@total_fragments, 
                                      colSums(sampled_counts))
 
     raw_deviation = observed - expected
     sampled_deviation = sampled_counts-expected_sampled_counts
-    rms_sampled_deviation = apply(sampled_counts - expected_sampled_counts, 1, rms)
+    rms_sampled_deviation = apply(sampled_counts - expected_sampled_counts, 
+                                  1, 
+                                  rms)
 
     normdev = raw_deviation / rms_sampled_deviation
 
@@ -123,8 +137,10 @@ compute_var_metrics <- function(observed, sampled_counts, counts_mat,
 
     bootstrap_indexes = sample(1:length(normdev),length(normdev)*1000,replace=T)
     bootstrap_normvars = sapply(1:1000, function(x)
-      normvar_func(raw_deviation[bootstrap_indexes[(1 + (x-1)*length(normdev)):(x*length(normdev))]],
-                   sampled_deviation[bootstrap_indexes[(1 + (x-1)*length(normdev)):(x*length(normdev))],]))
+      normvar_func(raw_deviation[bootstrap_indexes[(1 + (x-1)*length(normdev)):
+                                                     (x*length(normdev))]],
+                   sampled_deviation[bootstrap_indexes[(1 + (x-1)*length(normdev)):
+                                                         (x*length(normdev))],]))
     normvar_error = quantile(bootstrap_normvars, c(0.025, 0.975))
 
     res = deviationResult(deviations = as.numeric(normdev), 

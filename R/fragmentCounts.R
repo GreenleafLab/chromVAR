@@ -203,7 +203,7 @@ bamToFragments <- function(bamfile){
 #' @return \code{\link{fragmentCounts}} object
 #' @seealso \code{\link{getFragmentCounts}}, \code{\link{getFragmentCountsByRG}}, \code{\link{fragmentCounts}}
 #' @export          
-filterFragmentCounts <- function(counts_mat, min_in_peaks = 0.25, min_fragments = 5000){
+filterFragmentCounts <- function(counts_mat, min_in_peaks = 0.25, min_fragments = 2500){
   stopifnot(inherits(counts_mat, "fragmentCounts"))
   stopifnot(sum(counts_mat@depth > counts_mat@fragments_per_sample) == counts_mat@nsample)
   keep <- intersect(which(counts_mat@fragments_per_sample >= min_fragments), 

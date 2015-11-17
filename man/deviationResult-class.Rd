@@ -27,6 +27,8 @@ An S4 class to store chromVAAR result
 
 \item{\code{metric}}{}
 
-\item{\code{pvalues}}{}
+\item{\code{p_deviations}}{}
+
+\item{\code{p_variability}}{}
 }}
 

@@ -14,7 +14,7 @@ variability(object, ...)
 \S4method{variability}{deviationResultSet}(object)
 }
 \arguments{
-\item{object}{either deviationResult or deviationResultSet object}
+\item{object}{either \code{\link{deviationResult}} or \code{\link{deviationResultSet}} object}
 }
 \description{
 Accessor for variability metric in deviationResult or deviationResultSet.

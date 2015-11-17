@@ -2,13 +2,18 @@
 % Please edit documentation in R/deviationResultSet.R
 \docType{class}
 \name{deviationResultSet-class}
+\alias{[,deviationResultSet,ANY,ANY,ANY-method}
 \alias{deviationResultSet}
 \alias{deviationResultSet-class}
-\title{A class to store deviationResult objects}
+\title{deviationResultSet}
+\usage{
+\S4method{[}{deviationResultSet,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
+}
 \description{
 A class to store deviationResult objects
 }
 \seealso{
-\code{\link{metric}}, \code{\link{variability}}, \code{\link{variability_bounds}}
+\code{\link{metric}}, \code{\link{variability}},
+\code{\link{variability_bounds}}
 }
 
