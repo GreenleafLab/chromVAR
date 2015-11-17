@@ -17,7 +17,23 @@ compute_variability <- function(motif_indices, counts_mat, bg_peaks,
                                 BPPARAM = BiocParallel::bpparam()){
 
   metric = match.arg(metric)
-
+  
+  #check class of arguments to make sure they are correct
+  stopifnot(inherits(motif_indices,"list"))
+  stopifnot(inherits(counts_mat,"fragmentCounts"))
+  stopifnot(inherits(bg_peaks,"backgroundPeaks"))
+  
+  #check that backgroundPeaks based on same peaks as fragmentCounts
+  stopifnot(all.equal(bg_peaks@peaks, fc@peaks))
+  
+  #check that indices fall within appropriate bounds
+  tmp = unlist(motif_indices, use.names =F)
+  if (!(isTrue(all.equal(tmp, as.integer(tmp)))) ||
+        max(tmp) > counts_mat@npeak ||
+        min(tmp) < 1){
+    stop("motif_indices are not valid")
+  }
+  
   results = deviationResultSet(BiocParallel::bplapply(motif_indices,
                                                       compute_deviations,
                                                       counts_mat, bg_peaks,
