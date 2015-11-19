@@ -15,10 +15,10 @@ get_kmer_indices <- function(peaks,
   pd <- Biostrings::PDict(kmers)
   indices  <- Biostrings::vwhichPDict(pd,seqs)
   
-  tmp <- data.frame(peak_ix = unlist(lapply(1:length(indices), 
+  tmp <- data.frame(peak_ix = unlist(lapply(seq_along(indices), 
                                             function(x)rep(x, length(indices[[x]])))), 
                     kmer_ix = factor(unlist(indices),
-                                     levels = 1:length(kmers),
+                                     levels = seq_along(kmers),
                                      ordered=T))
   out <- split(tmp$peak_ix,tmp$kmer_ix)
   names(out) <- as.character(kmers)
@@ -29,6 +29,133 @@ get_kmer_indices <- function(peaks,
   out <- merge_lists(out, by = "name")
   
   return(out)
+}
+
+# k-mer alignment --------------------------------------------------------------
+
+kmer_dist <- function(kmers){
+  out = as.matrix(Biostrings::stringDist(kmers))
+  for (i in seq_along(kmers)){
+    tmp = kmers
+    tmp[[i]] <- Biostrings::reverseComplement(tmp[[i]])
+    tmp_dist = as.matrix(Biostrings::stringDist(tmp))
+    out[,i] = mapply(min, out[,i], tmp_dist[,i])
+    out[i,] = mapply(min, out[i,], tmp_dist[i,])
+  }
+  as.dist(out)
+}
+  
+
+kmer_cluster_number <-function(kmers, 
+                              max_k = 15, 
+                              out = c("plot","k"),
+                              method = "globalSEmax"){
+  
+  out = match.arg(out)
+  
+  #Perform checks on arguments
+  stopifnot(as.integer(max_k) == max_k && max_k > 1)
+  
+  
+  tmpfun <- function(x, k){
+    d = kmer_dist(x)
+    h = hclust(d)
+    cl = cutree(h, k)
+    return(list("cluster" = cl))
+  }
+  
+  g = cluster::clusGap(mat, tmpfun, K.max = max_k)
+  rec = cluster::maxSE(g$Tab[,"gap"],g$Tab[,"SE.sim"], method=method) 
+  
+  if (out == "plot"){
+    
+    tmp = data.frame(k = 1:max_k,
+                     Gap = g$Tab[,"gap"],
+                     ymax =  g$Tab[,"gap"] +  g$Tab[,"SE.sim"],
+                     ymin = g$Tab[,"gap"] -  g$Tab[,"SE.sim"],
+                     rec = (1:max_k == rec))
+    
+    tmp2 = data.frame(label = paste0("k = ",rec), k = tmp[tmp$rec,"k"],
+                      Gap = tmp[tmp$rec,"ymax"] + 0.1 *(max(tmp$ymax) - min(tmp$ymin)),
+                      ymax = tmp[tmp$rec,"ymax"], ymin = tmp[tmp$rec,"ymin"], rec = TRUE,
+                      stringsAsFactors = FALSE)
+    print(tmp2)
+    p = ggplot2::ggplot(tmp,
+                        ggplot2::aes_string(x = "k", y = "Gap", ymax = "ymax", 
+                                            ymin = "ymin", col = "rec")) +
+      ggplot2::geom_point() + ggplot2::geom_errorbar() + 
+      geom_text(data = tmp2, 
+                ggplot2::aes_string(x = "k", y = "Gap", label = "label"),col="red") +
+      scale_color_manual(values = c("black","red")) + 
+      theme(legend.position="none")
+    
+    print(p)
+    invisible(list("plot" = p, "value" = rec))
+  } else{
+    return(rec)
+  }  
+}
+
+
+
+
+
+cluster_kmers <- function(kmers){
+  
+  d = sapply(kmers, function(x) sapply(kmers, kmer_dist, x))
+  
+}
+
+
+
+align_pwms <- function(pwm1,pwm2){
+  w1 = ncol(pwm1)
+  w2 = ncol(pwm2)
+  cc = sapply(1:(w1+w2-1), function(x) sum(pwm1[,max(w1-x+1,1):min(w1,w1+w2-x)]*pwm2[,max(1,x-w1+1):min(x,w2)]))
+  pwm1_rev = pwm1[c(4,3,2,1),w1:1]
+  cc_rev = sapply(1:(w1+w2-1), function(x) sum(pwm1_rev[,max(w1-x+1,1):min(w1,w1+w2-x)]*pwm2[,max(1,x-w1+1):min(x,w2)]))
+  if (max(cc) >= max(cc_rev)){
+    wm = which(cc == max(cc))
+    pos = wm[length(wm)] - w1
+    out = c(max(cc),pos,1)
+  }else{
+    wm = which(cc_rev == max(cc_rev))
+    pos = wm[length(wm)] - w1
+    out = c(max(cc_rev),pos,-1)    
+  }
+  return(out)
+}
+
+align_cluster <- function(kmers){
+  ##kmers should be sorted based on variability
+  k = length(kmers[1])
+  kmers = Biostrings::DNAStringSet(kmers)
+  kmer_pwms = lapply(1:length(kmers), function(x) Biostrings::consensusMatrix(kmers[x])[1:4,])
+  pwm = kmer_pwms[[1]]
+  maxiter = 20
+  while (i < maxiter){
+    alignment = sapply(kmer_pwms, align_pwms, pwm)
+    keep = which(alignment[1,] >= sum(apply(pwm,2,max))*(k-1)/ncol(pwm) )
+    #if (length(keep) == 0) break
+    pwm = consensusMatrix(c(kmers[keep][which(alignment[3,keep]==1)],Biostrings::reverseComplement(kmers[keep][which(alignment[3,keep]==-1)])),
+                          shift = alignment[2,keep])[1:4,]
+    kmers = kmers[-keep]
+    
+  }
+  
+}
+  
+  
+  
+  
+
+
+
+align_kmers <- function(kmers){
+  
+  
+  
+  
 }
 
 
@@ -62,7 +189,7 @@ get_gapped_kmer_indices <- function(peaks, k, m){
 
   mapping = merge_lists(mapping, mapping.rc)
   
-  out <- lapply(1:length(mapping), 
+  out <- lapply(seq_along(mapping), 
                 function(x) unique(unlist(lmer_indices[mapping[[x]]],
                                           use.names=FALSE)))
   

@@ -1,6 +1,8 @@
 #' @include deviationResult.R
 NULL
 
+# Class Definition and basic methods -------------------------------------------
+
 #' deviationResultSet
 #' 
 #' A class to store deviationResult objects
@@ -25,7 +27,6 @@ setMethod("[", signature = signature(x = "deviationResultSet"),
             return(out)
           })
 
-
 #' @describeIn metric  returns name of metric used
 #' @export
 setMethod("metric", "deviationResultSet",
@@ -36,6 +37,16 @@ setMethod("metric", "deviationResultSet",
 #' @export
 setMethod("variability", "deviationResultSet",
           function(object){sapply(object, function(x) x@variability)})
+
+#' @describeIn deviations returns matrix of deviations, with columns representing 
+#' samples and rows representing annotation sets
+#' @export
+setMethod("deviations", "deviationResultSet",
+          function(object){
+            out <- t(sapply(object, deviations))
+            colnames(out) = names(object[[1]]@deviations)
+            out
+            })
 
 #' @param lower return lower bound?  if FALSE, returns upper bound
 #' @describeIn variability_bounds returns only lower or upper bound (based on lower argument) for all results in set
@@ -64,7 +75,7 @@ setMethod("get_pvalues", "deviationResultSet",
             return(out)
           })
 
-            
+# Plotting ---------------------------------------------------------------------            
 
 #' plot_variability
 #' 
@@ -151,7 +162,7 @@ setMethod("plot_variability", "deviationResultSet",
                                              size = 2, hjust=-0.15,col = "Black")
             } else if (label_type =="name"){
               if (is.null(label_option)){
-                label_option = 1:length(object)
+                label_option = seq_along(object)
               } else if (is.character(label_option)){
                 label_option = which(names(object) %in% label_option)
               } else if (!is.numeric(label_option)){
@@ -169,4 +180,151 @@ setMethod("plot_variability", "deviationResultSet",
             return(out)
 
           })
+
+
+
+#' subset_by_variability
+#' 
+#' function to isolate results with high variability
+#' @param object \code{\link{deviationResultSet}} object
+#' @param by choice of "pvalue", "top", "metric", or "bound".  See Details.
+#' @param cutoff -- cutoff for top sites. See Details.
+#' @param adjusted if by is set to "pvalue", adjust for multiple comparisons?
+#' @return \code{\link{deviationResultSet}} object
+#' @details Subsetting by variability can be done in sevarl ways, determined by 
+#' the options "by" and "cutoff".  If "by" is set to "pvalue" (the default),
+#' then the "cutoff" is an upper bound cutoff for the pvalue.  If "by" is set to 
+#' "top", then the top K most variable are returned, where K is set by "cutoff".  
+#' If "by" is "metric" then subsetting is based on the value of the variability 
+#' metric, and "cutoff" is a lower bound on that metric.  If "by" is "bound" then
+#' subsetting is based on the value of the lower bound for the variability metric,
+#' and "cutoff" is the lower bound for the lower bounds of the variability metric.
+#' @export
+subset_by_variability <- function(object, by = c("pvalue","top","metric","bound"), cutoff = 0.05, adjusted = TRUE){
+  
+  #Perform checks on arguments
+  stopifnot(inherits(object,"deviationResultSet"))
+  stopifnot(is.numeric(cutoff))
+  by = match.arg(by)
+
+  if (by =="pvalue"){
+    stopifnot(cutoff > 0 && cutoff < 1)
+    pvals = get_pvalues(object, adjust = adjusted)
+    object <- object[which(pvals <= cutoff)]
+  } else if (by == "top"){
+    stopifnot(cutoff > 2)
+    object <- object[which(rank(-1 * variability(object),
+                                ties.method="random") <= cutoff)]
+  } else if (by == "metric"){
+    object <- object[which(variability(object) >= cutoff)]
+  } else if (by == "bound"){
+    object <- object[which(variability_bound(object, lower = TRUE) >= cutoff)]
+  }
+  
+  return(object)}
+  
+
+
+# Clustering Sets --------------------------------------------------------------
+
+get_cluster_number <-function(object, 
+                              max_k = 15, 
+                              out = c("plot","k"),
+                              method = "globalSEmax"){
+  
+  out = match.arg(out)
+  
+  #Perform checks on arguments
+  stopifnot(inherits(object,"deviationResultSet"))
+  stopifnot(as.integer(max_k) == max_k && max_k > 1)
+
+  mat = deviations(object)
+  
+  tmpfun <- function(x, k){
+    d = as.dist(1-cor(t(x)))
+    h = hclust(d)
+    cl = cutree(h, k)
+    return(list("cluster" = cl))
+  }
+  
+  g = cluster::clusGap(mat, tmpfun, K.max = max_k)
+  rec = cluster::maxSE(g$Tab[,"gap"],g$Tab[,"SE.sim"], method=method) 
+  
+  if (out == "plot"){
+    
+    tmp = data.frame(k = 1:max_k,
+                     Gap = g$Tab[,"gap"],
+                     ymax =  g$Tab[,"gap"] +  g$Tab[,"SE.sim"],
+                     ymin = g$Tab[,"gap"] -  g$Tab[,"SE.sim"],
+                     rec = (1:max_k == rec))
+    
+    tmp2 = data.frame(label = paste0("k = ",rec), k = tmp[tmp$rec,"k"],
+                      Gap = tmp[tmp$rec,"ymax"] + 0.1 *(max(tmp$ymax) - min(tmp$ymin)),
+                      ymax = tmp[tmp$rec,"ymax"], ymin = tmp[tmp$rec,"ymin"], rec = TRUE,
+                      stringsAsFactors = FALSE)
+    print(tmp2)
+    p = ggplot2::ggplot(tmp,
+                    ggplot2::aes_string(x = "k", y = "Gap", ymax = "ymax", 
+                                        ymin = "ymin", col = "rec")) +
+      ggplot2::geom_point() + ggplot2::geom_errorbar() + 
+      geom_text(data = tmp2, 
+                ggplot2::aes_string(x = "k", y = "Gap", label = "label"),col="red") +
+      scale_color_manual(values = c("black","red")) + 
+      theme(legend.position="none")
+    
+    print(p)
+    invisible(list("plot" = p, "value" = rec))
+  } else{
+    return(rec)
+  }  
+}
+
+#' cluster_sets
+#' 
+#' function to custer the top annotation sets
+#' @param object \code{\link{deviationResultSet}} object
+#' @param k number of clusters -- if not provided, will be estimated. See Details
+#' @param max_k if k is not provided, max_k allowed
+#' @return list with two elements.  "hclust" is \code{\link[stats]{hclust}} object
+#' "cluster" is cluster membership vector.
+#' @export
+cluster_sets <- function(object, k = NULL, max_k = 15, plot = TRUE){
+  
+  #Perform checks on arguments
+  stopifnot(inherits(object,"deviationResultSet"))
+  stopifnot(as.integer(max_k) == max_k && max_k > 1)
+  
+  if (is.null(k)){
+    cn = get_cluster_number(object, max_k = max_k,  out = ifelse(plot, "plot","value"))
+    if (plot){
+      k = cn$value
+    } else{
+      k = cn 
+    }
+  }
+  
+  mat = deviations(object)
+
+  d = as.dist(1 - cor(t(mat)))
+  h = hclust(d)
+  cl = cutree(h, k)
+  
+  if (plot){
+    out = list("hclust" = h, "cluster" = cl, "plot" = cn$plot)
+  } else{
+    out = list("hclust" = h, "cluster" = cl)
+  }
+  
+  return(out)
+  
+}
+  
+
+
+
+
+
+
+
+
 
