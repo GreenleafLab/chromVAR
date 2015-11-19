@@ -25,7 +25,7 @@ setMethod("show",
           signature="deviationResult",
           definition = function(object){
             cat("An object of class ", class(object), "\n", sep = "")
-            if (nchar(object) >= 1){
+            if (isTRUE(nchar(object@name) >= 1)){
               cat("Deviations for ", object@name, " for ",
                 length(object@deviations), " cells/samples. \n", sep = "")
             } else{
@@ -46,6 +46,20 @@ setGeneric("metric", function(object, ...) standardGeneric("metric"))
 #' @export
 setMethod("metric", "deviationResult",
           function(object){object@metric})
+
+#' deviations
+#' 
+#' Accessor for deviations metric in deviationResult.
+#' Use \code{\link{metric}} to find metric
+#' @param object either \code{\link{deviationResult}} or \code{\link{deviationResultSet}}
+#' @seealso \code{\link{metric}}, \code{\link{variability_bounds}} 
+setGeneric("deviations", function(object, ...) standardGeneric("deviations"))
+
+#' @describeIn deviations returns vector of deviations for samples
+#' @export
+setMethod("deviations", "deviationResult",
+          function(object){object@deviations})
+
 
 
 #' variability

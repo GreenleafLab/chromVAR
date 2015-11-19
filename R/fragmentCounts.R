@@ -124,7 +124,7 @@ getFragmentCounts <- function(bams, peaks){
   depth = rep(0, length(bams))
   mat = matrix(nrow = length(peaks), ncol = length(bams))
   
-  for (i in 1:length(bams)){
+  for (i in seq_along(bams)){
     fragments = bamToFragments(bams[i])
     depth[i] = length(fragments)
     mat[,i] = countOverlaps(peaks, fragments, type="any", ignore.strand=T)
