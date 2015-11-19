@@ -1,4 +1,56 @@
 
+remove_overlap <- function(indices_list, index){
+  toremove = indices_list[[index]]
+  indices_list = indices_list[-index]
+  indices_list = lapply(indices_list, function(x) x[which(x %ni% toremove)])
+  return(indices_list)
+} 
+
+# 
+# peak_deviations <- function(counts_mat, window = 500, BPPARAM = BiocParallel::bpparam()){
+#   stopifnot(inherits(counts_mat,"fragmentCounts"))
+#   #if bias not available...
+#   if ("bias" %ni% colnames(S4Vectors::mcols(counts_mat@peaks))){
+#     stop("Peaks must have metadata column named 'bias'. Compute using compute_bias.")
+#   }
+#   
+#   expected_probs = counts_mat@fragments_per_peak / counts_mat@total_fragments
+#   
+#   expected = outer(expected_probs,
+#                    counts_mat@fragments_per_sample)
+#   
+#   dev = as.matrix(counts_mat@counts - expected) / sqrt(matrix( 1- expected_probs,
+#                                                          nrow = counts_mat@npeak,
+#                                                          ncol = counts_mat@nsample,
+#                                                          byrow=F) * 
+#                                                      expected)
+#   
+# 
+#   norm_mat <- cbind(log10(counts_mat@fragments_per_peak + 1 ), counts_mat@peaks$bias)
+#   reflected <- add_reflections(norm_mat, window = window)
+#   cov_mat = cov(norm_mat)
+#   
+#   norm_dev <- function(index){
+#     if (!all_true(!is.na(dev[index,]))){ return(rep(NA,ncol(dev)))}
+#     
+#     mdist <- mahalanobis(reflected$data, norm_mat[index,], cov = cov_mat)
+#     mdist[reflected$identify(index)] = Inf
+#     closest <- which(mdist <= quantile(mdist, window/nrow(norm_mat), type=1))
+#     closest <- reflected$replace(closest)
+#     out <- (dev[index,] - apply(dev[closest,],2,mean)) / apply(dev[closest,],2,sd)
+#     
+#     return(out)
+#   }
+#   
+#   normed = simplify2array(BiocParallel::bplapply(1:nrow(dev), norm_dev, BPPARAM = BPPARAM))
+#   #normed = do.call(cbind,BiocParallel::bplapply(1:nrow(dev), norm_dev, BPPARAM = BPPARAM))
+#   return(normed)
+#   
+# }
+# 
+
+
+
 #' compute_variability
 #' 
 #' Computes variability across sets of annotations
@@ -28,7 +80,7 @@ compute_variability <- function(motif_indices, counts_mat, bg_peaks,
   
   #check that indices fall within appropriate bounds
   tmp = unlist(motif_indices, use.names =F)
-  if (!(isTrue(all.equal(tmp, as.integer(tmp)))) ||
+  if (!(all.equal(tmp, as.integer(tmp))) ||
         max(tmp) > counts_mat@npeak ||
         min(tmp) < 1){
     stop("motif_indices are not valid")
@@ -110,7 +162,7 @@ compute_var_metrics <- function(observed, sampled_counts, counts_mat,
 
     sd_normdev = sd(normdev)
 
-    bootstrap_indexes = sample(1:length(normdev), 
+    bootstrap_indexes = sample(seq_along(normdev), 
                                length(normdev)*1000,
                                replace=TRUE)
     bootstrap_sds = sapply(1:1000, function(x) 
@@ -151,7 +203,7 @@ compute_var_metrics <- function(observed, sampled_counts, counts_mat,
 
     normvar = normvar_func(raw_deviation, sampled_deviation)
 
-    bootstrap_indexes = sample(1:length(normdev),length(normdev)*1000,replace=T)
+    bootstrap_indexes = sample(seq_along(normdev),length(normdev)*1000,replace=T)
     bootstrap_normvars = sapply(1:1000, function(x)
       normvar_func(raw_deviation[bootstrap_indexes[(1 + (x-1)*length(normdev)):
                                                      (x*length(normdev))]],
