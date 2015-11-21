@@ -23,6 +23,7 @@ Computing variability
 - find sets of peaks with independent variability [60%]
 - find overlapping kmers with synergystic variability [75%]
 - visualize kmers [10%]
+- clustering of kmer variability across samples [30%]
 
 
 
