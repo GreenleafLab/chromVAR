@@ -25,6 +25,16 @@ Computing variability
 - visualize kmers [10%]
 - clustering of kmer variability across samples [30%]
 
+Documentation 
+- functions [50%]
+- classes [50%]
+- vignette [0%]
+
+
+
+
+
+
 
 
 
