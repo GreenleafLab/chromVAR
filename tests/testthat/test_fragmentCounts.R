@@ -2,10 +2,10 @@ context('fragmentCounts')
 
 # Read in data needed for tests ------------------------------------------------
 
-test_rg <- system.file("extdata", "test_RG.bam", package = "tfdev")
-test_bam1 <- system.file("extdata", "test_single1.bam", package = "tfdev")
-test_bam2 <- system.file("extdata", "test_single2.bam", package = "tfdev")
-test_bam3 <- system.file("extdata", "test_single3.bam", package = "tfdev")
+test_rg <- system.file("extdata", "test_RG.bam", package = "chromVAR")
+test_bam1 <- system.file("extdata", "test_single1.bam", package = "chromVAR")
+test_bam2 <- system.file("extdata", "test_single2.bam", package = "chromVAR")
+test_bam3 <- system.file("extdata", "test_single3.bam", package = "chromVAR")
 test_peaks <- readRDS("test_peaks.rds") 
 
 # Test reading with RG ---------------------------------------------------------

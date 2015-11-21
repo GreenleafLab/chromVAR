@@ -2,7 +2,7 @@ context("peaks")
 
 # Test reading in peaks---------------------------------------------------------
 
-peaks_file <- system.file("extdata", "test_bed.txt", package = "tfdev")
+peaks_file <- system.file("extdata", "test_bed.txt", package = "chromVAR")
 
 test_that("can read peaks file", {
   peaks <- read_peaks(peaks_file)

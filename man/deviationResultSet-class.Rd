@@ -5,8 +5,11 @@
 \alias{[,deviationResultSet,ANY,ANY,ANY-method}
 \alias{deviationResultSet}
 \alias{deviationResultSet-class}
+\alias{initialize,deviationResultSet-method}
 \title{deviationResultSet}
 \usage{
+\S4method{initialize}{deviationResultSet}(.Object, ...)
+
 \S4method{[}{deviationResultSet,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 }
 \description{

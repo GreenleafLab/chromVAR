@@ -10,7 +10,7 @@
 get_pvalues(object, ...)
 
 \S4method{get_pvalues}{deviationResult}(object, what = c("deviations",
-  "variability"))
+  "variability"), adjust = TRUE)
 
 \S4method{get_pvalues}{deviationResultSet}(object, adjust = TRUE)
 }
@@ -19,7 +19,7 @@ get_pvalues(object, ...)
 
 \item{what}{return p values for deviations or variability?}
 
-\item{adjust}{adjust p-values for multiple testing}
+\item{adjust}{adjust for multiple testing?  Will use Benjamini-Hochberg correction}
 }
 \description{
 Accessor for p values

@@ -2,6 +2,7 @@
 % Please edit documentation in R/deviationResult.R
 \docType{methods}
 \name{differential_samples}
+\alias{differential_peaks,deviationResult-method}
 \alias{differential_samples}
 \alias{differential_samples,deviationResult-method}
 \title{differential_samples}
@@ -9,11 +10,20 @@
 differential_samples(object, ...)
 
 \S4method{differential_samples}{deviationResult}(object, cutoff = 0.05)
+
+\S4method{differential_peaks}{deviationResult}(object, counts_mat,
+  cutoff1 = 0.05, cutoff2 = 0.05)
 }
 \arguments{
 \item{object}{\code{\link{deviationResult}} object}
 
 \item{cutoff}{p-value cutoff for differential samples}
+
+\item{counts_mat}{fragmentCounts object}
+
+\item{cutoff1}{p-value cutoff for differential samples}
+
+\item{cutoff2}{p-value cutoff for differential peaks}
 }
 \description{
 get differential_samples

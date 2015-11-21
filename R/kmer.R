@@ -1,3 +1,6 @@
+
+
+
 #' @export
 get_kmer_indices <- function(peaks, 
                              genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, 
@@ -45,6 +48,121 @@ kmer_dist <- function(kmers){
   as.dist(out)
 }
   
+kmer_overlap_match <- function(kmers){
+  out = as.matrix(Biostrings::stringDist(kmers, method = "substitutionMatrix", 
+                                         substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1, 
+                                                                                                       mismatch = -Inf, 
+                                                                                                       baseOnly = FALSE, 
+                                                                                                       type = "DNA"),
+                                         type="overlap",gapOpening=-Inf))
+  for (i in seq_along(kmers)){
+    tmp = kmers
+    tmp[[i]] <- Biostrings::reverseComplement(tmp[[i]])
+    tmp_dist = as.matrix(Biostrings::stringDist(tmp, method = "substitutionMatrix", 
+                                                substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1, 
+                                                                                                              mismatch = -Inf, 
+                                                                                                              baseOnly = FALSE, 
+                                                                                                              type = "DNA"),
+                                                type="overlap",gapOpening=-Inf))
+    out[,i] = mapply(max, out[,i], tmp_dist[,i])
+    out[i,] = mapply(max, out[i,], tmp_dist[i,])
+  }
+  out
+}
+
+kmer_overlap_match2 <- function(kmer, kmers){
+  if (is.character(kmer)) kmer = Biostrings::DNAStringSet(kmer)
+  if (is.character(kmers)) kmers = Biostrings::DNAStringSet(kmers)  
+  tmp1 = as.matrix(Biostrings::stringDist(c(kmer,kmers), method = "substitutionMatrix", 
+                                         substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1, 
+                                                                                                       mismatch = -Inf, 
+                                                                                                       baseOnly = FALSE, 
+                                                                                                       type = "DNA"),
+                                         type="overlap",gapOpening=-Inf))[,1]
+  tmp2 = as.matrix(Biostrings::stringDist(c(Biostrings::reverseComplement(kmer), kmers), 
+                                          method = "substitutionMatrix", 
+                                         substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1, 
+                                                                                                       mismatch = -Inf, 
+                                                                                                       baseOnly = FALSE, 
+                                                                                                       type = "DNA"),
+                                         type="overlap",gapOpening=-Inf))[,1]
+  out = mapply(max,tmp1,tmp2)[2:length(tmp1)]
+  names(out) = as.character(kmers)
+  return(out)}
+
+
+kmer_overlap_match3 <- function(kmer, kmers){
+  if (is.character(kmer)) kmer = Biostrings::DNAStringSet(kmer)
+  if (is.character(kmers)) kmers = Biostrings::DNAStringSet(kmers)
+  tmp1 = sapply(kmers, function(x) 
+    Biostrings::pairwiseAlignment(kmer,
+                                  x, 
+                                  substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1, 
+                                                                                                  mismatch = -Inf, 
+                                                                                                  baseOnly = FALSE, 
+                                                                                                  type = "DNA"),
+                                  type="overlap",gapOpening=-Inf, scoreOnly = TRUE))
+  tmp2 = sapply(kmers, function(x) 
+    Biostrings::pairwiseAlignment(Biostrings::reverseComplement(kmer),
+                                  x, 
+                                  substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1, 
+                                                                                                mismatch = -Inf, 
+                                                                                                baseOnly = FALSE, 
+                                                                                                type = "DNA"),
+                                  type="overlap",gapOpening=-Inf, scoreOnly = TRUE))
+
+  return(mapply(max,tmp1,tmp2)[2:(length(kmers)+1)])}
+
+
+
+
+
+extend_kmer <- function(kmer, sets, counts_mat, bg_peaks, 
+                        diff = 2,
+                        niterations = 50,
+                        BPPARAM = BiocParallel::bpparam()){
+  
+  #kmer_var = variability(compute_deviations(sets[kmer], counts_mat, bg_peaks, niterations))
+  
+  ## Get kmers that overlap
+  min_overlap = nchar(kmer) - diff
+  kmer_dists = kmer_overlap_match2(kmer,names(sets))
+  close = which(kmer_dists >= min_overlap)
+  if (length(close) >= 2){
+    tmpsets = remove_nonoverlap(sets[close], kmer)
+    tmpresults <- compute_variability(tmpsets, counts_mat, bg_peaks, niterations = niterations,
+                                    BPPARAM = BPPARAM)
+    tmpvar <- variability(tmpresults)
+  
+    setlen = sapply(tmpsets,length)
+    nbg = 50
+    bgsets <- unlist(lapply(setlen, function(x) lapply(1:nbg, function(y) sample(sets[[kmer]], x, replace=FALSE))), recursive = F)
+  
+    bgresults <- compute_variability(bgsets, counts_mat, bg_peaks, niterations = niterations,
+                                   BPPARAM = BPPARAM)
+    bgvar <- variability(bgresults)
+  
+    var_boost <- sapply(seq_along(tmpvar), 
+                      function(x) (tmpvar[x] - mean(bgvar[((x-1)*nbg+1):(x*nbg)]))/ 
+                        sd(bgvar[((x-1)*nbg+1):(x*nbg)])  )
+    var_boost <- pnorm(var_boost, lower.tail = FALSE)
+    out_ix <- which(var_boost < 0.05)
+    out = var_boost[out_ix]
+    names(out) = names(tmpsets[out_ix])
+    return(out)
+  } else{
+    return(NULL)
+  }
+}
+  
+  
+  
+  
+
+
+
+
+
 
 kmer_cluster_number <-function(kmers, 
                               max_k = 15, 

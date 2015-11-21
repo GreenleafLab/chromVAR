@@ -1,6 +1,7 @@
 
-#' An S4 class to store chromVAAR result
+#' deviationResult
 #' 
+#' An S4 class to store chromVAAR result
 #' @slot deviations 
 #' @slot variability
 #' @slot variability_bounds
@@ -17,7 +18,8 @@ deviationResult <- setClass("deviationResult",
                                       name = 'character',
                                       metric = 'character',
                                       p_deviations = 'numeric',
-                                      p_variability = 'numeric'))
+                                      p_variability = 'numeric',
+                                      nresult = 'numeric'))
 
 
 
@@ -34,6 +36,15 @@ setMethod("show",
             }
             invisible(NULL)
           })
+
+#Private!
+setGeneric("set_nresult", function(object, ...) standardGeneric("set_nresult"))
+
+setMethod("set_nresult", "deviationResult",
+          function(object, nresult){
+            object@nresult = nresult
+            return(object)
+            })
 
 #' metric
 #' 
@@ -94,6 +105,7 @@ setMethod("variability_bounds", "deviationResult",
 #' 
 #' Accessor for p values
 #' @param object either \code{\link{deviationResult}} or \code{\link{deviationResultSet}} object
+#' @param adjust adjust for multiple testing?  Will use Benjamini-Hochberg correction
 #' @seealso \code{\link{metric}}, \code{\link{variability}}, \code{\link{deviations}}
 setGeneric("get_pvalues", function(object, ...) standardGeneric("get_pvalues"))
 
@@ -101,15 +113,24 @@ setGeneric("get_pvalues", function(object, ...) standardGeneric("get_pvalues"))
 #' @describeIn get_pvalues returns p values for either deviations or variability
 #' @export
 setMethod("get_pvalues", "deviationResult",
-          function(object, what = c("deviations","variability")){
+          function(object, what = c("deviations","variability"), adjust = TRUE){
             stopifnot(metric(object)!="old")
             what = match.arg(what)
             if (what == "deviations"){
-              return(object@p_deviations)
+              if (adjust){
+                return(p.adjust(object@p_deviations, method = "BH", n = object@nsample))
+              } else{
+                return(object@p_deviations)                
+              }
             } else if (what == "variability"){
-              return(object@p_variability)
+              if (adjust){
+                return(p.adjust(object@p_variability, method = "BH", n = object@nresult))
+              } else{
+                return(object@p_variability)                
+              }
             }
           })
+
 
 #' differential_samples
 #' 
@@ -128,8 +149,52 @@ setMethod("differential_samples", "deviationResult",
             sig = which(fdrs <= cutoff)
             up = intersect(sig, which(object@deviations > 0))
             down = intersect(sig, which(object@deviations < 0))
-            return(list(up = up, down = down))
+            return(list(up = up, down = down, steady = which(fdrs > cutoff)))
           })
+
+
+
+#' differential_peaks
+#' 
+#' get differential_peaks
+#' @param object \code{\link{deviationResult}} object
+#' @seealso \code{\link{get_pvalues}}, \code{\link{metric}},
+#' \code{\link{variability}}, \code{\link{deviations}}, \code{\link{differential_samples}}
+setGeneric("differential_peaks", function(object, ...) standardGeneric("differential_peaks"))
+
+#' @param counts_mat fragmentCounts object
+#' @param cutoff1 p-value cutoff for differential samples
+#' @param cutoff2 p-value cutoff for differential peaks
+#' @rdname differential_samples
+#' @export
+setMethod("differential_peaks", "deviationResult",
+          function(object, counts_mat, cutoff1 = 0.05, cutoff2 = 0.05){
+            changing = differential_samples(object, cutoff1)
+            mat = matrix(0, nrow = object@npeak, ncol = 2, dimnames = list(NULL, c("up","down","steady")))
+            mat[,"up"] = rowSums(counts_mat@counts[,changing@up])
+            mat[,"down"] = rowSums(counts_mat@counts[,changing@down])
+            mat[,"steady"] = rowSums(counts_mat@counts[,chaning@steady])
+            updowncounts = fragmentCounts(counts = Matrix(mat), peaks = object@peaks)
+            devs = peak_deviations(updowncounts)
+            dev_sds = apply(peak_deviations,1,sd)
+            pvals = pchisq(2*(dev_sds**2), df = 2, lower.tail = FALSE)
+            out = cbind(devs,dev_sds,pvals)
+            colnames(out) = c("up","down","steady","sd","pvalue")
+            return(out)
+          })
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

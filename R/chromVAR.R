@@ -1,4 +1,4 @@
-#' tfdev: A package for computing variability across sets of peaks.
+#' chromVAR: A package for computing variability across sets of peaks.
 #'
 #' The package provides three categories of important functions:
 #' functions!
@@ -12,6 +12,6 @@
 #' @import GenomicRanges
 #' @import methods
 #' @docType package
-#' @name tfdev
+#' @name chromVAR
 NULL
 #> NULL

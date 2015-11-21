@@ -4,14 +4,12 @@
 \alias{cluster_sets}
 \title{cluster_sets}
 \usage{
-cluster_sets(object, k = NULL, cutoff = 0.05, max_k = 15)
+cluster_sets(object, k = NULL, max_k = 15, plot = TRUE)
 }
 \arguments{
 \item{object}{\code{\link{deviationResultSet}} object}
 
 \item{k}{number of clusters -- if not provided, will be estimated. See Details}
-
-\item{cutoff}{-- cutoff for top sites. See Details.}
 
 \item{max_k}{if k is not provided, max_k allowed}
 }

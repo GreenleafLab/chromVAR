@@ -6,48 +6,99 @@ remove_overlap <- function(indices_list, index){
   return(indices_list)
 } 
 
-# 
-# peak_deviations <- function(counts_mat, window = 500, BPPARAM = BiocParallel::bpparam()){
-#   stopifnot(inherits(counts_mat,"fragmentCounts"))
-#   #if bias not available...
-#   if ("bias" %ni% colnames(S4Vectors::mcols(counts_mat@peaks))){
-#     stop("Peaks must have metadata column named 'bias'. Compute using compute_bias.")
-#   }
-#   
-#   expected_probs = counts_mat@fragments_per_peak / counts_mat@total_fragments
-#   
-#   expected = outer(expected_probs,
-#                    counts_mat@fragments_per_sample)
-#   
-#   dev = as.matrix(counts_mat@counts - expected) / sqrt(matrix( 1- expected_probs,
-#                                                          nrow = counts_mat@npeak,
-#                                                          ncol = counts_mat@nsample,
-#                                                          byrow=F) * 
-#                                                      expected)
-#   
-# 
-#   norm_mat <- cbind(log10(counts_mat@fragments_per_peak + 1 ), counts_mat@peaks$bias)
-#   reflected <- add_reflections(norm_mat, window = window)
-#   cov_mat = cov(norm_mat)
-#   
-#   norm_dev <- function(index){
-#     if (!all_true(!is.na(dev[index,]))){ return(rep(NA,ncol(dev)))}
-#     
-#     mdist <- mahalanobis(reflected$data, norm_mat[index,], cov = cov_mat)
-#     mdist[reflected$identify(index)] = Inf
-#     closest <- which(mdist <= quantile(mdist, window/nrow(norm_mat), type=1))
-#     closest <- reflected$replace(closest)
-#     out <- (dev[index,] - apply(dev[closest,],2,mean)) / apply(dev[closest,],2,sd)
-#     
-#     return(out)
-#   }
-#   
-#   normed = simplify2array(BiocParallel::bplapply(1:nrow(dev), norm_dev, BPPARAM = BPPARAM))
-#   #normed = do.call(cbind,BiocParallel::bplapply(1:nrow(dev), norm_dev, BPPARAM = BPPARAM))
-#   return(normed)
-#   
-# }
-# 
+remove_nonoverlap <- function(indices_list, index){
+  if (is.character(index)){
+    index = which(names(indices_list) == index)
+  }
+  tokeep = indices_list[[index]]
+  indices_list = indices_list[-index]
+  indices_list = lapply(indices_list, function(x) x[which(x %in% tokeep)])
+  return(indices_list)
+} 
+
+
+get_top_sets <- function(results, sets, counts_mat, bg_peaks, 
+                         niterations = 50,
+                         p_cutoff = 0.01,
+                         max_iter = 25,
+                         BPPARAM = BiocParallel::bpparam()){
+  
+  #Get only significant sets
+  results <- subset_by_variability(results, cutoff = p_cutoff, adjusted = TRUE)
+  sets <- sets[names(results)]
+  p <- get_pvalues(results, adjust = TRUE)
+  
+  #get max variable
+  max_var <- which(variability(results) == max(variability(results)))
+  min_p <- p[max_var]
+  
+  #initialize output
+  out <- results[max_var]
+
+  #Iterate...
+  iter = 2
+  while( min_p < p_cutoff && iter < max_iter){
+    sets <- remove_overlap(sets, max_var)
+    tmpresults <- compute_variability(sets, counts_mat, bg_peaks, niterations = niterations,
+                                      BPPARAM = BPPARAM)
+    tmpresults <- set_nresult(tmpresults, results@nresult)
+    # get most variable...
+    max_var <- which(variability(tmpresults) == max(variability(tmpresults)))
+    max_var_name <-  names(tmpresults)[max_var]
+    min_p <- min(get_pvalues(tmpresults, adjust = TRUE))
+    
+    out <- c(out, tmpresults[max_var])
+    
+    iter <- iter + 1
+  }
+
+  out <- set_nresult(out, results@nresult)
+  
+  return(out)
+}
+
+
+
+peak_deviations <- function(counts_mat, window = 500, BPPARAM = BiocParallel::bpparam()){
+  stopifnot(inherits(counts_mat,"fragmentCounts"))
+  #if bias not available...
+  if ("bias" %ni% colnames(S4Vectors::mcols(counts_mat@peaks))){
+    stop("Peaks must have metadata column named 'bias'. Compute using compute_bias.")
+  }
+  
+  expected_probs = counts_mat@fragments_per_peak / counts_mat@total_fragments
+  
+  expected = outer(expected_probs,
+                   counts_mat@fragments_per_sample)
+  
+  dev = as.matrix(counts_mat@counts - expected) / sqrt(matrix( 1- expected_probs,
+                                                         nrow = counts_mat@npeak,
+                                                         ncol = counts_mat@nsample,
+                                                         byrow=F) * 
+                                                     expected)
+  
+
+  norm_mat <- cbind(log10(counts_mat@fragments_per_peak + 1 ), counts_mat@peaks$bias)
+  reflected <- add_reflections(norm_mat, window = window)
+  cov_mat = cov(norm_mat)
+  
+  norm_dev <- function(index){
+    if (!all_true(!is.na(dev[index,]))){ return(rep(NA,ncol(dev)))}
+    
+    mdist <- mahalanobis(reflected$data, norm_mat[index,], cov = cov_mat)
+    mdist[reflected$identify(index)] = Inf
+    closest <- which(mdist <= quantile(mdist, window/nrow(norm_mat), type=1))
+    closest <- reflected$replace(closest)
+    out <- (dev[index,] - apply(dev[closest,],2,mean)) / apply(dev[closest,],2,sd)
+    
+    return(out)
+  }
+  
+  normed = t(simplify2array(BiocParallel::bplapply(1:nrow(dev), norm_dev, BPPARAM = BPPARAM)))
+  return(normed)
+  
+}
+
 
 
 
@@ -158,7 +209,6 @@ compute_var_metrics <- function(observed, sampled_counts, counts_mat,
     
     pvals = pnorm(normdev)
     pvals = ifelse(pvals > 0.5, (1-pvals)*2, pvals*2)
-    fdrs = p.adjust(pvals, method="BH")
 
     sd_normdev = sd(normdev)
 
@@ -177,7 +227,7 @@ compute_var_metrics <- function(observed, sampled_counts, counts_mat,
     res = deviationResult(deviations = as.numeric(normdev), 
                           variability = sd_normdev, 
                           variability_bounds = sd_error,
-                          p_deviations = fdrs,
+                          p_deviations = as.numeric(pvals),
                           p_variability = p_sd,
                           metric = "z-score")
 

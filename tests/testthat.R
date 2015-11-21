@@ -1,4 +1,4 @@
 library(testthat)
-library(tfdev)
+library(chromVAR)
 
-test_check("tfdev")
+test_check("chromVAR")

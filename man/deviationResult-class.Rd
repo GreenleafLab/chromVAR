@@ -10,7 +10,7 @@
 \alias{pvalues}
 \alias{variability,}
 \alias{variability_bounds,}
-\title{An S4 class to store chromVAAR result}
+\title{deviationResult}
 \description{
 An S4 class to store chromVAAR result
 }

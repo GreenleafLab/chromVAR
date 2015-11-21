@@ -1,6 +1,6 @@
-Package: tfdev
+Package: chromVAR
 Type: Package
-Title: Chromatin Variation Across Annotations
+Title: Chromatin Variation Across Regions
 Version: 0.1.0
 Date: 2015-08-28
 Authors@R: c(
@@ -33,6 +33,7 @@ Collate:
     'backgroundPeaks.R'
     'fragmentCounts.R'
     'bias.R'
+    'chromVAR.R'
     'compute_variability.R'
     'deviationResult.R'
     'deviationResultSet.R'
@@ -41,5 +42,4 @@ Collate:
     'motifs.R'
     'old.R'
     'peaks.R'
-    'tfdev.R'
     'utils.R'

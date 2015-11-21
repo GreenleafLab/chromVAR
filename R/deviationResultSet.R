@@ -8,7 +8,38 @@ NULL
 #' A class to store deviationResult objects
 #' @seealso \code{\link{metric}}, \code{\link{variability}}, 
 #' \code{\link{variability_bounds}} 
-deviationResultSet <- setClass("deviationResultSet", contains = "list")
+deviationResultSet <- setClass("deviationResultSet", 
+                               slots = c(names = 'character',
+                                         nresult = 'numeric') ,
+                               contains = "list")
+
+setValidity("deviationResultSet", function(object) {
+  msg <- NULL
+  valid <- TRUE
+  #Check that all elements are deviationResult
+  if (!all_true(sapply(object, function(x) inherits(x,"deviationResult")))){
+    valid <- FALSE
+    msg <- c(msg, "All elements of deviationResultSet must be of class deviationResult\n")
+  } 
+  if (!all_false(duplicated(names(object)))){
+    valid <- FALSE
+    msg <- c(msg, "Names must be unique")
+  }
+  if (valid) TRUE else msg})
+
+
+
+#' @rdname deviationResultSet-class
+setMethod("initialize",
+          "deviationResultSet",
+          function(.Object, ...){
+            .Object <- callNextMethod()
+            if (length(.Object@nresult) == 0){
+              .Object@nresult = length(.Object)
+            }
+            .Object@.Data <- lapply(.Object@.Data, function(x) set_nresult(x, .Object@nresult))
+            .Object
+          })
 
 setMethod("show",
           signature="deviationResultSet",
@@ -22,10 +53,38 @@ setMethod("show",
 #' @rdname deviationResultSet-class
 setMethod("[", signature = signature(x = "deviationResultSet"),
           definition = function(x, ...) {
+            nresult <- x@nresult
             tmp <- callNextMethod()
-            out <- deviationResultSet(tmp)
+            out <- deviationResultSet(tmp, nresult = nresult)
             return(out)
           })
+
+# @section c
+# Using 'c' to combine deviationResultSet will reset the nresult slot,
+# affecting multiple hypothesis testing...
+# @rdname deviationResultSet-class
+# setMethod("c", signature = signature(x = "deviationResultSet"),
+#           definition = function(x, ...) {
+#             extras = list(...)
+#             if (length(extras) == 0){
+#               return(x)
+#             }
+#             xnames <- c(names(x),sapply(extras,function(obj) obj@names))
+#             #nresult <- x@nresult + sum(sapply(extras,function(obj) obj@nresult))
+#             tmp <- callNextMethod()
+#             out <- deviationResultSet(tmp, names = xnames)
+#             return(out)
+#           })
+
+
+setMethod("set_nresult", "deviationResultSet",
+          function(object, nresult){
+            object@nresult <- nresult
+            object@.Data <- lapply(object@.Data, function(x) set_nresult(x, nresult))
+            return(object)
+          })
+
+
 
 #' @describeIn metric  returns name of metric used
 #' @export
@@ -63,14 +122,13 @@ setMethod("variability_bounds", "deviationResultSet",
 
 
 #' @describeIn get_pvalues returns p values for variability for each set
-#' @param adjust adjust p-values for multiple testing
 #' @export
 setMethod("get_pvalues", "deviationResultSet",
           function(object, adjust = TRUE){
             stopifnot(metric(object)!="old")
             out <- sapply(object, get_pvalues, what = "variability")
             if (adjust){
-              out <- p.adjust(out, method = "BH")
+              out <- p.adjust(out, method = "BH", n = object@nresult)
             }
             return(out)
           })
