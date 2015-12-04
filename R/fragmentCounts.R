@@ -31,6 +31,28 @@ fragmentCounts <- setClass("fragmentCounts",
                                      depth = 'numeric'
                            ))
 
+#' @export 
+combine_samples <- function(..., meta, meta_name = "sample_group"){
+  samples <- list(...)
+  stopifnot(all_true(sapply(samples, inherits, 'fragmentCounts')))
+  stopifnot(isTRUE(all.equal(sapply(samples, function(x) x@peaks))))
+  add_meta = sapply(seq_along(samples), function(x) rep(meta[x],samples[[x]]@nsample))
+  for (sample in samples){
+    if (is.null(sample@sample_meta)){
+      sample@sample_meta = data.frame(meta_name = add_meta)
+    } else{
+      sample@sample_meta[,sample_name] = add_meta
+    }    
+  } 
+  out <- fragmentCounts(counts = do.call(rBind, lapply(samples, function(x) x@counts)),
+                        peaks = samples[[1]]@peaks,
+                        sample_meta = do.call(cbind, lapply(samples, function(x) x@sample_meta)),
+                        depth = do.call(c, lapply(samples, function(x) x@sample_meta)))
+  
+  return(out)
+}
+
+
 #' @rdname fragmentCounts-class
 #' @export
 setMethod("initialize",
