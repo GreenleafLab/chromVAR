@@ -18,6 +18,7 @@
 #' @slot npeak number of peaks
 #' @slot sample_meta optional data.frame with meta data for samples, with rows corresponding to samples
 #' @slot depth total read depth for each sample
+#' @export
 fragmentCounts <- setClass("fragmentCounts",
                            slots = c(counts = 'Matrix',
                                      peaks = 'GenomicRanges',
@@ -31,6 +32,7 @@ fragmentCounts <- setClass("fragmentCounts",
                            ))
 
 #' @rdname fragmentCounts-class
+#' @export
 setMethod("initialize",
           "fragmentCounts",
           function(.Object, ...){
@@ -44,6 +46,7 @@ setMethod("initialize",
           })
 
 #' @rdname fragmentCounts-class
+#' @export
 setMethod("show",
           signature="fragmentCounts",
           definition = function(object){
@@ -65,6 +68,7 @@ setValidity("fragmentCounts", function(object) {
 
 
 #' @rdname fragmentCounts-class
+#' @export
 setMethod("[", signature = signature(x = "fragmentCounts"),
           definition = function(x, i ,j ) {
             if (missing(i)){

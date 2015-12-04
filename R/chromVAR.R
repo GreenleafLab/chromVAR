@@ -10,6 +10,7 @@
 #' the classes ...
 #' @import Matrix
 #' @import GenomicRanges
+#' @import Biostrings
 #' @import methods
 #' @docType package
 #' @name chromVAR

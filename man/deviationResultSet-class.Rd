@@ -3,6 +3,7 @@
 \docType{class}
 \name{deviationResultSet-class}
 \alias{[,deviationResultSet,ANY,ANY,ANY-method}
+\alias{c,deviationResultSet-method}
 \alias{deviationResultSet}
 \alias{deviationResultSet-class}
 \alias{initialize,deviationResultSet-method}
@@ -11,9 +12,16 @@
 \S4method{initialize}{deviationResultSet}(.Object, ...)
 
 \S4method{[}{deviationResultSet,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
+
+\S4method{c}{deviationResultSet}(x, ..., recursive = FALSE)
 }
 \description{
 A class to store deviationResult objects
+}
+\section{c}{
+
+Using 'c' to combine deviationResultSet will reset the nresult slot,
+affecting multiple hypothesis testing...
 }
 \seealso{
 \code{\link{metric}}, \code{\link{variability}},

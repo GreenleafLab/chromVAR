@@ -59,23 +59,27 @@ setMethod("[", signature = signature(x = "deviationResultSet"),
             return(out)
           })
 
-# @section c
-# Using 'c' to combine deviationResultSet will reset the nresult slot,
-# affecting multiple hypothesis testing...
-# @rdname deviationResultSet-class
-# setMethod("c", signature = signature(x = "deviationResultSet"),
-#           definition = function(x, ...) {
-#             extras = list(...)
-#             if (length(extras) == 0){
-#               return(x)
-#             }
-#             xnames <- c(names(x),sapply(extras,function(obj) obj@names))
-#             #nresult <- x@nresult + sum(sapply(extras,function(obj) obj@nresult))
-#             tmp <- callNextMethod()
-#             out <- deviationResultSet(tmp, names = xnames)
-#             return(out)
-#           })
-
+#' @section c:
+#' Using 'c' to combine deviationResultSet will reset the nresult slot,
+#' affecting multiple hypothesis testing...
+#' @rdname deviationResultSet-class
+#' @export
+setMethod("c", signature = signature(x = "deviationResultSet"),
+          definition = function(x, ...) {
+            if (!identical(recursive, FALSE)) 
+              stop("\"c\" method for deviationResultSet objects ", "does not support the 'recursive' argument")
+            if (missing(x)) {
+              args <- list(...)
+              x <- args[[1L]]
+            }
+            else {
+              args <- list(x, ...)
+            }
+            names <- unlist(lapply(args,function(obj) obj@names), recursive=FALSE)
+            results <- unlist(lapply(args,function(obj) obj@.Data), recursive = FALSE)
+            out <- deviationResultSet(results, names = names)
+            out})   
+            
 
 setMethod("set_nresult", "deviationResultSet",
           function(object, nresult){

@@ -40,6 +40,6 @@ Collate:
     'kmer.R'
     'legacy.R'
     'motifs.R'
-    'old.R'
     'peaks.R'
     'utils.R'
+    'variability_extensions.R'
