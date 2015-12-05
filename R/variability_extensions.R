@@ -70,6 +70,7 @@ get_top_sets <- function(results, sets, counts_mat, bg_peaks,
   
   #get max variable
   max_var <- which(variability(results) == max(variability(results)))
+  max_var_name <- names(results)[max_var]
   min_p <- p[max_var]
   
   #initialize output
@@ -77,18 +78,23 @@ get_top_sets <- function(results, sets, counts_mat, bg_peaks,
   
   #Iterate...
   iter = 2
-  while( min_p < p_cutoff && iter < max_iter){
-    sets <- remove_overlap(sets, max_var)
-    tmpresults <- compute_variability(sets, counts_mat, bg_peaks, niterations = niterations,
+  candidates = names(sets)[names(sets) != max_var_name]
+  while( length(candidates) > 0 && iter < max_iter){
+    tmpsets <- remove_overlap(c(sets[candidates],sets[max_var_name]), max_var_name)
+    tmpresults <- compute_variability(tmpsets, counts_mat, bg_peaks, niterations = niterations,
                                       BPPARAM = BPPARAM)
     tmpresults <- set_nresult(tmpresults, results@nresult)
+    tmpresults <- subset_by_variability(tmpresults, cutoff = p_cutoff, adjusted = TRUE)
+    if (length(tmpresults) ==0){
+      break
+    }
     # get most variable...
     max_var <- which(variability(tmpresults) == max(variability(tmpresults)))
     max_var_name <-  names(tmpresults)[max_var]
     min_p <- min(get_pvalues(tmpresults, adjust = TRUE))
     
     out <- c(out, tmpresults[max_var])
-    
+    candidates <- names(tmpresults)[-max_var]
     iter <- iter + 1
   }
   
@@ -96,3 +102,6 @@ get_top_sets <- function(results, sets, counts_mat, bg_peaks,
   
   return(out)
 }
+
+
+
