@@ -411,11 +411,11 @@ get_motif_list <- function(species = 'Homo sapiens', collection = "CORE", ...){
   opts['species'] = species
   opts['collection'] = collection
   opts = c(opts, list(...))
-  getMatrixSet(JASPAR2014::JASPAR2014, opts)
+  TFBSTools::getMatrixSet(JASPAR2014::JASPAR2014, opts)
 }
 
 
-PFMatrixList = get_motif_list()
+#PFMatrixList = get_motif_list()
 
 
 
