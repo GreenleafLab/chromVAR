@@ -32,22 +32,21 @@ fragmentCounts <- setClass("fragmentCounts",
                            ))
 
 #' @export 
-combine_samples <- function(..., meta, meta_name = "sample_group"){
-  samples <- list(...)
+combine_samples <- function(samples, meta_name = "sample_group"){
   stopifnot(all_true(sapply(samples, inherits, 'fragmentCounts')))
-  stopifnot(isTRUE(all.equal(sapply(samples, function(x) x@peaks))))
-  add_meta = sapply(seq_along(samples), function(x) rep(meta[x],samples[[x]]@nsample))
-  for (sample in samples){
-    if (is.null(sample@sample_meta)){
-      sample@sample_meta = data.frame(meta_name = add_meta)
+  stopifnot(all_true(sapply(samples, function(x) all.equal(x@peaks,samples[[1]]@peaks))))
+  for (i in seq_along(samples)){
+    sample = samples[[i]]
+    if (ncol(sample@sample_meta)==0){
+      sample@sample_meta = data.frame(meta_name = rep(names(samples)[i], sample@nsample))
     } else{
-      sample@sample_meta[,sample_name] = add_meta
+      sample@sample_meta[,meta_name] = rep(names(samples)[i], sample@nsample)
     }    
   } 
-  out <- fragmentCounts(counts = do.call(rBind, lapply(samples, function(x) x@counts)),
+  out <- fragmentCounts(counts = do.call(cBind, lapply(samples, function(x) x@counts)),
                         peaks = samples[[1]]@peaks,
-                        sample_meta = do.call(cbind, lapply(samples, function(x) x@sample_meta)),
-                        depth = do.call(c, lapply(samples, function(x) x@sample_meta)))
+                        sample_meta = do.call(rbind, lapply(samples, function(x) x@sample_meta)),
+                        depth = do.call(c,sapply(samples, function(x) x@depth)))
   
   return(out)
 }
@@ -224,19 +223,26 @@ bamToFragments <- function(bamfile){
 #' 
 #' Filter Fragment Counts by quality
 #' @param counts_mat fragmentCounts object
-#' @param min_in_peaks minimum fraction of fragments within peaks (default = 0.25)
-#' @param min_fragments minimum fragments in peaks (default = 5000)
+#' @param min_in_peaks minimum fraction of fragments within peaks for a sample (default = 0.25)
+#' @param min_fragments minimum fragments in peaks for a sample(default = 2500)
+#' @param min_fragments_per_peak minimum fragments across samples that fall into a peak
+#' @details Filtering of samples based on min_in_peaks and min_fragments arguments is performed first.
+#' Then peaks are filtered by min_fragments_per_peak argument (so only fragments in samples that survived
+#' filtering of samples are counted).
 #' @return \code{\link{fragmentCounts}} object
 #' @seealso \code{\link{getFragmentCounts}}, \code{\link{getFragmentCountsByRG}}, \code{\link{fragmentCounts}}
 #' @export          
-filterFragmentCounts <- function(counts_mat, min_in_peaks = 0.25, min_fragments = 2500){
+filterFragmentCounts <- function(counts_mat, min_in_peaks = 0.25, min_fragments = 2500, min_fragments_per_peak = 3){
   stopifnot(inherits(counts_mat, "fragmentCounts"))
-  stopifnot(sum(counts_mat@depth > counts_mat@fragments_per_sample) == counts_mat@nsample)
-  keep <- intersect(which(counts_mat@fragments_per_sample >= min_fragments), 
-                    which(counts_mat@fragments_per_sample/counts_mat@depth >= min_in_peaks))            
-  counts_mat <- counts_mat[,keep]            
+  stopifnot(sum(counts_mat@depth >= counts_mat@fragments_per_sample) == counts_mat@nsample)
+  keep_samples <- intersect(which(counts_mat@fragments_per_sample >= min_fragments), 
+                    which(counts_mat@fragments_per_sample/counts_mat@depth >= min_in_peaks))    
+  counts_mat <- counts_mat[,keep_samples]
+  keep_peaks <- which(counts_mat@fragments_per_peak >= min_fragments_per_peak)
+  counts_mat <- counts_mat[keep_peaks,]
   return(counts_mat)
 }
+
 
 
 
