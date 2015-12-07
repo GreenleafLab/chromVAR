@@ -17,17 +17,25 @@ Reading in and preprocessing data:
 Computing variability
 - compute variability for set of peaks [100%]
 - compute variability for set of sets of peaks [100%]
-- plot variability [90%]
+
+Extensions for variability
 - find samples with high or low accessibility for set of peaks [50%]
 - find peaks with high or low accessibility across set of samples [50%]
-- find sets of peaks with independent variability [60%]
+- find sets of peaks with independent variability [70%]
 - find overlapping kmers with synergystic variability [75%]
-- visualize kmers [10%]
 - clustering of kmer variability across samples [30%]
 
+Differential variablity
+- find sets with greater variability in one sample versus another [0%]
+
+Visualization
+- plot variability [90%]
+- visualize kmers [60%]
+- heatmaps deviatons across samples [50%]
+
 Documentation 
-- functions [50%]
-- classes [50%]
+- functions [60%]
+- classes [60%]
 - vignette [0%]
 
 
