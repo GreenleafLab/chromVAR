@@ -1,7 +1,7 @@
 # chromVAR
 chromatin Variability Across Regions (of the genome!)
 
-[] indicates status {} indicates estimated work time to completion {} indicates priority
+[] indicates status {} indicates estimated work time to completion () indicates priority
 
 Reading in and preprocessing data:
 - Read processed bed file [100%]
