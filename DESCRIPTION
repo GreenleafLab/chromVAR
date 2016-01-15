@@ -24,7 +24,8 @@ Imports:
     S4Vectors,
     gtools,
     plyr,
-    methods
+    methods,
+    Rcpp
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     readr,
