@@ -31,6 +31,7 @@ fragmentCounts <- setClass("fragmentCounts",
                                      depth = 'numeric'
                            ))
 
+
 #' @export 
 combine_samples <- function(samples, meta_name = "sample_group"){
   stopifnot(all_true(sapply(samples, inherits, 'fragmentCounts')))
@@ -123,17 +124,23 @@ getFragmentCountsByRG <- function(bam, peaks, BPPARAM = BiocParallel::bpparam())
 
   rg_fragments <- bamToFragmentsByRG(bam, BPPARAM)
   depth <- sapply(rg_fragments, length)
-  counts_mat <- Matrix(simplify2array(BiocParallel::bplapply(rg_fragments,
-                                                         function(fragments) countOverlaps(peaks, fragments, type="any", ignore.strand=T),
-                                                         BPPARAM = BPPARAM)))
+  tmpfun <- function(frags){
+    overlaps = as.data.frame(GenomicRanges::findOverlaps(peaks, frags, type="any", ignore.strand=T))
+    return(overlaps)
+  }
+
+  all_overlaps <-  BiocParallel::bplapply(rg_fragments,tmpfun,
+                                        BPPARAM = BPPARAM)
+  counts_mat <- sparseMatrix(i = do.call(rbind,all_overlaps)$queryHits, 
+                                   j = unlist(lapply(seq_along(all_overlaps),function(y) rep(y,nrow(all_overlaps[[y]]))),use.names=F),
+                                   x = 1, dims = c(length(peaks),length(rg_fragments)), dimnames = list(NULL,names(rg_fragments)))
 
   counts <- fragmentCounts(counts = counts_mat,
-                           peaks = peaks,
-                           depth = depth)
+                                    peaks = peaks,
+                                    depth = depth)
 
   return(counts)
 }
-
 
 
 #' getFragmentCounts
@@ -236,9 +243,15 @@ filterFragmentCounts <- function(counts_mat, min_in_peaks = 0.25, min_fragments 
   stopifnot(inherits(counts_mat, "fragmentCounts"))
   stopifnot(sum(counts_mat@depth >= counts_mat@fragments_per_sample) == counts_mat@nsample)
   keep_samples <- intersect(which(counts_mat@fragments_per_sample >= min_fragments), 
-                    which(counts_mat@fragments_per_sample/counts_mat@depth >= min_in_peaks))    
+                    which(counts_mat@fragments_per_sample/counts_mat@depth >= min_in_peaks))  
+  if (length(keep_samples) == 0){
+    stop("No samples passed filters!")
+  }
   counts_mat <- counts_mat[,keep_samples]
   keep_peaks <- which(counts_mat@fragments_per_peak >= min_fragments_per_peak)
+  if (length(keep_peaks) == 0){
+    stop("No peaks passed filters!")
+  }
   counts_mat <- counts_mat[keep_peaks,]
   return(counts_mat)
 }
