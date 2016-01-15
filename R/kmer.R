@@ -215,14 +215,12 @@ add_right <- function(letter, kmer, gap = 0){
 }
 
 #' @export
-extend_kmer2 <- function(kmer, set, counts_mat, bg_peaks,
+extend_kmer2 <- function(kmer, set, counts_mat, bg_peaks, seqs, 
                         max_extend = 3,
-                        genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
                         niterations = 50,
                         p.cutoff = 0.01,
                         BPPARAM = BiocParallel::bpparam()){
 
-  seqs <- Biostrings::getSeq(genome, counts_mat@peaks)
   nucs = c("A","C","G","T")
   ntest = max_extend * 2 * 4
   p.cutoff = p.cutoff / ntest
@@ -268,6 +266,64 @@ extend_kmer2 <- function(kmer, set, counts_mat, bg_peaks,
 
 
 #' @export
+extend_kmer3 <- function(kmer, set, counts_mat, bg_peaks, seqs, 
+                         max_extend = 3,
+                         niterations = 50,
+                         p.cutoff = 0.01,
+                         BPPARAM = BiocParallel::bpparam()){
+  stopifnot(length(seqs) == length(set))
+  nucs = c("A","C","G","T")
+  ntest = max_extend * 2 * 4
+  p.cutoff = p.cutoff / ntest
+  i = 1
+  kmer_head = rep("N",max_extend)
+  kmer_tail = rep("N", max_extend)
+  tmpsets = list()
+  while (i <= max_extend){
+    #left
+    candidates = sapply(nucs, add_left, kmer, i-1)
+    tmpsets = c(tmpsets,match_kmers(candidates, seqs, tb.start = i + 1, tb.end = i + nchar(kmer), max.mismatch = i-1))
+    #right
+    candidates = sapply(nucs, add_right, kmer, i-1)
+    tmpsets = c(tmpsets,match_kmers(candidates, seqs, tb.start = 1, tb.end = nchar(kmer), max.mismatch = i-1))
+    i = i + 1
+  }
+  tmpsets = lapply(tmpsets, function(x) set[x])
+  var_boost <- get_variability_boost(set,tmpsets,counts_mat,bg_peaks, niterations, BPPARAM)
+  i = 1
+  while (i <= max_extend){
+    left_boost <- nucs[which(var_boost[(8*(i-1)+1):(8*(i-1)+4)] < p.cutoff)]
+    if (length(left_boost)>0){
+      kmer_head[max_extend - i + 1] = Biostrings::consensusString(left_boost,
+                                                                  ambiguityMap=Biostrings::IUPAC_CODE_MAP,
+                                                                  threshold = 0.25)
+    }
+    right_boost <- nucs[which(var_boost[(8*(i-1)+5):(8*(i-1)+8)] < p.cutoff)]
+    if (length(right_boost)>0){
+      kmer_tail[i] = Biostrings::consensusString(right_boost,
+                                                 ambiguityMap=Biostrings::IUPAC_CODE_MAP,
+                                                 threshold = 0.25)
+    }
+    i = i +1
+  }
+  if (!all_true(kmer_head == "N")){
+    kmer_head = BiocGenerics::paste(kmer_head[(which(kmer_head != "N")[1]):(length(kmer_head))],
+                                    collapse="")
+  } else{
+    kmer_head =""
+  }
+  if (!all_true(kmer_tail == "N")){
+    kmer_tail = BiocGenerics::paste(kmer_tail[1:(rev(which(kmer_tail != "N"))[1])],
+                                    collapse="")
+  } else{
+    kmer_tail =""
+  }
+  return(list(head = kmer_head, tail = kmer_tail))}
+
+
+
+
+#' @export
 get_similar_kmers <- function(kmer, kmers, cutoff = 4){
   dists = kmer_overlap_dist(kmers,kmer)
   return(kmers[which(dists >= cutoff)])
@@ -279,13 +335,17 @@ get_overlapping_kmers <- function(kmer, kmers, cutoff = 2){
   return(kmers[which(dists >= cutoff)])
 }
 
+cor_helper <- function(a, b, ...){
+  res = cor.test(a, b,...)
+  return(c(r = res$estimate[[1]],p = res$p.value))
+}
 
 #' @export
-get_correlated_results <- function(name, results, p.cutoff = 0.01){
+get_correlated_results <- function(name, results, p.cutoff = 0.01, corr.cutoff = 0.5){
   mat = deviations(results)
   ix = which(names(results) == name)
-  pcors = apply(mat, 1, function(x) cor.test(x, mat[ix,])$p.value)
-  sig = which(pcors < 0.01)
+  pcors = apply(mat, 1, function(x) cor_helper(x, mat[ix,],alternative = "greater"))
+  sig = intersect(which(pcors["p",] < 0.01), which(pcors["r",] > corr.cutoff))
   return(names(results)[sig[sig != ix]])
 }
 
@@ -296,6 +356,57 @@ get_associated_kmers <- function(kmer,
                                  results,
                                  counts_mat,
                                  bg_peaks,
+                                 seqs,
+                                 max_extend = 3,
+                                 niterations = 50,
+                                 p.cutoff = 0.01,
+                                 k.cutoff = 4,
+                                 BPPARAM = BiocParallel::bpparam()){
+
+  #Step -1: get extended kmer
+  extensions = extend_kmer3(kmer,
+                            sets[[kmer]],
+                            counts_mat,
+                            bg_peaks,
+                            seqs,
+                            max_extend = max_extend,
+                            niterations = niterations,
+                            p.cutoff = p.cutoff,
+                            BPPARAM = BPPARAM)
+  ekmer = BiocGenerics::paste(extensions[["head"]],kmer,extensions[["tail"]], collapse="",sep="")
+
+  if (length(sets) >1){
+    #Step 0: Test sequence similarity
+    sim_seqs = get_similar_kmers(ekmer, names(sets), cutoff = k.cutoff)
+    #overlap_seqs = get_overlapping_kmers(kmer, names(sets), cutoff = 2)
+    #candidates1 = sim_seqs[which(sim_seqs %ni% overlap_seqs)]
+    #candidates2 = sim_seqs[which(sim_seqs %in% overlap_seqs)]
+
+    #Step 1: Test Correlation for non-overlapping but similar kmers
+    cor_res = get_correlated_results(kmer, results[sim_seqs], p.cutoff = p.cutoff)
+
+    #Step 2: Test Correlation for overlapping kmers
+    #tmpsets <- remove_nonoverlap(sets[candidates2], kmer)
+    #var_boost <- get_variability_boost(sets[[kmer]],tmpsets, counts_mat, bg_peaks, niterations, BPPARAM)
+    #var_boost <- pnorm(var_boost, lower.tail = FALSE)
+    #boosters <- names(var_boost)[which(var_boost <= (p.cutoff / length(tmpsets)))]
+    #cor_res2 = get_correlated_results(kmer, results[candidates2], p.cutoff = p.cutoff)
+    
+    #return...
+    out <- list(kmer = kmer, ekmer = ekmer, similar = cor_res)
+  } else {
+    out <- list(kmer = kmer, ekmer = ekmer, similar = NULL)
+  }
+
+  return(out)
+
+}
+
+#' @export
+group_kmers <- function(sets,
+                                 results,
+                                 counts_mat,
+                                 bg_peaks,
                                  max_extend = 3,
                                  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
                                  niterations = 50,
@@ -303,38 +414,34 @@ get_associated_kmers <- function(kmer,
                                  k.cutoff = 4,
                                  BPPARAM = BiocParallel::bpparam()){
 
-  #Step -1: get extended kmer
-  extensions = extend_kmer2(kmer,
-                            sets[[kmer]],
-                            counts_mat,
-                            bg_peaks,
-                            max_extend = max_extend,
-                            genome = genome,
-                            niterations = niterations,
-                            p.cutoff = p.cutoff,
-                            BPPARAM = BPPARAM)
-  ekmer = BiocGenerics::paste(extensions[["head"]],kmer,extensions[["tail"]], collapse="",sep="")
-
-  #Step 0: Test sequence similarity
-  sim_seqs = get_similar_kmers(ekmer, names(sets), cutoff = k.cutoff)
-  overlap_seqs = get_overlapping_kmers(kmer, names(sets), cutoff = 2)
-  candidates1 = sim_seqs[which(sim_seqs %ni% overlap_seqs)]
-  candidates2 = sim_seqs[which(sim_seqs %in% overlap_seqs)]
-
-  #Step 1: Test Correlation for non-overlapping but similar kmers
-  cor_res = get_correlated_results(kmer, results[c(candidates1,kmer)], p.cutoff = p.cutoff)
-
-  #Step 2: Get boosters
-  tmpsets <- remove_nonoverlap(sets[candidates2], kmer)
-  var_boost <- get_variability_boost(sets[[kmer]],tmpsets, counts_mat, bg_peaks, niterations, BPPARAM)
-  boosters <- names(var_boost)[which(var_boost <= (p.cutoff / length(tmpsets)))]
-
-  #return...
-  out <- list(kmer = kmer, ekmer = ekmer, similar = cor_res, boost = boosters)
+  if (length(sets) != length(results) || !all_true(all.equal(sort(names(sets)),sort(names(results))))){
+    warning("Names of sets and results not the same... using intersection")
+    common_names <- intersect(names(sets),names(results))
+    sets <- sets[common_names]
+    results <- results[common_names]
+  }
+  
+  p <- get_pvalues(results, adjust = TRUE)
+  #order by pvalues...
+  candidates <- names(p)[sort(p, index.return=T)$ix]
+  out <- list()
+  seqs <- Biostrings::getSeq(genome, counts_mat@peaks)
+  while (length(candidates)>0){
+    kmer_assoc = get_associated_kmers(candidates[1], sets[candidates], results[candidates], counts_mat, bg_peaks, seqs[sets[[candidates[1]]]], max_extend, niterations, p.cutoff, k.cutoff, BPPARAM)
+    toremove <- c(kmer_assoc$kmer, kmer_assoc$similar, kmer_assoc$boost)
+    candidates <- candidates[which(candidates %ni% toremove)]
+    out = c(out, list(kmer_assoc))
+    print(length(candidates))
+    print(candidates)
+  }
+  names(out) <- sapply(out, function(obj) obj$kmer)
   return(out)
-
 }
 
+
+
+
+#' @export
 make_motif_from_kmer_group <- function(kmer_group){
   shifts = c(get_kmer_alignment(kmer_group$kmer, kmer_group$ekmer)$shift)
   kmers = c(kmer_group$kmer)
@@ -353,7 +460,7 @@ make_motif_from_kmer_group <- function(kmer_group){
   out = out + matrix((1-colSums(out))/4, byrow = TRUE, ncol = ncol(out), nrow = nrow(out))
   return(out)}
 
-
+#' @export
 plot_kmer_group <- function(kmer_group, motif_list = NULL, top.motifs = 3){
   l = (length(kmer_group$similar) + length(kmer_group$boost) + 5)*2
   anno_df = data.frame(x = 0, y = l, label = "seed\nkmer")
@@ -363,13 +470,13 @@ plot_kmer_group <- function(kmer_group, motif_list = NULL, top.motifs = 3){
   p  = p + ggmotif(kmer_group$ekmer, y.pos = l, x.pos = 1-a)
   anno_df = rbind(anno_df, data.frame(x = 0, y = l, label = "extended\nkmer"))
   l = l - 3
-  anno_df = rbind(anno_df, data.frame(x = 0, y = l, label = "overlapping kmers\nthat boost variability"))
-  for (i in kmer_group$boost){
-    al = get_kmer_alignment(i, kmer_group$ekmer)
-    p = p + ggmotif(al$kmer, y.pos = l, x.pos = al$shift - a)
-    l = l-1.5
-  }
-  l = l - 1.5
+#   anno_df = rbind(anno_df, data.frame(x = 0, y = l, label = "overlapping kmers\nthat boost variability"))
+#   for (i in kmer_group$boost){
+#     al = get_kmer_alignment(i, kmer_group$ekmer)
+#     p = p + ggmotif(al$kmer, y.pos = l, x.pos = al$shift - a)
+#     l = l-1.5
+#   }
+#   l = l - 1.5
   anno_df = rbind(anno_df, data.frame(x = 0, y = l, label = "similar\nvariable kmers"))
   for (i in kmer_group$similar){
     al = get_kmer_alignment(i, kmer_group$ekmer)
@@ -382,11 +489,11 @@ plot_kmer_group <- function(kmer_group, motif_list = NULL, top.motifs = 3){
     motif_matches <- TFBSTools::PFMSimilarity(motif_list, kmer_group$ekmer)
     scores <- sapply(motif_matches, function(x) x["relScore"])
     for (motif in names(motif_matches)[sort(scores, decreasing = TRUE, index.return=TRUE)$ix[1:top.motifs]]){
-      m = Matrix(motif_list[[motif]])
+      m = as.matrix(motif_list[[motif]]@profileMatrix)
       m = m / matrix(colSums(m), byrow = FALSE, nrow = nrow(m), ncol=ncol(m))
       al = get_kmer_alignment(Biostrings::consensusString(m,ambiguityMap=Biostrings::IUPAC_CODE_MAP, threshold = 0.25), kmer_group$ekmer)
-     p = p + ggmotif(m, y.pos = l, x.pos = al$shift - a)
-     l = l - 1.5
+      p = p + ggmotif(m, y.pos = l, x.pos = al$shift - a)
+      l = l - 1.5
     }
   }
   minxval  = min(sapply(ggplot_build(p)$data, function(obj) min(obj$x)))
