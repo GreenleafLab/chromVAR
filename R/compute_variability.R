@@ -43,6 +43,101 @@ peak_deviations <- function(counts_mat, window = 500, BPPARAM = BiocParallel::bp
 }
 
 
+compute_background_deviation <- function(index, motif_mat, counts_mat, bg_peaks){
+  tmp = sparseMatrix(i = 1:counts_mat@npeak, 
+                     j = bg_peaks@background_peaks[,index],
+                     x = 1, 
+                     dims = c(counts_mat@npeak, counts_mat@npeak))
+  bg_observed = (motif_mat %*% tmp) %*% counts_mat@counts
+  bg_expected = outer(rowSums(bg_observed), counts_mat@fragments_per_sample/counts_mat@total_fragments)
+  bg_deviation = bg_observed - bg_expected
+  return(as.matrix(bg_deviation))
+}
+
+
+
+
+#' @export
+compute_variability2 <- function(motif_indices, counts_mat, bg_peaks, 
+                                niterations = 50,
+                                metric = c("z-score","old"),
+                                BPPARAM = BiocParallel::bpparam()){
+  
+  metric = match.arg(metric)
+  
+  #check class of arguments to make sure they are correct
+  stopifnot(inherits(motif_indices,"list"))
+  stopifnot(inherits(counts_mat,"fragmentCounts"))
+  stopifnot(inherits(bg_peaks,"backgroundPeaks"))
+  
+  #check that backgroundPeaks based on same peaks as fragmentCounts
+  stopifnot(all.equal(bg_peaks@peaks, counts_mat@peaks))
+  
+  #check that indices fall within appropriate bounds
+  tmp = unlist(motif_indices, use.names =F)
+  if (!(all.equal(tmp, as.integer(tmp))) ||
+        max(tmp) > counts_mat@npeak ||
+        min(tmp) < 1){
+    stop("motif_indices are not valid")
+  }
+  
+  #First compute observed & expected
+  motif_mat = sparseMatrix(j = unlist(motif_indices, use.names=F), 
+                           i = unlist(lapply(seq_along(motif_indices), 
+                                             function(x) rep(x,length(motif_indices[[x]]))),
+                                      use.names=F),
+                           x = 1,
+                           dims = c(length(motif_indices),counts_mat@npeak))
+  observed = motif_mat %*% counts_mat@counts
+  expected = outer(rowSums(observed), counts_mat@fragments_per_sample/counts_mat@total_fragments)
+  deviation = observed - expected
+  
+  #Compute background
+  bg_deviations = simplify2array(BiocParallel::bplapply(1:niterations, compute_background_deviation, motif_mat, counts_mat, bg_peaks, BPPARAM = BPPARAM))
+  
+  #Compute deviation Z-scores
+  zscores = (deviation - means.along(bg_deviations,3)) / sd.along(bg_deviations, 3)
+
+  make_results <- function(index){
+    normdev = zscores[index,]
+    pvals = pnorm(normdev)
+    pvals = ifelse(pvals > 0.5, (1-pvals)*2, pvals*2)
+    
+    sd_normdev = sd(normdev)
+    
+    bootstrap_indexes = sample(seq_along(normdev), 
+                               length(normdev)*1000,
+                               replace=TRUE)
+    bootstrap_sds = sapply(1:1000, function(x) 
+      sd(normdev[bootstrap_indexes[(1 + (x-1)*length(normdev)):
+                                     (x*length(normdev))]]))
+    sd_error = quantile(bootstrap_sds, c(0.025, 0.975))
+    
+    p_sd = pchisq((length(normdev)-1) * (sd_normdev**2), 
+                  df = (length(normdev)-1), 
+                  lower.tail = FALSE)
+    
+    res = deviationResult(deviations = as.numeric(normdev), 
+                          variability = sd_normdev, 
+                          variability_bounds = sd_error,
+                          p_deviations = as.numeric(pvals),
+                          p_variability = p_sd,
+                          metric = "z-score")
+    return(res)
+  }
+  
+
+  results = deviationResultSet(BiocParallel::bplapply(1:nrow(zscores), make_results, BPPARAM = BPPARAM),
+                               names = names(motif_indices))
+  
+  return(results)
+}
+
+
+
+
+
+
 
 
 #' compute_variability
@@ -70,7 +165,7 @@ compute_variability <- function(motif_indices, counts_mat, bg_peaks,
   stopifnot(inherits(bg_peaks,"backgroundPeaks"))
   
   #check that backgroundPeaks based on same peaks as fragmentCounts
-  stopifnot(all.equal(bg_peaks@peaks, fc@peaks))
+  stopifnot(all.equal(bg_peaks@peaks, counts_mat@peaks))
   
   #check that indices fall within appropriate bounds
   tmp = unlist(motif_indices, use.names =F)
@@ -108,7 +203,7 @@ compute_deviations <- function(peak_set, counts_mat, bg_peaks, niterations = 50,
 
   tf_count = length(peak_set)
   tf_vec = sparseMatrix(j = peak_set, i = rep(1,tf_count), x = 1, 
-                        dims = c(1, length(counts_mat@peaks)))
+                        dims = c(1, counts_mat@npeak))
 
   observed = as.matrix(tf_vec %*% counts_mat@counts)
 
