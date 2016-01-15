@@ -29,6 +29,21 @@ mean_smooth <- function(X, window){
 
 rms <- function(x) sqrt(mean(x**2))
 
+means.along <- function(a, i) {
+  n <- length(dim(a))
+  b <- aperm(a, c(seq_len(n)[-i], i))
+  rowMeans(b, dims = n - 1)
+}
+
+sd.along <- function(a, i) {
+  n <- dim(a)[i]
+  tmp.var <- means.along(a*a,i) - (means.along(a,i)**2)
+  return(sqrt(tmp.var * n/(n-1)))
+}
+
+
+
+
 # Functions to test whether a vector is all TRUE or all FALSE ------------------
 all_true <- function(x){
   stopifnot(inherits(x,"logical"))
@@ -75,6 +90,30 @@ merge_lists <- function(..., by = c("order","name")){
     }
   }
 }
+
+## remove overlapping or non-overlapping items
+remove_overlap <- function(x, to.remove){
+  #removes items in vector to.remove from x
+  if (inherits(x, "list")){
+    return(lapply(x, function(y) y[which(y %ni% to.remove)]))    
+  } else if (inherits(x, "vector")){
+    return(x[which(x %ni% to.remove)])
+  } else{
+    stop("x must be list or vector")
+  }
+} 
+
+remove_nonoverlap <- function(x, to.keep){
+  #keep only items in x that are in to.keep
+  if (inherits(x, "list")){
+    return(lapply(x, function(y) y[which(y %in% to.keep)]))    
+  } else if (inherits(x, "vector")){
+    return(x[which(x %in% to.keep)])
+  } else{
+    stop("x must be list or vector")
+  }
+} 
+
 
 
 
