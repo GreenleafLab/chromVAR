@@ -33,21 +33,23 @@ fragmentCounts <- setClass("fragmentCounts",
 
 
 #' @export 
-combine_samples <- function(samples, meta_name = "sample_group"){
+combine_samples <- function(samples, sample_names = 1:length(samples), meta_name = "sample_group"){
   stopifnot(all_true(sapply(samples, inherits, 'fragmentCounts')))
   stopifnot(all_true(sapply(samples, function(x) all.equal(x@peaks,samples[[1]]@peaks))))
-  for (i in seq_along(samples)){
-    sample = samples[[i]]
-    if (ncol(sample@sample_meta)==0){
-      sample@sample_meta = data.frame(meta_name = rep(names(samples)[i], sample@nsample))
-    } else{
-      sample@sample_meta[,meta_name] = rep(names(samples)[i], sample@nsample)
-    }    
-  } 
+  if (!is.null(sample_names)){
+    for (i in seq_along(samples)){
+      sample = samples[[i]]
+      if (nrow(sample@sample_meta)==0){
+        sample@sample_meta = data.frame(row.names = colnames(sample@counts))
+      } 
+      sample@sample_meta[,meta_name] = rep(sample_names[i], sample@nsample)
+      samples[[i]] = sample
+    }     
+  }
   out <- fragmentCounts(counts = do.call(cBind, lapply(samples, function(x) x@counts)),
                         peaks = samples[[1]]@peaks,
                         sample_meta = do.call(rbind, lapply(samples, function(x) x@sample_meta)),
-                        depth = do.call(c,sapply(samples, function(x) x@depth)))
+                        depth = do.call(c,lapply(samples, function(x) x@depth)))
   
   return(out)
 }
@@ -106,7 +108,7 @@ setMethod("[", signature = signature(x = "fragmentCounts"),
             x@total_fragments = sum(x@counts)
             x@npeak = length(x@peaks)
             x@nsample = ncol(x@counts)
-            x@sample_meta = x@sample_meta[j,]
+            x@sample_meta = x@sample_meta[j,,drop=FALSE]
             x@depth = x@depth[j]
             return(x)
           })
