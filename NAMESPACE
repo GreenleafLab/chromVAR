@@ -2,7 +2,8 @@
 
 export(bamToFragments)
 export(bamToFragmentsByRG)
-export(cluster_sets)
+export(cluster_samples)
+export(collapse_samples)
 export(combine_samples)
 export(compute_bias)
 export(compute_deviations)

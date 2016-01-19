@@ -309,7 +309,7 @@ get_cluster_number <-function(object,
     return(list("cluster" = cl))
   }
   
-  g = cluster::clusGap(mat, tmpfun, K.max = max_k)
+  g = cluster::clusGap(t(mat), tmpfun, K.max = max_k)
   rec = cluster::maxSE(g$Tab[,"gap"],g$Tab[,"SE.sim"], method=method) 
   
   if (out == "plot"){
@@ -341,41 +341,27 @@ get_cluster_number <-function(object,
   }  
 }
 
-#' cluster_sets
+#' cluster_samples
 #' 
-#' function to custer the top annotation sets
+#' function to custer samples
 #' @param object \code{\link{deviationResultSet}} object
-#' @param k number of clusters -- if not provided, will be estimated. See Details
-#' @param max_k if k is not provided, max_k allowed
+#' @param k number of clusters 
 #' @return list with two elements.  "hclust" is \code{\link[stats]{hclust}} object
 #' "cluster" is cluster membership vector.
 #' @export
-cluster_sets <- function(object, k = NULL, max_k = 15, plot = TRUE){
+cluster_samples <- function(object, k = 5, plot = TRUE){
   
   #Perform checks on arguments
   stopifnot(inherits(object,"deviationResultSet"))
-  stopifnot(as.integer(max_k) == max_k && max_k > 1)
-  
-  if (is.null(k)){
-    cn = get_cluster_number(object, max_k = max_k,  out = ifelse(plot, "plot","value"))
-    if (plot){
-      k = cn$value
-    } else{
-      k = cn 
-    }
-  }
+  stopifnot(k >= 1)
   
   mat = deviations(object)
 
-  d = as.dist(1 - cor(t(mat)))
+  d = as.dist(1 - cor(mat))
   h = hclust(d)
   cl = cutree(h, k)
   
-  if (plot){
-    out = list("hclust" = h, "cluster" = cl, "plot" = cn$plot)
-  } else{
-    out = list("hclust" = h, "cluster" = cl)
-  }
+  out = list("hclust" = h, "cluster" = cl)
   
   return(out)
   
@@ -383,6 +369,23 @@ cluster_sets <- function(object, k = NULL, max_k = 15, plot = TRUE){
   
 
 
+
+
+
+plot_deviations <- function(object){
+  #Perform checks on arguments
+  stopifnot(inherits(object,"deviationResultSet"))
+  mat = deviations(object)
+  
+  d1 = as.dist(1 - cor(mat))
+  h1 = hclust(d1)
+  
+  d2 = as.dist(1 - cor(t(mat)))
+  h2 = hclust(d2)
+  
+  ggheatmap(mat[h2$order,h1$order], fixed=FALSE)
+  
+}
 
 
 
