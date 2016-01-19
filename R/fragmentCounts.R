@@ -258,8 +258,30 @@ filterFragmentCounts <- function(counts_mat, min_in_peaks = 0.25, min_fragments 
   return(counts_mat)
 }
 
-
-
+#' collapse_samples
+#' 
+#' collapse samples based on provided groupings
+#' @param counts_mat fragmentCounts object
+#' @param grouping vector with groupings
+#' @details Meta data will be stripped from new fragmentCounts object
+#' @return \code{\link{fragmentCounts}} object
+#' @seealso \code{\link{getFragmentCounts}}, \code{\link{cluster_samples}}, \code{\link{fragmentCounts}}
+#' @export          
+collapse_samples <- function(counts_mat, grouping){
+  
+  groups <- unique(grouping)
+  new_mat <- Matrix(do.call(cBind, lapply(groups, function(x) apply(counts_mat@counts[,grouping == x],1,sum))))
+  colnames(new_mat) = groups
+  new_depth <- do.call(c, lapply(groups, function(x) sum(counts_mat@depth[grouping == x])))
+  meta <- data.frame("collapsed_samples" = do.call(c, lapply(groups, function(x) sum(grouping ==x))))
+  rownames(meta) <- groups
+  
+  out <- fragmentCounts(counts = new_mat, depth = new_depth, 
+                        sample_meta = meta, peaks = counts_mat@peaks)
+  return(out)
+  
+}
+  
 
 
 
