@@ -14,6 +14,10 @@ se <- function(x) sqrt(var(x,na.rm=TRUE)/length(na.omit(x)))
 
 '%ni%' = Negate('%in%')
 
+# check for installed package --------------------------------------------------
+
+is.installed <- function(pkg) is.element(pkg, installed.packages()[,1]) 
+
 # Mathematical shortcuts -------------------------------------------------------
 
 mean_smooth <- function(X, window){
