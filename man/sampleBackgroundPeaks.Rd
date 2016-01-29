@@ -4,14 +4,12 @@
 \alias{sampleBackgroundPeaks}
 \title{sampleBackgroundPeaks}
 \usage{
-sampleBackgroundPeaks(object, peak_set, counts_mat, niterations = 50)
+sampleBackgroundPeaks(object, peak_set, niterations = 50)
 }
 \arguments{
-\item{object}{backgroundPeaks object}
+\item{object}{fragmentCounts object}
 
 \item{peak_set}{list of peak indices}
-
-\item{counts_mat}{fragmentCounts object}
 
 \item{niterations}{number of background sets to sample}
 }
@@ -20,5 +18,9 @@ matrix with sampled counts for background sets
 }
 \description{
 gets sample counts for background sets for a given peak set
+}
+\details{
+input fragmentCounts object must include set of background peaks, computed
+using \code{\link{getBackgroundPeakSets}}
 }
 

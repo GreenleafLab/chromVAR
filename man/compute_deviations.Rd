@@ -4,15 +4,13 @@
 \alias{compute_deviations}
 \title{compute_deviations}
 \usage{
-compute_deviations(peak_set, counts_mat, bg_peaks, niterations = 50,
+compute_deviations(peak_set, counts_mat, niterations = 50,
   metric = c("z-score", "old"))
 }
 \arguments{
 \item{peak_set}{vector of indices for peaks in set}
 
 \item{counts_mat}{fragmentCounts object}
-
-\item{bg_peaks}{backgroundPeaks object}
 
 \item{niterations}{number of background sets to sample}
 

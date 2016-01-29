@@ -6,7 +6,7 @@
 #' a Matrix (from package Matrix); the specific class of the Matrix is determined by
 #' sparsity of the data.  The fragmentCounts class also stores the genomic regions that
 #' correspond to the rows of the counts matrix. Optionally, the class can store sample meta data
-#' as a data.frame with rows corresponding to samples.   
+#' as a data.frame with rows corresponding to samples, and a set of background peaks   
 #' @section Accessors:
 #' Accessors are available for counts, peaks, and meta.
 #' @slot counts Matrix of fragment counts, with each row representing a peak, each column a sample
@@ -18,6 +18,7 @@
 #' @slot npeak number of peaks
 #' @slot sample_meta optional data.frame with meta data for samples, with rows corresponding to samples
 #' @slot depth total read depth for each sample
+#' @slot background_peaks matrix with indices of background peaks for each peak
 #' @export
 fragmentCounts <- setClass("fragmentCounts",
                            slots = c(counts = 'Matrix',
@@ -28,7 +29,8 @@ fragmentCounts <- setClass("fragmentCounts",
                                      nsample = 'numeric',
                                      npeak = 'numeric',
                                      sample_meta = 'data.frame',
-                                     depth = 'numeric'
+                                     depth = 'numeric',
+                                     background_peaks = 'matrix'
                            ))
 
 
@@ -86,8 +88,12 @@ setValidity("fragmentCounts", function(object) {
   #Check dimensions
   if (nrow(object@counts) != length(object@peaks)){
     valid <- FALSE
-    msg <- c(msg, "Number of rows of counts matrix must be same as length of peaks")
-  }
+    msg <- c(msg, "Number of rows of counts matrix must be same as length of peaks.\n")
+  } 
+  if (nrow(object@background_peaks)!=0 & nrow(object@background_peaks)!= length(object@peaks)){
+    valid <- FALSE
+    msg <- c(msg, "Number of row of background peaks must be same as length of peaks.\n")
+  }  
   if (valid) TRUE else msg})
 
 
@@ -97,19 +103,22 @@ setMethod("[", signature = signature(x = "fragmentCounts"),
           definition = function(x, i ,j ) {
             if (missing(i)){
               i = 1:x@npeak
+            } else{
+              x@background_peaks = matrix(nrow=0,ncol=0)
             }
             if (missing(j)){
               j = 1:x@nsample
             }
-            x@counts = x@counts[i,j]
-            x@fragments_per_sample = colSums(x@counts)
-            x@fragments_per_peak = rowSums(x@counts)
-            x@peaks = x@peaks[i]
-            x@total_fragments = sum(x@counts)
-            x@npeak = length(x@peaks)
-            x@nsample = ncol(x@counts)
-            x@sample_meta = x@sample_meta[j,,drop=FALSE]
-            x@depth = x@depth[j]
+            x@counts <- x@counts[i,j]
+            x@fragments_per_sample <- colSums(x@counts)
+            x@fragments_per_peak <- rowSums(x@counts)
+            x@peaks <- x@peaks[i]
+            x@total_fragments <- sum(x@counts)
+            x@npeak <- length(x@peaks)
+            x@nsample <- ncol(x@counts)
+            x@sample_meta <- x@sample_meta[j,,drop=FALSE]
+            x@depth <- x@depth[j]
+            validObject(x)
             return(x)
           })
 

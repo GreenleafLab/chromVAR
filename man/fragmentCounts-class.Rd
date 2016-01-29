@@ -22,7 +22,7 @@ arise from single-cell ATAC-seq experiment.  The counts slot holds the count dat
 a Matrix (from package Matrix); the specific class of the Matrix is determined by
 sparsity of the data.  The fragmentCounts class also stores the genomic regions that
 correspond to the rows of the counts matrix. Optionally, the class can store sample meta data
-as a data.frame with rows corresponding to samples.
+as a data.frame with rows corresponding to samples, and a set of background peaks
 }
 \section{Slots}{
 
@@ -44,6 +44,8 @@ as a data.frame with rows corresponding to samples.
 \item{\code{sample_meta}}{optional data.frame with meta data for samples, with rows corresponding to samples}
 
 \item{\code{depth}}{total read depth for each sample}
+
+\item{\code{background_peaks}}{matrix with indices of background peaks for each peak}
 }}
 \section{Accessors}{
 

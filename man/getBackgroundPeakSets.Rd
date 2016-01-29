@@ -4,8 +4,8 @@
 \alias{getBackgroundPeakSets}
 \title{getBackgroundPeakSets}
 \usage{
-getBackgroundPeakSets(counts_mat, niterations = 50, window = 1000,
-  BPPARAM = BiocParallel::bpparam(), for_set = TRUE)
+getBackgroundPeakSets(counts_mat, niterations = 50, window = 500,
+  with_replacement = TRUE)
 }
 \arguments{
 \item{counts_mat}{a fragmentCounts object}
@@ -14,12 +14,10 @@ getBackgroundPeakSets(counts_mat, niterations = 50, window = 1000,
 
 \item{window}{window size around peak in which to sample a background peak}
 
-\item{BPPARAM}{multiprocessing parameter for use by BiocParallel}
-
-\item{for_set}{computing background peaks for a set of peaks? affect whether sampling is done with replacement}
+\item{with_replacement}{sample peaks with replacement? Default is TRUE}
 }
 \value{
-backgroundPeaks object
+fragmentCounts object
 }
 \description{
 Function to get a set of background peaks for each peak based on GC content and # of counts
