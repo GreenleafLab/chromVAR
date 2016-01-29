@@ -13,7 +13,7 @@ get_nuc_freqs <- function(seqs){
 #' @param collection Which collection to use?  default is "CORE"
 #' @param ... additional arguments to opts for \code{\link[TFBSTools]{getMatrixSet}}
 #' @details Simply a wrapper function for \code{\link[TFBSTools]{getMatrixSet}} that calls
-#' JASPAR2014 database using \code{\link[JASPAR2014]{JASPAR2014}
+#' JASPAR2014 database using \code{\link[JASPAR2014]{JASPAR2014}}
 #' @return \code{\link[TFBSTools]{PFMatrixList}}
 #' @export
 get_motifs <- function(species = "Homo sapiens", collection = "CORE", ...){
@@ -29,7 +29,7 @@ get_motifs <- function(species = "Homo sapiens", collection = "CORE", ...){
 #' 
 #' Function to get indices of peaks that contain motifs
 #' @param motifs \code{\link[TFBSTools]{PFMatrixList}} or \code{\link[TFBSTools]{PWMatrixList}}
-#' @param peaks \code{\link[GenomicRanges]{GenomicRanges}}
+#' @param peaks \code{\link[GenomicRanges]{GenomicRanges}} or \code{\link{fragmentCounts}}
 #' @param BPPARAM parameter for \code{\link[BiocParallel]{BiocParallel}}
 #' @param p.cutoff default is 0.00005
 #' @return A list with a vector of peak indices for each motif.
@@ -39,6 +39,12 @@ get_motif_indices <- function(motifs,
                               genome =  BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, 
                               BPPARAM = BiocParallel::bpparam(), 
                               p.cutoff = 0.00005){
+  if (inherits(peaks,"fragmentCounts")){
+    peaks <- peaks@peaks
+  }
+  if (!inherits(peaks,"GenomicRanges")){
+    stop("peaks input must be fragmentCounts or GenomicRanges.")
+  }
   # If PFMatrixList or PFMatrix, convert to PWM
   if (inherits(motifs,"PFMatrixList")){
     motifs <- do.call(TFBSTools::PWMatrixList,lapply(motifs, TFBSTools::toPWM))
