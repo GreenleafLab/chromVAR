@@ -118,9 +118,57 @@ remove_nonoverlap <- function(x, to.keep){
   }
 } 
 
+# Modified tabulate funcion ----------------------------------------------------
+
+tabulate2<-function(x,min_val,max_val){
+  if (max_val <= min_val){
+    stop("max_val must be greater than min_val")
+  }
+  if (min_val<0 && max_val >0){
+    n = rev(tabulate(-1*(x))[1:(-min_val)])
+    p = tabulate(x)[1:max_val]
+    z = length(which(x == 0))
+    out = c(n,z,p)
+    out[which(is.na(out))] = 0
+    names(out)=min_val:max_val
+    return(out)}
+  else if (min_val==0 && max_val >0){
+    p = tabulate(x)[1:max_val]
+    z = length(which(x == 0))
+    out = c(z,p)
+    out[which(is.na(out))] = 0
+    names(out)=min_val:max_val
+    return(out)}
+  else if (min_val > 0 && max_val >0){
+    out = tabulate(x)[min_val:max_val]
+    out[which(is.na(out))] = 0
+    names(out)=min_val:max_val
+    return(out)
+  }
+  else if (min_val <0 && max_val == 0){
+    n = rev(tabulate(-1*(x))[1:(-min_val)])
+    z = length(which(x == 0))
+    out = c(n,z)
+    out[which(is.na(out))] = 0
+    names(out)=min_val:max_val
+    return(out)}
+  else if (min_val <0 && max_val < 0){
+    n = rev(tabulate(-1*(x))[1:(-min_val)])
+    out = n
+    out[which(is.na(out))] = 0
+    names(out)=min_val:max_val
+    return(out)}
+  else{
+    stop("something may be amiss with min_val or max_val")
+  }
+} 
 
 
+# Functions with ranges --------------------------------------------------------
 
+getstrand<- function(ranges){
+  return(as.character(BiocGenerics::strand(ranges)))
+}
 
 
 
