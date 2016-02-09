@@ -30,5 +30,7 @@ An S4 class to store chromVAAR result
 \item{\code{p_deviations}}{}
 
 \item{\code{p_variability}}{}
+
+\item{\code{intermediate_results}}{}
 }}
 

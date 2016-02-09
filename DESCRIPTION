@@ -40,6 +40,7 @@ Collate:
     'deviationResult.R'
     'deviationResultSet.R'
     'kmer.R'
+    'kmer_experimental.R'
     'legacy.R'
     'motifs.R'
     'peaks.R'

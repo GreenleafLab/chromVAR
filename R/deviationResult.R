@@ -9,6 +9,7 @@
 #' @slot metric
 #' @slot p_deviations
 #' @slot p_variability
+#' @slot intermediate_results
 #'
 #' @aliases deviations, variability, variability_bounds, name, metric, pvalues
 deviationResult <- setClass("deviationResult",
@@ -19,7 +20,8 @@ deviationResult <- setClass("deviationResult",
                                       metric = 'character',
                                       p_deviations = 'numeric',
                                       p_variability = 'numeric',
-                                      nresult = 'numeric'))
+                                      nresult = 'numeric',
+                                      intermediate_results = 'list'))
 
 
 

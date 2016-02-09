@@ -25,13 +25,16 @@ compute_variability <- function(motif_indices,
   validObject(counts_mat)
   stopifnot(ncol(counts_mat@background_peaks)>= niterations)
     
-  #check that indices fall within appropriate bounds
+  # check that indices fall within appropriate bounds
   tmp <- unlist(motif_indices, use.names =F)
   if (!(all.equal(tmp, as.integer(tmp))) ||
         max(tmp) > counts_mat@npeak ||
         min(tmp) < 1){
     stop("motif_indices are not valid")
   }
+  
+  # remove sets of length 0
+  motif_indices <- motif_indices[which(sapply(motif_indices,length)>0)]
   
   results <- deviationResultSet(BiocParallel::bplapply(motif_indices,
                                                       compute_deviations,
@@ -57,7 +60,8 @@ compute_variability <- function(motif_indices,
 compute_deviations <- function(peak_set, 
                                counts_mat, 
                                niterations = 50,
-                               metric = c("z-score","old")){
+                               metric = c("z-score","old"),
+                               intermediate_results = FALSE){
 
   metric <- match.arg(metric)
 
@@ -73,6 +77,9 @@ compute_deviations <- function(peak_set,
 
   res <- compute_var_metrics(observed, sampled_counts, counts_mat,
                              metric = metric)
+  
+  res@intermediate_results = list(observed = observed,
+                                  sampled_counts = sampled_counts)
 
   return(res)
 
