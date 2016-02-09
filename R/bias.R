@@ -59,13 +59,15 @@ make_bias_bins <- function(counts_mat, nbins = 25){
   tmp_count_bins = split(1:npeaks, count_cut)
   bias_count_bins = sapply(1:nbins, function(x) sapply(1:nbins, function(y) intersect(tmp_bias_bins[[y]], tmp_count_bins[[x]])))
   names(bias_count_bins) = sapply(1:nbins, function(x) sapply(1:nbins, function(y) paste("bias_count_bin_",x,"_",y,sep="",collapse="")))
-  return(c(bias_bins, count_bins, bias_count_bins))
+  tmp = c(bias_bins, count_bins, bias_count_bins)
+  out = lapply(tmp, function(x) sample(x, size = length(x)/3))
+  return(out)
 }
 
 #' @keywords internal
 #' @export
-make_permuted_sets <- function(counts_mat, motif_indices, window = 10, BPPARAM = BPPARAM){
-  bg <- getBackgroundPeakSets(counts_mat, niterations = 1, window = window, BPPARAM = BPPARAM)
+make_permuted_sets <- function(counts_mat, motif_indices, window = 10){
+  bg <- getBackgroundPeakSets(counts_mat, niterations = 1, window = window)
   sets <- lapply(seq_along(motif_indices), function(x) bg@background_peaks[motif_indices[[x]],1])
   names(sets) <- sapply(names(motif_indices), function(x) paste("permuted_",x,collapse=""))
   return(sets)

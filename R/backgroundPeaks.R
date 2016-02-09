@@ -51,7 +51,12 @@ getBackgroundPeakSets <- function(counts_mat, niterations = 50, window = 500, wi
   chol_cov_mat <- chol(cov(norm_mat))
   tmp_vals <- t(forwardsolve(t(chol_cov_mat),t(reflected$data)))  
   nns <- FNN::get.knn(tmp_vals, k = window)$nn.index
-  counts_mat@background_peaks <- t(apply(nns[1:length(counts_mat@peaks),], 1, function(x) reflected$replace(sample(x, niterations, replace = with_replacement))))
+  if (niterations == 1){
+    counts_mat@background_peaks <- matrix(apply(nns[1:length(counts_mat@peaks),], 1, function(x) reflected$replace(sample(x, niterations, replace = with_replacement))),
+                                          ncol = 1)
+  } else{
+    counts_mat@background_peaks <- t(apply(nns[1:length(counts_mat@peaks),], 1, function(x) reflected$replace(sample(x, niterations, replace = with_replacement))))
+  }
   return(counts_mat)
 }
 
