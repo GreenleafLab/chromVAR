@@ -1,24 +1,117 @@
 
-match_kmers <- function(kmers, seqs, tb.start = NA, tb.end = NA, max.mismatch = NA){
-  stopifnot(all_false(duplicated(kmers)))
+get_kmer_positions <- function(kmer, peaks, seqs){
+  matches <- Biostrings::vmatchPattern(Biostrings::DNAString(kmer), seqs, fixed=FALSE)
+  rc_matches <- Biostrings::vmatchPattern(Biostrings::reverseComplement(Biostrings::DNAString(kmer)), seqs, fixed=FALSE)
+  
+  tmp1 <- elementLengths(matches)
+  tmp2 <-  unlist(sapply(1:length(peaks), function(x) rep(x,tmp1[x])), use.names=F)
+  f_pos <- resize(shift(peaks[tmp2],shift = start(unlist(matches)))+1,width = 1)
+  BiocGenerics::strand(f_pos) <- "+"
+  
+  tmp1 <- elementLengths(rc_matches)
+  tmp2 <-  unlist(sapply(1:length(peaks), function(x) rep(x,tmp1[x])), use.names=F)
+  r_pos <- resize(shift(peaks[tmp2], shift = start(unlist(rc_matches)) -1),width = 1)
+  BiocGenerics::strand(r_pos) <- "-"  
+  
+  return(BiocGenerics::sort(c(f_pos, r_pos)))
+}
+
+get_kmer_to_kmer_dist <- function(kmer1, kmer2, peaks, seqs, all_seqs, max_dist = 25){
+  
+  ranges1 <- get_kmer_positions(kmer1, peaks, seqs)
+  ranges2 <- get_kmer_positions(kmer2, peaks, seqs)
+  
+  ranges1_mod = ranges1
+  BiocGenerics::strand(ranges1_mod)="*"
+  close = as.data.frame(findOverlaps(ranges1_mod, ranges2, maxgap = max_dist, select="all", type="any"))
+  ss = which(getstrand(ranges1[close$queryHits]) == getstrand(ranges2[close$subjectHits]) )
+  ds = which(getstrand(ranges1[close$queryHits]) != getstrand(ranges2[close$subjectHits]) )
+  
+  dists_f = ifelse(getstrand(ranges1[close[ss,1]]) == "-", 
+           BiocGenerics::start(ranges1[close[ss,1]]) - BiocGenerics::start(ranges2[close[ss,2]]),
+           BiocGenerics::start(ranges2[close[ss,2]]) - BiocGenerics::start(ranges1[close[ss,1]]))
+  
+  dists_r = ifelse(getstrand(ranges1[close[ds,1]]) == "-", 
+           BiocGenerics::start(ranges1[close[ds,1]]) - BiocGenerics::start(ranges2[close[ds,2]]),
+           BiocGenerics::start(ranges2[close[ds,2]]) - BiocGenerics::start(ranges1[close[ds,1]]))
+  
+  
+  
+  expected = rep(sum(vcountPattern(kmer2, all_seqs))/ sum(width(all_seqs)-nchar(kmer2)+1) * length(ranges1), 2* max_dist +1)
+  expected_rc = expected
+  
+  out = list(forward = tabulate2(dists_f, max_val = max_dist, min_val = -max_dist), 
+              reverse_complement = tabulate2(dists_r, max_val = max_dist, min_val = -max_dist))
+  
+  for (i in -(nchar(kmer1)-1):(nchar(kmer1)-1)){
+    if (out$forward[as.character(i)] > 0 ){
+      if (i < 0){
+        tmp_mer = substr(kmer2, 1, nchar(kmer2) + i)
+        expected[max_dist + i + 1] = sum(vcountPattern(tmp_mer, all_seqs))/ sum(width(all_seqs)-nchar(tmp_mer)+1) * length(ranges1)
+      } else if (i > 0){
+        tmp_mer = substr(kmer2, nchar(kmer2) -i, nchar(kmer2))
+        expected[max_dist + i + 1] = sum(vcountPattern(tmp_mer, all_seqs))/ sum(width(all_seqs)-nchar(tmp_mer)+1) * length(ranges1)       
+      } else{
+        expected[max_dist + 1] = length(ranges1) 
+      }
+    }
+    if (out$reverse[as.character(i)] > 0 ){
+      rev_kmer2 = get_reverse_complement(kmer2)
+      if (i < 0){
+        tmp_mer = substr(rev_kmer2, 1, nchar(rev_kmer2) + i)
+        expected_rc[max_dist + i + 1] = sum(vcountPattern(tmp_mer, all_seqs))/ sum(width(all_seqs)-nchar(tmp_mer)+1) * length(ranges1)
+      } else if (i > 0){
+        tmp_mer = substr(rev_kmer2, nchar(rev_kmer2) - i, nchar(rev_kmer2))
+        expected_rc[max_dist + i + 1] = sum(vcountPattern(tmp_mer, all_seqs))/ sum(width(all_seqs)-nchar(tmp_mer)+1) * length(ranges1)       
+      } else{
+        expected_rc[max_dist + 1] = length(ranges1) 
+      }
+    }  
+  }
+  
+  out$forward = -1 * ppois(out$forward,expected, lower.tail = FALSE,log.p=TRUE)
+  out$reverse_complement = -1 * ppois(out$reverse_complement,expected_rc, lower.tail = FALSE,log.p=TRUE)
+  
+  return(out)
+}
+  
+
+get_sequence_flanking_kmer <- function(kmer, 
+                                       peaks, 
+                                       genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, 
+                                       flank = 5){
+  
+  seqs = Biostrings::getSeq(genome, peaks)
+
+  matches <- Biostrings::vmatchPattern(Biostrings::DNAString(kmer), seqs, fixed=FALSE)
+  rc_matches <- Biostrings::vmatchPattern(Biostrings::reverseComplement(Biostrings::DNAString(kmer)), seqs, fixed=FALSE)
+  
+  tmp1 <- elementLengths(matches)
+  tmp2 <-  unlist(sapply(1:length(peaks), function(x) rep(x,tmp1[x])), use.names=F)
+  f_seqs <- Biostrings::getSeq(genome,resize(shift(peaks[tmp2], 
+                                                   shift = start(unlist(matches)) - flank - 1), 
+                                             width = flank*2 + 1 + nchar(kmer)))
+  tmp1 <- elementLengths(rc_matches)
+  tmp2 <-  unlist(sapply(1:length(peaks), function(x) rep(x,tmp1[x])), use.names=F)
+  r_seqs <- Biostrings::reverseComplement(Biostrings::getSeq(genome,resize(shift(peaks[tmp2], 
+                                                   shift = start(unlist(rc_matches)) - flank - 2), 
+                                             width = flank*2 + 1 + nchar(kmer))))
+  return(c(f_seqs,r_seqs))
+  
+}
+
+
+match_kmers <- function(kmers, seqs, var = FALSE){
   if (is.character(kmers)) kmers = Biostrings::DNAStringSet(kmers)
   stopifnot(inherits(kmers,"DNAStringSet"))
-  ##Make PDict
-  if (is.na(tb.start)){
+  if (!all_true(width(kmers) == width(kmers[1])) || var){
+    indices  <- Biostrings::vwhichPDict(kmers,seqs, fixed = FALSE)
+    indices_rc <- Biostrings::vwhichPDict(kmers,Biostrings::reverseComplement(seqs), fixed = FALSE)
+  } else {
     pd <- Biostrings::PDict(kmers)
     indices  <- Biostrings::vwhichPDict(pd,seqs)
     indices_rc <- Biostrings::vwhichPDict(pd,Biostrings::reverseComplement(seqs))
-  } else{
-    pd <- Biostrings::PDict(kmers, tb.start = tb.start, tb.end = tb.end)
-    indices  <- Biostrings::vwhichPDict(pd,
-                                        seqs,
-                                        fixed="subject",
-                                        max.mismatch = max.mismatch)
-    indices_rc <- Biostrings::vwhichPDict(pd,
-                                          Biostrings::reverseComplement(seqs),
-                                          fixed="subject",
-                                          max.mismatch = max.mismatch)
-  }
+  } 
   indices <- merge_lists(indices, indices_rc, by = "order")
   indices <- lapply(indices, unique)
 
@@ -31,8 +124,6 @@ match_kmers <- function(kmers, seqs, tb.start = NA, tb.end = NA, max.mismatch = 
   names(out) <- as.character(kmers)
   return(out)
 }
-
-
 
 
 #' @export
@@ -56,620 +147,192 @@ get_kmer_indices <- function(peaks,
   return(out)
 }
 
-# k-mer alignment --------------------------------------------------------------
-
-kmer_dist <- function(kmers){
-  out = as.matrix(Biostrings::stringDist(kmers))
-  for (i in seq_along(kmers)){
-    tmp = kmers
-    tmp[[i]] <- Biostrings::reverseComplement(tmp[[i]])
-    tmp_dist = as.matrix(Biostrings::stringDist(tmp))
-    out[,i] = mapply(min, out[,i], tmp_dist[,i])
-    out[i,] = mapply(min, out[i,], tmp_dist[i,])
-  }
-  as.dist(out)
-}
-
-kmer_overlap_dist <- function(kmers, kmer = NULL){
-  if (is.character(kmers)) kmers = Biostrings::DNAStringSet(kmers)
-  if (is.null(kmer)){
-    out = as.matrix(Biostrings::stringDist(kmers, method = "substitutionMatrix",
-                                           substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1,
-                                                                                                         mismatch = 0,
-                                                                                                         baseOnly = FALSE,
-                                                                                                         type = "DNA"),
-                                           type="overlap",gapOpening=-Inf))
-    for (i in seq_along(kmers)){
-      tmp = kmers
-      tmp[[i]] <- Biostrings::reverseComplement(tmp[[i]])
-      tmp_dist = as.matrix(Biostrings::stringDist(tmp, method = "substitutionMatrix",
-                                                  substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1,
-                                                                                                                mismatch = 0,
-                                                                                                                baseOnly = FALSE,
-                                                                                                                type = "DNA"),
-                                                  type="overlap",gapOpening=-Inf))
-      out[,i] = mapply(max, out[,i], tmp_dist[,i])
-      out[i,] = mapply(max, out[i,], tmp_dist[i,])
-      out[i,i] = Biostrings::nchar(kmers[[i]])
-    }
-  } else {
-    if (is.character(kmer)) kmer = Biostrings::DNAStringSet(kmer)
-    stopifnot(inherits(kmer,"DNAStringSet"))
-    tmp1 = sapply(kmers, function(x)
-      Biostrings::pairwiseAlignment(kmer,
-                                    x,
-                                    substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1,
-                                                                                                  mismatch = 0,
-                                                                                                  baseOnly = FALSE,
-                                                                                                  type = "DNA"),
-                                    type="overlap",gapOpening=-Inf, scoreOnly = TRUE))
-    tmp2 = sapply(kmers, function(x)
-      Biostrings::pairwiseAlignment(Biostrings::reverseComplement(kmer),
-                                    x,
-                                    substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1,
-                                                                                                  mismatch = 0,
-                                                                                                  baseOnly = FALSE,
-                                                                                                  type = "DNA"),
-                                    type="overlap",gapOpening=-Inf, scoreOnly = TRUE))
-    out = mapply(max,tmp1,tmp2)
-  }
-  out
-}
-
-
-
-
-
-kmer_overlap_match <- function(kmers, kmer = NULL){
-  if (is.character(kmers)) kmers = Biostrings::DNAStringSet(kmers)
-  if (is.null(kmer)){
-    out = as.matrix(Biostrings::stringDist(kmers, method = "substitutionMatrix",
-                                         substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1,
-                                                                                                       mismatch = -Inf,
-                                                                                                       baseOnly = FALSE,
-                                                                                                       type = "DNA"),
-                                         type="overlap",gapOpening=-Inf))
-    for (i in seq_along(kmers)){
-      tmp = kmers
-      tmp[[i]] <- Biostrings::reverseComplement(tmp[[i]])
-      tmp_dist = as.matrix(Biostrings::stringDist(tmp, method = "substitutionMatrix",
-                                                substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1,
-                                                                                                              mismatch = -Inf,
-                                                                                                              baseOnly = FALSE,
-                                                                                                              type = "DNA"),
-                                                type="overlap",gapOpening=-Inf))
-      out[,i] = mapply(max, out[,i], tmp_dist[,i])
-      out[i,] = mapply(max, out[i,], tmp_dist[i,])
-      out[i,i] = Biostrings::nchar(kmers[[i]])
-    }
-  } else {
-      if (is.character(kmer)) kmer = Biostrings::DNAStringSet(kmer)
-      stopifnot(inherits(kmer,"DNAStringSet"))
-      tmp1 = sapply(kmers, function(x)
-                  Biostrings::pairwiseAlignment(kmer,
-                                    x,
-                                    substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1,
-                                                                                                  mismatch = -Inf,
-                                                                                                  baseOnly = FALSE,
-                                                                                                  type = "DNA"),
-                                    type="overlap",gapOpening=-Inf, scoreOnly = TRUE))
-      tmp2 = sapply(kmers, function(x)
-      Biostrings::pairwiseAlignment(Biostrings::reverseComplement(kmer),
-                                    x,
-                                    substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1,
-                                                                                                  mismatch = -Inf,
-                                                                                                  baseOnly = FALSE,
-                                                                                                  type = "DNA"),
-                                    type="overlap",gapOpening=-Inf, scoreOnly = TRUE))
-      out = mapply(max,tmp1,tmp2)
-  }
-  out
-}
-
-
-
-
-extend_kmer <- function(kmer, sets, counts_mat, bg_peaks,
-                        diff = 2,
-                        niterations = 50,
-                        BPPARAM = BiocParallel::bpparam()){
-
-  ## Get kmers that overlap
-  min_overlap = nchar(kmer) - diff
-  kmer_dists = kmer_overlap_match(names(sets), kmer)
-  close = which(kmer_dists >= min_overlap)
-  if (length(close) >= 2){
-    tmpsets = remove_nonoverlap(sets[close], kmer)
-    tmpresults <- compute_variability(tmpsets, counts_mat, bg_peaks, niterations = niterations,
-                                    BPPARAM = BPPARAM)
-    tmpvar <- variability(tmpresults)
-
-    setlen = sapply(tmpsets,length)
-    nbg = 50
-    bgsets <- unlist(lapply(setlen, function(x) lapply(1:nbg, function(y) sample(sets[[kmer]], x, replace=FALSE))), recursive = F)
-
-    bgresults <- compute_variability(bgsets, counts_mat, bg_peaks, niterations = niterations,
-                                   BPPARAM = BPPARAM)
-    bgvar <- variability(bgresults)
-
-    var_boost <- sapply(seq_along(tmpvar),
-                      function(x) (tmpvar[x] - mean(bgvar[((x-1)*nbg+1):(x*nbg)]))/
-                        sd(bgvar[((x-1)*nbg+1):(x*nbg)])  )
-    var_boost <- pnorm(var_boost, lower.tail = FALSE)
-    out_ix <- which(var_boost < 0.05)
-    out = var_boost[out_ix]
-    names(out) = names(tmpsets[out_ix])
-    return(out)
-  } else{
-    return(NULL)
-  }
-}
-
-
-add_left <- function(letter, kmer, gap = 0){
-  return(BiocGenerics::paste(c(letter,rep("N",gap),kmer),collapse=""))
-}
-
-add_right <- function(letter, kmer, gap = 0){
-  return(BiocGenerics::paste(c(kmer,rep("N",gap),letter),collapse=""))
-}
-
-#' @export
-extend_kmer2 <- function(kmer, set, counts_mat, bg_peaks, seqs, 
-                        max_extend = 3,
-                        niterations = 50,
-                        p.cutoff = 0.01,
-                        BPPARAM = BiocParallel::bpparam()){
-
-  nucs = c("A","C","G","T")
-  ntest = max_extend * 2 * 4
-  p.cutoff = p.cutoff / ntest
-  i = 1
-  kmer_head = rep("N",max_extend)
-  kmer_tail = rep("N", max_extend)
-  while (i <= max_extend){
-    #left
-    candidates = sapply(nucs, add_left, kmer, i-1)
-    tmpsets = match_kmers(candidates, seqs, tb.start = i + 1, tb.end = i + nchar(kmer), max.mismatch = i-1)
-    var_boost <- get_variability_boost(set,tmpsets,counts_mat,bg_peaks, niterations, BPPARAM)
-    left_boost <- nucs[which(var_boost < p.cutoff)]
-    if (length(left_boost)>0){
-      kmer_head[max_extend - i + 1] = Biostrings::consensusString(left_boost,
-                                                            ambiguityMap=Biostrings::IUPAC_CODE_MAP,
-                                                            threshold = 0.25)
-    }
-    #right
-    candidates = sapply(nucs, add_right, kmer, i-1)
-    tmpsets = match_kmers(candidates, seqs, tb.start = 1, tb.end = nchar(kmer), max.mismatch = i-1)
-    var_boost <- get_variability_boost(set,tmpsets,counts_mat,bg_peaks, niterations, BPPARAM)
-    right_boost <- nucs[which(var_boost< p.cutoff)]
-    if (length(right_boost)>0){
-      kmer_tail[i] = Biostrings::consensusString(right_boost,
-                                                            ambiguityMap=Biostrings::IUPAC_CODE_MAP,
-                                                            threshold = 0.25)
-    }
-    i = i +1
-  }
-  if (!all_true(kmer_head == "N")){
-    kmer_head = BiocGenerics::paste(kmer_head[(which(kmer_head != "N")[1]):(length(kmer_head))],
-                                    collapse="")
-  } else{
-    kmer_head =""
-  }
-  if (!all_true(kmer_tail == "N")){
-    kmer_tail = BiocGenerics::paste(kmer_tail[1:(rev(which(kmer_tail != "N"))[1])],
-                                    collapse="")
-  } else{
-    kmer_tail =""
-  }
-  return(list(head = kmer_head, tail = kmer_tail))}
-
-
-#' @export
-extend_kmer3 <- function(kmer, set, counts_mat, bg_peaks, seqs, 
-                         max_extend = 3,
-                         niterations = 50,
-                         p.cutoff = 0.01,
-                         BPPARAM = BiocParallel::bpparam()){
-  stopifnot(length(seqs) == length(set))
-  nucs = c("A","C","G","T")
-  ntest = max_extend * 2 * 4
-  p.cutoff = p.cutoff / ntest
-  i = 1
-  kmer_head = rep("N",max_extend)
-  kmer_tail = rep("N", max_extend)
-  tmpsets = list()
-  while (i <= max_extend){
-    #left
-    candidates = sapply(nucs, add_left, kmer, i-1)
-    tmpsets = c(tmpsets,match_kmers(candidates, seqs, tb.start = i + 1, tb.end = i + nchar(kmer), max.mismatch = i-1))
-    #right
-    candidates = sapply(nucs, add_right, kmer, i-1)
-    tmpsets = c(tmpsets,match_kmers(candidates, seqs, tb.start = 1, tb.end = nchar(kmer), max.mismatch = i-1))
-    i = i + 1
-  }
-  tmpsets = lapply(tmpsets, function(x) set[x])
-  var_boost <- get_variability_boost(set,tmpsets,counts_mat,bg_peaks, niterations, BPPARAM)
-  i = 1
-  while (i <= max_extend){
-    left_boost <- nucs[which(var_boost[(8*(i-1)+1):(8*(i-1)+4)] < p.cutoff)]
-    if (length(left_boost)>0){
-      kmer_head[max_extend - i + 1] = Biostrings::consensusString(left_boost,
-                                                                  ambiguityMap=Biostrings::IUPAC_CODE_MAP,
-                                                                  threshold = 0.25)
-    }
-    right_boost <- nucs[which(var_boost[(8*(i-1)+5):(8*(i-1)+8)] < p.cutoff)]
-    if (length(right_boost)>0){
-      kmer_tail[i] = Biostrings::consensusString(right_boost,
-                                                 ambiguityMap=Biostrings::IUPAC_CODE_MAP,
-                                                 threshold = 0.25)
-    }
-    i = i +1
-  }
-  if (!all_true(kmer_head == "N")){
-    kmer_head = BiocGenerics::paste(kmer_head[(which(kmer_head != "N")[1]):(length(kmer_head))],
-                                    collapse="")
-  } else{
-    kmer_head =""
-  }
-  if (!all_true(kmer_tail == "N")){
-    kmer_tail = BiocGenerics::paste(kmer_tail[1:(rev(which(kmer_tail != "N"))[1])],
-                                    collapse="")
-  } else{
-    kmer_tail =""
-  }
-  return(list(head = kmer_head, tail = kmer_tail))}
-
-
-
 
 #' @export
 get_similar_kmers <- function(kmer, kmers, cutoff = 4){
-  dists = kmer_overlap_dist(kmers,kmer)
-  return(kmers[which(dists >= cutoff)])
+  a = get_kmer_alignment(kmers,kmer, mismatch = 0, minimum = cutoff)
+  return(unique(a$input))
 }
 
 #' @export
 get_overlapping_kmers <- function(kmer, kmers, cutoff = 2){
-  dists = kmer_overlap_match(kmers,kmer)
-  return(kmers[which(dists >= cutoff)])
-}
-
-cor_helper <- function(a, b, ...){
-  res = cor.test(a, b,...)
-  return(c(r = res$estimate[[1]],p = res$p.value))
+  a = get_kmer_alignment(kmers,kmer, mismatch = -Inf, minimum = cutoff)
+  return(unique(a$input))
 }
 
 #' @export
-get_correlated_results <- function(name, results, p.cutoff = 0.01, corr.cutoff = 0.5){
-  mat = deviations(results)
-  ix = which(names(results) == name)
-  pcors = apply(mat, 1, function(x) cor_helper(x, mat[ix,],alternative = "greater"))
-  sig = intersect(which(pcors["p",] < 0.01), which(pcors["r",] > corr.cutoff))
-  return(names(results)[sig[sig != ix]])
-}
-
-
-#' @export
-get_associated_kmers <- function(kmer,
-                                 sets,
-                                 results,
-                                 counts_mat,
-                                 bg_peaks,
-                                 seqs,
-                                 max_extend = 3,
-                                 niterations = 50,
-                                 p.cutoff = 0.01,
-                                 k.cutoff = 4,
-                                 BPPARAM = BiocParallel::bpparam()){
-
-  #Step -1: get extended kmer
-  extensions = extend_kmer3(kmer,
-                            sets[[kmer]],
-                            counts_mat,
-                            bg_peaks,
-                            seqs,
-                            max_extend = max_extend,
-                            niterations = niterations,
-                            p.cutoff = p.cutoff,
-                            BPPARAM = BPPARAM)
-  ekmer = BiocGenerics::paste(extensions[["head"]],kmer,extensions[["tail"]], collapse="",sep="")
-
-  if (length(sets) >1){
-    #Step 0: Test sequence similarity
-    sim_seqs = get_similar_kmers(ekmer, names(sets), cutoff = k.cutoff)
-    #overlap_seqs = get_overlapping_kmers(kmer, names(sets), cutoff = 2)
-    #candidates1 = sim_seqs[which(sim_seqs %ni% overlap_seqs)]
-    #candidates2 = sim_seqs[which(sim_seqs %in% overlap_seqs)]
-
-    #Step 1: Test Correlation for non-overlapping but similar kmers
-    cor_res = get_correlated_results(kmer, results[sim_seqs], p.cutoff = p.cutoff)
-
-    #Step 2: Test Correlation for overlapping kmers
-    #tmpsets <- remove_nonoverlap(sets[candidates2], kmer)
-    #var_boost <- get_variability_boost(sets[[kmer]],tmpsets, counts_mat, bg_peaks, niterations, BPPARAM)
-    #var_boost <- pnorm(var_boost, lower.tail = FALSE)
-    #boosters <- names(var_boost)[which(var_boost <= (p.cutoff / length(tmpsets)))]
-    #cor_res2 = get_correlated_results(kmer, results[candidates2], p.cutoff = p.cutoff)
-    
-    #return...
-    out <- list(kmer = kmer, ekmer = ekmer, similar = cor_res)
-  } else {
-    out <- list(kmer = kmer, ekmer = ekmer, similar = NULL)
+make_kmer_group <- function(seed, results, sets, counts_mat, minScore = nchar(seed)-2){
+  candidates = get_correlated_results(seed, results)
+  indep_var = get_independent_variability(to.remove = sets[[seed]],
+                                          sets = sets[candidates],
+                                          counts_mat = counts_mat)
+  indep = which(get_pvalues(indep_var) < 0.05)
+  dep = which(get_pvalues(indep_var) >= 0.05)
+  var_boost = get_variability_boost(sets[[seed]], sets[candidates[dep]], counts_mat)
+  boost = dep[which(pnorm(var_boost,lower.tail=FALSE) < 0.05)]
+  #align non-independent, not allowing mismatches
+  a = get_kmer_alignment(kmers = c(seed ,candidates[boost]), reference = seed, mismatch = -100)    
+  #align independent, allowing mismatches
+  if (length(indep) >0){
+      a = rbind(a, get_kmer_alignment(kmers = candidates[indep], reference = seed, mismatch = 0))
   }
-
-  return(out)
-
-}
-
-#' @export
-group_kmers <- function(sets,
-                                 results,
-                                 counts_mat,
-                                 bg_peaks,
-                                 max_extend = 3,
-                                 genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
-                                 niterations = 50,
-                                 p.cutoff = 0.01,
-                                 k.cutoff = 4,
-                                 BPPARAM = BiocParallel::bpparam()){
-
-  if (length(sets) != length(results) || !all_true(all.equal(sort(names(sets)),sort(names(results))))){
-    warning("Names of sets and results not the same... using intersection")
-    common_names <- intersect(names(sets),names(results))
-    sets <- sets[common_names]
-    results <- results[common_names]
-  }
-  
-  p <- get_pvalues(results, adjust = TRUE)
-  #order by pvalues...
-  candidates <- names(p)[sort(p, index.return=T)$ix]
-  out <- list()
-  seqs <- Biostrings::getSeq(genome, counts_mat@peaks)
-  while (length(candidates)>0){
-    kmer_assoc = get_associated_kmers(candidates[1], sets[candidates], results[candidates], counts_mat, bg_peaks, seqs[sets[[candidates[1]]]], max_extend, niterations, p.cutoff, k.cutoff, BPPARAM)
-    toremove <- c(kmer_assoc$kmer, kmer_assoc$similar, kmer_assoc$boost)
-    candidates <- candidates[which(candidates %ni% toremove)]
-    out = c(out, list(kmer_assoc))
-    print(length(candidates))
-    print(candidates)
-  }
-  names(out) <- sapply(out, function(obj) obj$kmer)
+  highscore = which(a$score >= minScore)
+  consensus = Biostrings::consensusString(Biostrings::DNAStringSet(a$kmer[highscore]),
+                                        shift = a$shift[highscore] - min(a$shift[highscore]), 
+                                        threshold = 1/length(highscore))
+  rc_kmers = unique(get_reverse_complement(a$kmer))
+  rc_kmers = rc_kmers[rc_kmers %ni% a$kmer]
+  a2 = get_kmer_alignment(kmers = c(a$kmer, rc_kmers), reference = consensus, mismatch = -100, both_strands = FALSE)
+  a2 = a2[which(a2$score >= minScore),]
+  a2$shift = a2$shift - a2$shift[which(a2$kmer == seed)]
+  seed_block = a2[which(a2$kmer == seed),]
+  forward_block = a2[intersect(which(a2$kmer != seed),which(a2$kmer %in% a$kmer)),]
+  reverse_block = a2[which(a2$kmer %in% rc_kmers),]
+  out = rbind(seed_block,
+              forward_block[order(forward_block$score),],
+              reverse_block[order(reverse_block$score),])
   return(out)
 }
 
 
 
-
 #' @export
-make_motif_from_kmer_group <- function(kmer_group){
-  shifts = c(get_kmer_alignment(kmer_group$kmer, kmer_group$ekmer)$shift)
-  kmers = c(kmer_group$kmer)
-  for (i in kmer_group$boost){
-    al = get_kmer_alignment(i, kmer_group$ekmer)
-    shifts = c(shifts, al$shift)
-    kmers = c(kmers, al$kmer)
-  }
-  for (i in kmer_group$indep){
-    al = get_kmer_alignment(i, kmer_group$ekmer)
-    shifts = c(shifts, al$shift)
-    kmers = c(kmers, al$kmer)
-  }
-  out = Biostrings::consensusMatrix(Biostrings::DNAStringSet(kmers),as.prob=FALSE,shift = shifts)[1:4,]
-  out = out / max(colSums(out))
-  out = out + matrix((1-colSums(out))/4, byrow = TRUE, ncol = ncol(out), nrow = nrow(out))
-  return(out)}
-
-#' @export
-plot_kmer_group <- function(kmer_group, motif_list = NULL, top.motifs = 3){
-  l = (length(kmer_group$similar) + length(kmer_group$boost) + 5)*2
-  anno_df = data.frame(x = 0, y = l, label = "seed\nkmer")
-  p  = ggplot() + ggmotif(kmer_group$kmer, y.pos = l)
-  l = l - 3
-  a = get_kmer_alignment(kmer_group$kmer, kmer_group$ekmer)$shift
-  p  = p + ggmotif(kmer_group$ekmer, y.pos = l, x.pos = 1-a)
-  anno_df = rbind(anno_df, data.frame(x = 0, y = l, label = "extended\nkmer"))
-  l = l - 3
-#   anno_df = rbind(anno_df, data.frame(x = 0, y = l, label = "overlapping kmers\nthat boost variability"))
-#   for (i in kmer_group$boost){
-#     al = get_kmer_alignment(i, kmer_group$ekmer)
-#     p = p + ggmotif(al$kmer, y.pos = l, x.pos = al$shift - a)
-#     l = l-1.5
-#   }
-#   l = l - 1.5
-  anno_df = rbind(anno_df, data.frame(x = 0, y = l, label = "similar\nvariable kmers"))
-  for (i in kmer_group$similar){
-    al = get_kmer_alignment(i, kmer_group$ekmer)
-    p = p + ggmotif(al$kmer, y.pos = l, x.pos = al$shift - a)
-    l = l-1.5
+plot_kmer_group <- function(a, motif_list = NULL, top.motifs = 3, plot.consensus = TRUE){
+  p = ggplot()
+  for (i in 1:nrow(a)){
+    p = p + ggmotif(a$kmer[i], y.pos = (nrow(a)-i)*1.25, x.pos = a$shift[i])
+  }  
+  anno_df = data.frame(y = (nrow(a)-1)*1.25+0.5, label = "K-mers")
+  if (plot.consensus){  
+    consensus = Biostrings::consensusMatrix(Biostrings::DNAStringSet(a$kmer),
+                                            shift = a$shift - min(a$shift))[1:4,]
+    consensus_shift = align_pwms(consensus, seq_to_pwm(a$kmer[1]), both_strands = FALSE)$pos
+    tmp_y = min(sapply(ggplot_build(p)$data, function(obj) min(obj$y))) - 2
+    p = p + ggmotif(consensus / max(consensus), 
+                    y.pos = tmp_y, 
+                    x.pos = consensus_shift)
+    anno_df = rbind(anno_df, data.frame(y = tmp_y + 0.5, label = "Consensus"))
   }
   if (!is.null(motif_list)){
-    l = l - 1.5
-    anno_df = rbind(anno_df, data.frame(x = 0, y = l, label = "similar motifs"))
-    motif_matches <- TFBSTools::PFMSimilarity(motif_list, kmer_group$ekmer)
-    scores <- sapply(motif_matches, function(x) x["relScore"])
-    for (motif in names(motif_matches)[sort(scores, decreasing = TRUE, index.return=TRUE)$ix[1:top.motifs]]){
-      m = as.matrix(motif_list[[motif]]@profileMatrix)
+    if (!plot.consensus){
+      consensus = Biostrings::consensusMatrix(Biostrings::DNAStringSet(a$kmer),
+                                              shift = a$shift - min(a$shift))[1:4,]
+      consensus_shift = align_pwms(consensus, seq_to_pwm(a$kmer[1]), both_strands = FALSE)$pos
+    }
+    similar_motifs = get_similar_motifs(consensus, motif_list, top.motifs)
+    tmp_y = min(sapply(ggplot_build(p)$data, function(obj) min(obj$y))) - 2
+    for (i in 1:length(similar_motifs)){
+      m = as.matrix(similar_motifs[[i]])
       m = m / matrix(colSums(m), byrow = FALSE, nrow = nrow(m), ncol=ncol(m))
-      al = get_kmer_alignment(Biostrings::consensusString(m,ambiguityMap=Biostrings::IUPAC_CODE_MAP, threshold = 0.25), kmer_group$ekmer)
-      p = p + ggmotif(m, y.pos = l, x.pos = al$shift - a)
-      l = l - 1.5
+      m2 = m + 0.1
+      m2 = m2 / matrix(colSums(m2), byrow = TRUE, nrow = nrow(m2), ncol= ncol(m2))
+      m2 = log(m2/0.25)
+      tmp_a = align_pwms(m2, consensus, both_strands = TRUE)
+      tmp_shift = tmp_a$pos[1] + consensus_shift
+      if (tmp_a$strand[1] == -1) m = Biostrings::reverseComplement(m)
+      p = p + ggmotif(m, 
+                      y.pos = tmp_y - (i-1) * 1.25, 
+                      x.pos = tmp_shift)
+      anno_df = rbind(anno_df, data.frame(y = tmp_y - (i-1) * 1.25 + 0.5, label = name(similar_motifs[[i]])))
     }
   }
-  minxval  = min(sapply(ggplot_build(p)$data, function(obj) min(obj$x)))
-  maxxval  = max(sapply(ggplot_build(p)$data, function(obj) max(obj$x)))
-  xbreaks = ceiling(minxval):floor(maxxval)
-  anno_df$x = minxval - 0.5
-  #p = p + geom_text(data = anno_df, mapping = aes(x = x, y = y, label = label), hjust = 1, vjust =0)
-
-  return(p + ggmotif_scale() + ggmotif_theme() +
-           scale_x_continuous(breaks = xbreaks) +
-           scale_y_continuous(breaks = anno_df$y, labels = anno_df$label) +
+  
+  out = p + ggmotif_scale() + ggmotif_theme() +
+           scale_x_continuous(breaks = 0:max(sapply(1:nrow(a), function(x) nchar(a$kmer[x]) + a$shift[x]))) +
+            scale_y_continuous(breaks = anno_df$y, labels = anno_df$label) +
            xlab("position relative to start of seed kmer (bp)") +
-           theme(axis.line.y = element_blank(),
+           theme(axis.line = element_blank(),
+                 axis.text.x = element_blank(),
                  axis.text.y = element_text(face="bold",size=12),
-                 axis.ticks.y = element_blank(),
-                 axis.title.y = element_blank()))
+                 axis.ticks = element_blank(),
+                 axis.title = element_blank())
+  
+  return(out)
 }
+  
 
-
-get_motif_list <- function(species = 'Homo sapiens', collection = "CORE", ...){
-  opts = list()
-  opts['species'] = species
-  opts['collection'] = collection
-  opts = c(opts, list(...))
-  TFBSTools::getMatrixSet(JASPAR2014::JASPAR2014, opts)
-}
-
-
-#PFMatrixList = get_motif_list()
-
-
-
-get_kmer_alignment<- function(kmer, reference){
-  if (is.character(kmer)) kmer = Biostrings::DNAString(kmer)
-        tmp1 = Biostrings::pairwiseAlignment(reference,
-                                    kmer,
-                                    substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1,
-                                                                                                  mismatch = 0,
-                                                                                                  baseOnly = FALSE,
-                                                                                                  type = "DNA"),
-                                    type="overlap",gapOpening=-Inf)
-        tmp2 = Biostrings::pairwiseAlignment(reference,Biostrings::reverseComplement(kmer),
-                                    substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1,
-                                                                                                  mismatch = 0,
-                                                                                                  baseOnly = FALSE,
-                                                                                                  type = "DNA"),
-                                    type="overlap",gapOpening=-Inf)
-        if (Biostrings::score(tmp1) >= Biostrings::score(tmp2)){
-          al_start = Biostrings::start(Biostrings::aligned(tmp1,degap=TRUE))
-          return(list(kmer = as.character(kmer), shift = al_start))
-        } else if (Biostrings::score(tmp1) < Biostrings::score(tmp2)){
-          al_start = Biostrings::start(Biostrings::aligned(tmp2,degap=TRUE))
-          return(list(kmer = as.character(Biostrings::reverseComplement(kmer)),shift = al_start))
-        }
-}
-
-
-
-
-
-
-
-
-
-kmer_cluster_number <-function(kmers,
-                              max_k = 15,
-                              out = c("plot","k"),
-                              method = "globalSEmax"){
-
-  out = match.arg(out)
-
-  #Perform checks on arguments
-  stopifnot(as.integer(max_k) == max_k && max_k > 1)
-
-
-  tmpfun <- function(x, k){
-    d = kmer_dist(x)
-    h = hclust(d)
-    cl = cutree(h, k)
-    return(list("cluster" = cl))
+get_similar_motifs <- function(consensus, motif_list, top = 3){
+  helpfun <- function(x){
+    x = as.matrix(x)
+    x = x + 0.1
+    x = x / matrix(colSums(x), byrow = TRUE, nrow = nrow(x), ncol= ncol(x))
+    x = log(x/0.25)
+    align_pwms(x, consensus)[1,]
   }
+  motif_matches <- lapply(motif_list, helpfun)
+  scores <- sapply(motif_matches, function(x) x$score)
+  return(motif_list[order(-scores)[1:top]])
+}
 
-  g = cluster::clusGap(mat, tmpfun, K.max = max_k)
-  rec = cluster::maxSE(g$Tab[,"gap"],g$Tab[,"SE.sim"], method=method)
+get_reverse_complement <- function(x){
+  as.character(Biostrings::reverseComplement(Biostrings::DNAStringSet(x)))
+}
 
-  if (out == "plot"){
 
-    tmp = data.frame(k = 1:max_k,
-                     Gap = g$Tab[,"gap"],
-                     ymax =  g$Tab[,"gap"] +  g$Tab[,"SE.sim"],
-                     ymin = g$Tab[,"gap"] -  g$Tab[,"SE.sim"],
-                     rec = (1:max_k == rec))
-
-    tmp2 = data.frame(label = paste0("k = ",rec), k = tmp[tmp$rec,"k"],
-                      Gap = tmp[tmp$rec,"ymax"] + 0.1 *(max(tmp$ymax) - min(tmp$ymin)),
-                      ymax = tmp[tmp$rec,"ymax"], ymin = tmp[tmp$rec,"ymin"], rec = TRUE,
-                      stringsAsFactors = FALSE)
-    print(tmp2)
-    p = ggplot2::ggplot(tmp,
-                        ggplot2::aes_string(x = "k", y = "Gap", ymax = "ymax",
-                                            ymin = "ymin", col = "rec")) +
-      ggplot2::geom_point() + ggplot2::geom_errorbar() +
-      geom_text(data = tmp2,
-                ggplot2::aes_string(x = "k", y = "Gap", label = "label"),col="red") +
-      scale_color_manual(values = c("black","red")) +
-      theme(legend.position="none")
-
-    print(p)
-    invisible(list("plot" = p, "value" = rec))
-  } else{
-    return(rec)
+seq_to_pwm <- function(in_seq, mismatch = 0){
+  mat <- matrix(mismatch, ncol = nchar(in_seq), nrow = 4)
+  rownames(mat) <- c("A","C","G","T")
+  in_seq <- strsplit(in_seq,"")[[1]]
+  for (x in seq_along(in_seq)){
+    tmp =  strsplit(Biostrings::IUPAC_CODE_MAP[in_seq[x]],"")[[1]]
+    mat[tmp,x] = 1
   }
+ return(mat) 
 }
 
 
-
-
-
-cluster_kmers <- function(kmers){
-
-  d = sapply(kmers, function(x) sapply(kmers, kmer_dist, x))
-
-}
-
-
-
-align_pwms <- function(pwm1,pwm2){
+align_pwms <- function(pwm1,pwm2, minimum = FALSE, both_strands = TRUE){
   w1 = ncol(pwm1)
   w2 = ncol(pwm2)
   cc = sapply(1:(w1+w2-1), function(x) sum(pwm1[,max(w1-x+1,1):min(w1,w1+w2-x)]*pwm2[,max(1,x-w1+1):min(x,w2)]))
-  pwm1_rev = pwm1[c(4,3,2,1),w1:1]
-  cc_rev = sapply(1:(w1+w2-1), function(x) sum(pwm1_rev[,max(w1-x+1,1):min(w1,w1+w2-x)]*pwm2[,max(1,x-w1+1):min(x,w2)]))
-  if (max(cc) >= max(cc_rev)){
-    wm = which(cc == max(cc))
-    pos = wm[length(wm)] - w1
-    out = c(max(cc),pos,1)
-  }else{
-    wm = which(cc_rev == max(cc_rev))
-    pos = wm[length(wm)] - w1
-    out = c(max(cc_rev),pos,-1)
+  if (both_strands){
+    pwm1_rev = pwm1[c(4,3,2,1),w1:1]
+    cc_rev = sapply(1:(w1+w2-1), function(x) sum(pwm1_rev[,max(w1-x+1,1):min(w1,w1+w2-x)]*pwm2[,max(1,x-w1+1):min(x,w2)]))
   }
+  out = data.frame()
+  if (minimum){
+    if (max(cc) >= minimum){
+      wm = which(cc >= minimum)
+      pos = wm - w1
+      out = rbind(out, data.frame(score = cc[wm], pos = pos, strand = 1))
+    }
+    if (both_strands && max(cc_rev >= minimum)){
+      wm = which(cc_rev >= minimum)
+      pos = wm - w1
+      out = rbind(out, data.frame(score = cc_rev[wm], pos = pos, strand = -1))
+    }
+  } else{
+    if (!both_strands || (max(cc) >= max(cc_rev))){
+      wm = which(cc == max(cc))
+      pos = wm - w1
+      out = rbind(out, data.frame(score = max(cc), pos = pos, strand = 1))
+    }
+    if (both_strands && (max(cc_rev) >= max(cc))){
+      wm = which(cc_rev == max(cc_rev))
+      pos = wm - w1
+      out = rbind(out,data.frame(score = max(cc_rev), pos = pos, strand = -1))
+    }
+  }  
   return(out)
 }
 
-align_cluster <- function(kmers){
-  ##kmers should be sorted based on variability
-  k = length(kmers[1])
-  kmers = Biostrings::DNAStringSet(kmers)
-  kmer_pwms = lapply(1:length(kmers), function(x) Biostrings::consensusMatrix(kmers[x])[1:4,])
-  pwm = kmer_pwms[[1]]
-  maxiter = 20
-  while (i < maxiter){
-    alignment = sapply(kmer_pwms, align_pwms, pwm)
-    keep = which(alignment[1,] >= sum(apply(pwm,2,max))*(k-1)/ncol(pwm) )
-    #if (length(keep) == 0) break
-    pwm = consensusMatrix(c(kmers[keep][which(alignment[3,keep]==1)],Biostrings::reverseComplement(kmers[keep][which(alignment[3,keep]==-1)])),
-                          shift = alignment[2,keep])[1:4,]
-    kmers = kmers[-keep]
-
+get_kmer_alignment <- function(kmers, reference, mismatch = -1, minimum = FALSE, both_strands = TRUE){
+  out = data.frame()
+  for (kmer in kmers){
+    pwm1 = seq_to_pwm(kmer)
+    pwm2 = seq_to_pwm(reference, mismatch = mismatch)
+    alignment <- align_pwms(pwm1, pwm2, minimum = minimum, both_strands = both_strands)
+    if (nrow(alignment) > 0){
+      out = rbind(out,data.frame(kmer = ifelse(alignment$strand ==-1,
+                           as.character(Biostrings::reverseComplement(Biostrings::DNAString(kmer))),
+                           kmer),
+             shift = alignment$pos,
+             score = alignment$score,
+             input = kmer, stringsAsFactors=FALSE))
+    }
   }
-
+  return(unique(out))
 }
-
-
-
-
-
-
-
-align_kmers <- function(kmers){
-
-
-
-
-}
-
 
 
 # Gapped k-mers ----------------------------------------------------------------
@@ -717,4 +380,6 @@ remove_rc <- function(seqs){
   temp[temp[,1] > temp[,2],1] <- temp[temp[,1] > temp[,2],2]
   Biostrings::DNAStringSet(unique(temp[,1]))
 }
+
+
 
