@@ -93,8 +93,7 @@ compute_variability0 <- function(motif_indices,
                                  counts_mat, 
                                  window = 2500,
                                  niterations = 50,
-                                 metric = c("z-score","old"),
-                                 BPPARAM = BiocParallel::bpparam()){
+                                 metric = c("z-score","old")){
   
   metric = match.arg(metric)
   
@@ -105,8 +104,7 @@ compute_variability0 <- function(motif_indices,
                                                                 counts_mat, 
                                                                 bg_param, 
                                                                 niterations, 
-                                                                metric, 
-                                                                BPPARAM = BPPARAM))
+                                                                metric))
       
   return(results)
 }
