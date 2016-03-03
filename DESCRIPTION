@@ -21,17 +21,19 @@ Imports:
     Biostrings,
     TFBSTools,
     JASPAR2014,
-    TFMPvalue,
     Rsamtools,
     S4Vectors,
     gtools,
     plyr,
-    methods
+    methods,
+    Rcpp
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     readr,
     testthat
+LinkingTo: Rcpp
 Collate:
+    'RcppExports.R'
     'backgroundPeaks.R'
     'fragmentCounts.R'
     'bias.R'
@@ -39,9 +41,11 @@ Collate:
     'compute_variability.R'
     'deviationResult.R'
     'deviationResultSet.R'
+    'experimental.R'
     'kmer.R'
     'kmer_experimental.R'
     'legacy.R'
+    'motif_crap.R'
     'motifs.R'
     'peaks.R'
     'utils.R'

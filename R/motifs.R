@@ -30,15 +30,14 @@ get_motifs <- function(species = "Homo sapiens", collection = "CORE", ...){
 #' Function to get indices of peaks that contain motifs
 #' @param motifs \code{\link[TFBSTools]{PFMatrixList}} or \code{\link[TFBSTools]{PWMatrixList}}
 #' @param peaks \code{\link[GenomicRanges]{GenomicRanges}} or \code{\link{fragmentCounts}}
-#' @param BPPARAM parameter for \code{\link[BiocParallel]{BiocParallel}}
+#' @param genome \code{\link[BSgenome]{BSgenome}} object
 #' @param p.cutoff default is 0.00005
 #' @return A list with a vector of peak indices for each motif.
-#' @export
+#'@export
 get_motif_indices <- function(motifs, 
-                              peaks, 
-                              genome =  BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, 
-                              BPPARAM = BiocParallel::bpparam(), 
-                              p.cutoff = 0.00005){
+                               peaks, 
+                               genome =  BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, 
+                               p.cutoff = 0.00005){
   if (inherits(peaks,"fragmentCounts")){
     peaks <- peaks@peaks
   }
@@ -55,60 +54,32 @@ get_motif_indices <- function(motifs,
   if (!(inherits(motifs, "PWMatrixList") | inherits(motifs, "PWMatrix"))){
     stop("motifs must be PFMatrixList, PWMatrixList, PFMatrix, or PWMatrix object")
   }
-
+  
   seqs <- Biostrings::getSeq(genome, peaks)
-  seq_widths <- Biostrings::width(seqs)
-  n_seq <- length(seqs)
-  ranges <- IRanges::IRanges(start = cumsum(c(1,seq_widths)[1:n_seq]), 
-                               width = seq_widths)
-  tmpseq <- paste(seqs, collapse="")
   
   #get nucleotide frequencies
   nucFreqs <-  get_nuc_freqs(seqs)
   
-  get_motif_matches <- function(motif, tmpseq, ranges, nucFreqs){    
-    #find motifs on forward and reverse strands
-    motif = as.matrix(motif)
-    min.score = TFMPvalue::TFMpv2sc(motif, p.cutoff, bg = nucFreqs, type="PWM")
-    forward <- Biostrings::matchPWM(motif, tmpseq,  
-                                    min.score = min.score)   
-    forward_matches <- IRanges::findOverlaps(forward,ranges,
-                                             type="within",
-                                             select="all")
-    reverse <- Biostrings::matchPWM(Biostrings::reverseComplement(motif),
-                                    tmpseq, 
-                                    min.score = min.score)    
-    reverse_matches <- IRanges::findOverlaps(reverse,ranges,
-                                             type="within",
-                                             select="all")
-
-    out <- unique(c(IRanges::subjectHits(forward_matches),
-                    IRanges::subjectHits(reverse_matches)))
-    return(out)
-  }  
-    
-  #find motif matches
+  seqs <- as.character(seqs)
+  
+  motif_mats <- lapply(motifs, function(x) TFBSTools::as.matrix(x))
+  
+  names(motif_mats) = name(motifs)
+  
   if (is.installed("BiocParallel")){
-    motif_ix <- BiocParallel::bplapply(motifs,
-                                     get_motif_matches,
-                                     tmpseq,
-                                     ranges,
-                                     nucFreqs,
-                                     BPPARAM = BPPARAM)    
+
+    motif_ix = BiocParallel::bplapply(motif_mats,
+                                      motif_match,
+                                      seqs,
+                                      nucFreqs,
+                                      p.cutoff)
   } else{
-    motif_ix <- lapply(motifs,
-                       get_motif_matches,
-                       tmpseq,
-                       ranges,
+    motif_ix <- lapply(motif_mats,
+                       motif_match,
+                       seqs,
                        nucFreqs,
-                       BPPARAM = BPPARAM)  
+                       p.cutoff)
   }
   
   return(motif_ix)
 }
-
-
-
-
-
-
