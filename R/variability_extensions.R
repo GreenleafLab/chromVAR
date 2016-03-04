@@ -13,7 +13,7 @@ get_correlated_results <- function(name, results, p.cutoff = 0.01, corr.cutoff =
 }
 
 #' @export
-get_peak_dev_assoc <- function(counts_mat, dev, BPPARAM = BiocParallel::bpparam(), bg.reps = 100, progress.bar = TRUE){
+get_peak_dev_assoc <- function(counts_mat, dev, bg.reps = 100, progress.bar = TRUE){
   
   #break into groups of 500
   grpsize = 500
@@ -36,7 +36,7 @@ get_peak_dev_assoc <- function(counts_mat, dev, BPPARAM = BiocParallel::bpparam(
   }
   
   
-  out <- do.call(c,BiocParallel::bplapply(grps, helperfun,  BPPARAM = BPPARAM))
+  out <- do.call(c,BiocParallel::bplapply(grps, helperfun))
    
   countab = tabulate(counts_mat@fragments_per_peak)
   sig = rep(1, length(out))
@@ -47,7 +47,7 @@ get_peak_dev_assoc <- function(counts_mat, dev, BPPARAM = BiocParallel::bpparam(
       ix = which(counts_mat@fragments_per_peak == i)
       ix.sub = ix[sample.int(length(ix), size = bg.reps, replace = TRUE)]
       grps <- lapply(1:(bg.reps %/% grpsize + ((bg.reps %% grpsize)!=0)), function(x) ix.sub[((x-1)*grpsize +1):(min(x*grpsize,bg.reps))])
-      bg <- do.call(c,BiocParallel::bplapply(grps, helperfun2,BPPARAM = BPPARAM))
+      bg <- do.call(c,BiocParallel::bplapply(grps, helperfun2))
       sig[ix] = sapply(out[ix], function(x) (x - mean(bg))/sd(bg))
     }
   }
@@ -62,7 +62,7 @@ get_peak_dev_assoc <- function(counts_mat, dev, BPPARAM = BiocParallel::bpparam(
 
 
 #' @export
-get_variability_synergy <- function(sets, results, counts_mat, niterations = 50, BPPARAM = BiocParallel::bpparam(), nbg = 50, force = FALSE){
+get_variability_synergy <- function(sets, results, counts_mat, niterations = 50, nbg = 50, force = FALSE){
   stopifnot((length(sets) < 100) || (length(results) < 100) || force)
   #
   if (length(sets) != length(results) || !all_true(all.equal(sort(names(sets)),sort(names(results))))){
@@ -81,31 +81,41 @@ get_variability_synergy <- function(sets, results, counts_mat, niterations = 50,
     set <- sets[[setnames[i]]]
     tmpsets <- sets[setnames[(i+1):l]]
     outmat[i,(i+1):l] <- get_variability_boost(set, tmpsets, counts_mat, 
-                                               niterations, BPPARAM, nbg)
+                                               niterations, nbg)
   }
   outmat
 }
 
 
 #' @export
-get_variability_boost <- function(set, sets, counts_mat, niterations= 50, BPPARAM = BiocParallel::bpparam(), nbg = 50){
+get_variability_boost <- function(set, sets, counts_mat, niterations= 50, nbg = 50, out = c("fold","z-score","raw")){
   tmpsets <- remove_nonoverlap(sets, set)
-  tmpresults <- compute_variability(tmpsets, counts_mat, niterations = niterations,
-                                    BPPARAM = BPPARAM)
-  tmpvar <- variability(tmpresults)
-  setlen = sapply(tmpsets,length)
+  tmpresults <- compute_variability(c(list(set),tmpsets), counts_mat, niterations = niterations)
+  tmpvar <- variability(tmpresults)[2:length(tmpresults)]
+  basevar <- variability(tmpresults)[1]
+  out <- match.arg(out)
   
-  bgsets <- unlist(lapply(setlen, function(x) lapply(1:nbg, function(y) sample(set, x, replace=FALSE))), recursive = F)
-  
-  bgresults <- compute_variability(bgsets, counts_mat, niterations = niterations,
-                                   BPPARAM = BPPARAM)
-  bgvar <- variability(bgresults)
-  
-  var_boost <- sapply(seq_along(tmpvar), 
-                      function(x) (tmpvar[x] - mean(bgvar[((x-1)*nbg+1):(x*nbg)]))/ 
-                        sd(bgvar[((x-1)*nbg+1):(x*nbg)])  )
-  #var_boost <- pnorm(var_boost, lower.tail = FALSE)
-  return(var_boost)
+  if(out == "raw"){
+    return(log2(tmpvar/basevar))
+  } else{
+    setlen = sapply(tmpsets,length)
+    
+    
+    bgsets <- unlist(lapply(setlen, function(x) lapply(1:nbg, function(y) sample(set, x, replace=FALSE))), recursive = F)
+    
+    bgresults <- compute_variability(bgsets, counts_mat, niterations = niterations)
+    bgvar <- variability(bgresults)
+    
+    if (out == "fold"){
+      var_boost <- sapply(seq_along(tmpvar), 
+                          function(x) log2(tmpvar[x]) - log2(mean(bgvar[((x-1)*nbg+1):(x*nbg)])))
+    } else{
+      var_boost <- sapply(seq_along(tmpvar), 
+                          function(x) (tmpvar[x] - mean(bgvar[((x-1)*nbg+1):(x*nbg)]))/ 
+                            sd(bgvar[((x-1)*nbg+1):(x*nbg)])  )
+    }
+    return(var_boost)
+  }
 }
 
 
@@ -114,12 +124,10 @@ get_independent_variability <- function(to.remove,
                                         sets, 
                                         counts_mat,
                                         nresult = length(sets),
-                                        niterations = 50,
-                                        BPPARAM = BiocParallel::bpparam()){
+                                        niterations = 50){
   tmpsets <- remove_overlap(sets, to.remove)
-  tmpresults <- compute_variability(tmpsets, counts_mat, niterations = niterations,
-                                    BPPARAM = BPPARAM)
-  #tmpresults <- set_nresult(tmpresults, nresult)
+  tmpresults <- compute_variability(tmpsets, counts_mat, niterations = niterations)
+  tmpresults <- set_nresult(tmpresults, nresult)
   return(tmpresults)
 }
 
@@ -128,8 +136,7 @@ get_independent_variability <- function(to.remove,
 get_top_sets <- function(results, sets, counts_mat,
                          niterations = 50,
                          p_cutoff = 0.01,
-                         max_iter = 25,
-                         BPPARAM = BiocParallel::bpparam()){
+                         max_iter = 25){
   
   #Get only significant sets
   results <- subset_by_variability(results, cutoff = p_cutoff, adjusted = TRUE)
@@ -148,11 +155,10 @@ get_top_sets <- function(results, sets, counts_mat,
   iter = 2
   candidates <- names(tmpsets)[names(tmpsets) != max_var_name]
   while( length(candidates) > 0 && iter < max_iter){
-    cors <- get_peak_dev_assoc(counts_mat = fc[sets[[max_var_name]],], dev = deviations(results[[max_var_name]]), BPPARAM = BPPARAM, progress.bar = FALSE)
+    cors <- get_peak_dev_assoc(counts_mat = fc[sets[[max_var_name]],], dev = deviations(results[[max_var_name]]), progress.bar = FALSE)
     to.remove <- sets[[max_var_name]][intersect(which(cors$cor > 0), which(cors$pval < p_cutoff))]
     tmpsets <- remove_overlap(tmpsets[candidates], to.remove)
-    tmpresults <- compute_variability(tmpsets, counts_mat, niterations = niterations,
-                                      BPPARAM = BPPARAM)
+    tmpresults <- compute_variability(tmpsets, counts_mat, niterations = niterations)
     tmpresults <- set_nresult(tmpresults, results@nresult)
     tmpresults <- subset_by_variability(tmpresults, cutoff = p_cutoff, adjusted = TRUE)
     if (length(tmpresults) ==0){

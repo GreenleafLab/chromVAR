@@ -161,25 +161,24 @@ get_overlapping_kmers <- function(kmer, kmers, cutoff = 2){
 }
 
 #' @export
-make_kmer_group <- function(seed, results, sets, counts_mat, minScore = nchar(seed)-2){
-  candidates = get_correlated_results(seed, results)
-  indep_var = get_independent_variability(to.remove = sets[[seed]],
-                                          sets = sets[candidates],
-                                          counts_mat = counts_mat)
-  indep = which(get_pvalues(indep_var) < 0.05)
-  dep = which(get_pvalues(indep_var) >= 0.05)
-  var_boost = get_variability_boost(sets[[seed]], sets[candidates[dep]], counts_mat)
-  boost = dep[which(pnorm(var_boost,lower.tail=FALSE) < 0.05)]
-  #align non-independent, not allowing mismatches
-  a = get_kmer_alignment(kmers = c(seed ,candidates[boost]), reference = seed, mismatch = -100)    
-  #align independent, allowing mismatches
-  if (length(indep) >0){
-      a = rbind(a, get_kmer_alignment(kmers = candidates[indep], reference = seed, mismatch = 0))
+make_kmer_group <- function(seed, candidates, sets, counts_mat, minScore = nchar(seed)-2){
+  preliminary_alignment = get_kmer_alignment(kmers = c(seed ,candidates), reference = seed, mismatch = -100)
+  candidates = unique(preliminary_alignment$input[which(preliminary_alignment$score >= minScore)])
+  print(length(candidates))
+  var_boost = get_variability_boost(sets[[seed]], sets[candidates], counts_mat, nbg = 25, out = "z-score")
+  print(var_boost)
+  boost = which(pnorm(var_boost,lower.tail = TRUE) < 0.05)
+  print(length(boost))
+  if (length(boost)>0){
+    a = get_kmer_alignment(kmers = c(seed ,candidates[boost]), reference = seed, mismatch = -100)
+  }
+  else{
+    a = get_kmer_alignment(kmers = seed, reference = seed, mismatch = -100)
   }
   highscore = which(a$score >= minScore)
   consensus = Biostrings::consensusString(Biostrings::DNAStringSet(a$kmer[highscore]),
                                         shift = a$shift[highscore] - min(a$shift[highscore]), 
-                                        threshold = 1/length(highscore))
+                                        threshold = 0.1)
   rc_kmers = unique(get_reverse_complement(a$kmer))
   rc_kmers = rc_kmers[rc_kmers %ni% a$kmer]
   a2 = get_kmer_alignment(kmers = c(a$kmer, rc_kmers), reference = consensus, mismatch = -100, both_strands = FALSE)
@@ -191,6 +190,34 @@ make_kmer_group <- function(seed, results, sets, counts_mat, minScore = nchar(se
   out = rbind(seed_block,
               forward_block[order(forward_block$score),],
               reverse_block[order(reverse_block$score),])
+  return(out)
+}
+
+#' @export
+group_kmers <- function(results, sets, counts_mat, max_groups = 10){
+  results <- subset_by_variability(results)
+  indep_results <- results
+  i = 1
+  out = list()
+  while (i <= max_groups){
+    print(i)
+    top = names(subset_by_variability(indep_results, by = "top", cutoff =1))
+    candidates = get_correlated_results(top, results)   
+    new_grp = make_kmer_group(top, candidates, sets, counts_mat)   
+    out = c(out, list(new_grp))
+    candidates = candidates[which(candidates %in% names(indep_results))]
+    indep_var = get_independent_variability(to.remove = sets[[top]],
+                                            sets = sets[candidates],
+                                            counts_mat = counts_mat)
+    indep = which(get_pvalues(indep_var) < 0.01)
+    keep = unique(c(names(indep_var[indep]),names(indep_results)[which(names(indep_results) %ni% c(top,candidates))]))
+    if (length(keep) > 0 ){
+      indep_results = indep_results[keep]
+    } else{
+      break
+    }
+    i = i + 1
+  }
   return(out)
 }
 
@@ -237,7 +264,7 @@ plot_kmer_group <- function(a, motif_list = NULL, top.motifs = 3, plot.consensus
     }
   }
   
-  out = p + ggmotif_scale() + ggmotif_theme() +
+  out = p + ggmotif_scale() + ggmotif:::ggmotif_theme() +
            scale_x_continuous(breaks = 0:max(sapply(1:nrow(a), function(x) nchar(a$kmer[x]) + a$shift[x]))) +
             scale_y_continuous(breaks = anno_df$y, labels = anno_df$label) +
            xlab("position relative to start of seed kmer (bp)") +
@@ -269,15 +296,25 @@ get_reverse_complement <- function(x){
 }
 
 
+ambiguity_mapping <- lapply(Biostrings::IUPAC_CODE_MAP, function(x){
+  letters = strsplit(x,"")[[1]]
+  out = rep(0, length(letters))
+  out[which(letters == "A")] = 1
+  out[which(letters == "C")] = 2
+  out[which(letters == "G")] = 3
+  out[which(letters == "T")] = 4
+  return(out)  
+})
+
+
 seq_to_pwm <- function(in_seq, mismatch = 0){
   mat <- matrix(mismatch, ncol = nchar(in_seq), nrow = 4)
   rownames(mat) <- c("A","C","G","T")
   in_seq <- strsplit(in_seq,"")[[1]]
   for (x in seq_along(in_seq)){
-    tmp =  strsplit(Biostrings::IUPAC_CODE_MAP[in_seq[x]],"")[[1]]
-    mat[tmp,x] = 1
+    mat[ambiguity_mapping[[in_seq[x]]],x] = 1
   }
- return(mat) 
+  return(mat) 
 }
 
 
@@ -320,7 +357,11 @@ get_kmer_alignment <- function(kmers, reference, mismatch = -1, minimum = FALSE,
   out = data.frame()
   for (kmer in kmers){
     pwm1 = seq_to_pwm(kmer)
-    pwm2 = seq_to_pwm(reference, mismatch = mismatch)
+    if (is.character(reference)){
+      pwm2 = seq_to_pwm(reference, mismatch = mismatch)      
+    } else {
+      pwm2 = reference
+    }
     alignment <- align_pwms(pwm1, pwm2, minimum = minimum, both_strands = both_strands)
     if (nrow(alignment) > 0){
       out = rbind(out,data.frame(kmer = ifelse(alignment$strand ==-1,
