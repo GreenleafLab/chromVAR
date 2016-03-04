@@ -5,7 +5,7 @@
 \title{compute_variability}
 \usage{
 compute_variability(motif_indices, counts_mat, niterations = 50,
-  metric = c("z-score", "old"), BPPARAM = BiocParallel::bpparam())
+  metric = c("z-score", "old"), count = NULL)
 }
 \arguments{
 \item{motif_indices}{list of indices representing different sets of peaks}
@@ -16,13 +16,16 @@ compute_variability(motif_indices, counts_mat, niterations = 50,
 
 \item{metric}{which metric to use? default is z-score}
 
-\item{BPPARAM}{multi-processing argument to pass to \code{\link[BiocParallel]{bplapply}}}
+\item{count}{is input data count data?  will determine based on data if not given}
 }
 \value{
 \code{\link{deviationResultSet}}
 }
 \description{
 Computes variability across sets of annotations
+}
+\details{
+multiprocessing using \code{\link[BiocParallel]{bplapply}}
 }
 \seealso{
 \code{\link{deviationResultSet}}, \code{\link{variability}}, \code{\link{plot_variability}}

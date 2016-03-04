@@ -6,14 +6,14 @@
 \usage{
 get_motif_indices(motifs, peaks,
   genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
-  BPPARAM = BiocParallel::bpparam(), p.cutoff = 5e-05)
+  p.cutoff = 5e-05)
 }
 \arguments{
 \item{motifs}{\code{\link[TFBSTools]{PFMatrixList}} or \code{\link[TFBSTools]{PWMatrixList}}}
 
 \item{peaks}{\code{\link[GenomicRanges]{GenomicRanges}} or \code{\link{fragmentCounts}}}
 
-\item{BPPARAM}{parameter for \code{\link[BiocParallel]{BiocParallel}}}
+\item{genome}{\code{\link[BSgenome]{BSgenome}} object}
 
 \item{p.cutoff}{default is 0.00005}
 }

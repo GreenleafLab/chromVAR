@@ -5,7 +5,7 @@
 \title{getBackgroundPeakSets}
 \usage{
 getBackgroundPeakSets(counts_mat, niterations = 50, window = 500,
-  with_replacement = TRUE)
+  with_replacement = TRUE, count = TRUE)
 }
 \arguments{
 \item{counts_mat}{a fragmentCounts object}

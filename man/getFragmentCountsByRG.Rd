@@ -4,7 +4,7 @@
 \alias{getFragmentCountsByRG}
 \title{getFragmentCountsByRG}
 \usage{
-getFragmentCountsByRG(bam, peaks, BPPARAM = BiocParallel::bpparam())
+getFragmentCountsByRG(bam, peaks)
 }
 \arguments{
 \item{bam}{filename for bam file with aligned reads}

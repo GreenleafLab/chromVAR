@@ -5,7 +5,8 @@
 \title{compute_deviations}
 \usage{
 compute_deviations(peak_set, counts_mat, niterations = 50,
-  metric = c("z-score", "old"), intermediate_results = FALSE)
+  metric = c("z-score", "old"), intermediate_results = FALSE,
+  count = NULL)
 }
 \arguments{
 \item{peak_set}{vector of indices for peaks in set}
