@@ -131,17 +131,16 @@ setMethod("[", signature = signature(x = "fragmentCounts"),
 #' @return \code{\link{fragmentCounts}} object
 #' @seealso \code{\link{getFragmentCounts}}, \code{\link{fragmentCounts}}, \code{\link{filterFragmentCounts}}
 #' @export
-getFragmentCountsByRG <- function(bam, peaks, BPPARAM = BiocParallel::bpparam()){
+getFragmentCountsByRG <- function(bam, peaks){
 
-  rg_fragments <- bamToFragmentsByRG(bam, BPPARAM)
+  rg_fragments <- bamToFragmentsByRG(bam)
   depth <- sapply(rg_fragments, length)
   tmpfun <- function(frags){
     overlaps = as.data.frame(GenomicRanges::findOverlaps(peaks, frags, type="any", ignore.strand=T))
     return(overlaps)
   }
 
-  all_overlaps <-  BiocParallel::bplapply(rg_fragments,tmpfun,
-                                        BPPARAM = BPPARAM)
+  all_overlaps <-  BiocParallel::bplapply(rg_fragments,tmpfun)
   counts_mat <- sparseMatrix(i = do.call(rbind,all_overlaps)$queryHits, 
                                    j = unlist(lapply(seq_along(all_overlaps),function(y) rep(y,nrow(all_overlaps[[y]]))),use.names=F),
                                    x = 1, dims = c(length(peaks),length(rg_fragments)), dimnames = list(NULL,names(rg_fragments)))
@@ -196,7 +195,7 @@ left_right_to_grglist <- function(left, right){
   
 
 #' @export
-bamToFragmentsByRG <- function(bamfile, BPPARAM = BiocParallel::bpparam()){
+bamToFragmentsByRG <- function(bamfile){
 
   scanned <- Rsamtools::scanBam(bamfile,
                                 param = Rsamtools::ScanBamParam(flag = Rsamtools::scanBamFlag(isMinusStrand=FALSE, 
@@ -217,7 +216,7 @@ bamToFragmentsByRG <- function(bamfile, BPPARAM = BiocParallel::bpparam()){
                                                              width = 1),
                                             strand = "-")
     return(left_right_to_grglist(scanned_left, scanned_right))
-  }, BPPARAM = BPPARAM)
+  })
 
   names(out) = RG_tags
 
