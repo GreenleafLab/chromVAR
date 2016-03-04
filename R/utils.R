@@ -59,6 +59,12 @@ all_false <- function(x){
   ifelse(sum(x)==0, TRUE, FALSE)
 }
 
+# Function to test whether vector is all whole number
+
+all_whole <- function(x, tol = .Machine$double.eps^0.5){
+  all_true(abs(x - round(x)) < tol)
+}  
+
 # Function to merge lists, either by name or order -----------------------------
 
 merge_lists <- function(..., by = c("order","name")){
