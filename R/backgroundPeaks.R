@@ -13,7 +13,7 @@ sampleBackgroundPeaks <- function(object, peak_set, niterations = 50){
   stopifnot(inherits(object, "fragmentCounts"))
   stopifnot(niterations <= ncol(object@background_peaks))
 
-  sample_mat = sparseMatrix(j = as.vector(object@background_peaks[peak_set,1:niterations]), 
+  sample_mat = sparseMatrix(j = unlist(object@background_peaks[peak_set,1:niterations],use.names=FALSE), 
                             i = rep(1:niterations, each = length(peak_set)), 
                             x=1, 
                             dims = c(niterations, object@npeak))
@@ -37,7 +37,7 @@ sampleBackgroundPeaks <- function(object, peak_set, niterations = 50){
 #' GC content and # of fragments across samples using the Mahalanobis distance.  From those nearest
 #' neighbors, niterations peaks are sampled from that background.
 #' @export
-getBackgroundPeakSets <- function(counts_mat, niterations = 50, window = 500, with_replacement = TRUE){
+getBackgroundPeakSets <- function(counts_mat, niterations = 50, window = 500, with_replacement = TRUE, count = TRUE){
   stopifnot(inherits(counts_mat,"fragmentCounts"))
   #if bias not available...
   if ("bias" %ni% colnames(S4Vectors::mcols(counts_mat@peaks))){
@@ -46,19 +46,44 @@ getBackgroundPeakSets <- function(counts_mat, niterations = 50, window = 500, wi
   if (!with_replacement && niterations > window){
     stop("If with_replacement is FALSE, then niterations must be less than window")
   }
-  norm_mat <- cbind(log10(counts_mat@fragments_per_peak + 1 ), counts_mat@peaks$bias)
+  if (count){
+    norm_mat <- cbind(log10(counts_mat@fragments_per_peak + 1 ), counts_mat@peaks$bias)
+  } else{
+    norm_mat <- cbind(counts_mat@fragments_per_peak, counts_mat@peaks$bias)
+  }
   reflected <- add_reflections(norm_mat, window = window)
   chol_cov_mat <- chol(cov(norm_mat))
-  tmp_vals <- t(forwardsolve(t(chol_cov_mat),t(reflected$data)))  
-  nns <- FNN::get.knn(tmp_vals, k = window)$nn.index
-  if (niterations == 1){
-    counts_mat@background_peaks <- matrix(apply(nns[1:length(counts_mat@peaks),], 1, function(x) reflected$replace(sample(x, niterations, replace = with_replacement))),
-                                          ncol = 1)
-  } else{
-    counts_mat@background_peaks <- t(apply(nns[1:length(counts_mat@peaks),], 1, function(x) reflected$replace(sample(x, niterations, replace = with_replacement))))
+  tmp_vals <- t(forwardsolve(t(chol_cov_mat),t(reflected$data)))
+  
+  grpsize <- 10000
+  grps <- lapply(1:(counts_mat@npeak %/% grpsize + ((counts_mat@npeak %% grpsize)!=0)), function(x) ((x-1)*grpsize +1):(min(x*grpsize,counts_mat@npeak)))
+  
+  bghelper <- function(grp, reflected, tmp_vals, with_replacement, niterations){
+    in1 = tmp_vals
+    in2 = tmp_vals[grp,]
+    tmp_nns <- FNN::get.knnx(in1, query = in2, k = window)$nn.index
+    if (niterations == 1){
+        return(matrix(apply(tmp_nns, 1, function(x) reflected$replace(sample(x, niterations, replace = with_replacement))),
+                                                                 ncol = 1))
+    } else{
+        return(t(apply(tmp_nns,1, function(x) reflected$replace(sample(x, niterations, replace = with_replacement)))))
+    }
   }
+  
+  counts_mat@background_peaks <- do.call(rbind, BiocParallel::bplapply(grps, bghelper, reflected, tmp_vals, with_replacement, niterations))
   return(counts_mat)
 }
+  
+#   
+#   nns <- FNN::get.knn(tmp_vals, k = window)$nn.index
+#   if (niterations == 1){
+#     counts_mat@background_peaks <- matrix(apply(nns[1:length(counts_mat@peaks),], 1, function(x) reflected$replace(sample(x, niterations, replace = with_replacement))),
+#                                           ncol = 1)
+#   } else{
+#     counts_mat@background_peaks <- t(apply(nns[1:length(counts_mat@peaks),], 1, function(x) reflected$replace(sample(x, niterations, replace = with_replacement))))
+#   }
+#   return(counts_mat)
+#}
 
 
 # helper function, not exported
