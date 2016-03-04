@@ -64,8 +64,6 @@ get_motif_indices <- function(motifs,
   
   motif_mats <- lapply(motifs, function(x) TFBSTools::as.matrix(x))
   
-  names(motif_mats) = name(motifs)
-  
   if (is.installed("BiocParallel")){
 
     motif_ix = BiocParallel::bplapply(motif_mats,
