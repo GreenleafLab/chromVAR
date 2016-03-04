@@ -66,8 +66,8 @@ make_bias_bins <- function(counts_mat, nbins = 25){
 
 #' @keywords internal
 #' @export
-make_permuted_sets <- function(counts_mat, motif_indices, window = 10){
-  bg <- getBackgroundPeakSets(counts_mat, niterations = 1, window = window)
+make_permuted_sets <- function(counts_mat, motif_indices, window = 10, count=TRUE){
+  bg <- getBackgroundPeakSets(counts_mat, niterations = 1, window = window, count = count)
   sets <- lapply(seq_along(motif_indices), function(x) bg@background_peaks[motif_indices[[x]],1])
   names(sets) <- sapply(names(motif_indices), function(x) paste("permuted_",x,collapse=""))
   return(sets)
