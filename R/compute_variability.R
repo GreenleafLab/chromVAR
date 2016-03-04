@@ -7,7 +7,8 @@
 #' @param counts_mat fragmentCounts object
 #' @param niterations number of background sets to sample
 #' @param metric which metric to use? default is z-score
-#' @param BPPARAM multi-processing argument to pass to \code{\link[BiocParallel]{bplapply}}
+#' @param count is input data count data?  will determine based on data if not given
+#' @details multiprocessing using \code{\link[BiocParallel]{bplapply}}
 #' @return  \code{\link{deviationResultSet}}
 #' @seealso \code{\link{deviationResultSet}}, \code{\link{variability}}, \code{\link{plot_variability}}
 #' @export
@@ -15,7 +16,7 @@ compute_variability <- function(motif_indices,
                                 counts_mat, 
                                 niterations = 50,
                                 metric = c("z-score","old"),
-                                BPPARAM = BiocParallel::bpparam()){
+                                count = NULL){
 
   metric <- match.arg(metric)
   
@@ -27,21 +28,36 @@ compute_variability <- function(motif_indices,
     
   # check that indices fall within appropriate bounds
   tmp <- unlist(motif_indices, use.names =F)
-  if (!(all.equal(tmp, as.integer(tmp))) ||
+  if (is.null(tmp) ||
+        !(all.equal(tmp, as.integer(tmp))) ||
         max(tmp) > counts_mat@npeak ||
         min(tmp) < 1){
     stop("motif_indices are not valid")
   }
+  if (is.null(count)){
+    count = all_whole(counts_mat@counts@x)
+  }
+  stopifnot(is.logical(count))
   
   # remove sets of length 0
   motif_indices <- motif_indices[which(sapply(motif_indices,length)>0)]
   
-  results <- deviationResultSet(BiocParallel::bplapply(motif_indices,
+  if (is.installed("BiocParallel")){
+      results <- deviationResultSet(BiocParallel::bplapply(motif_indices,
                                                       compute_deviations,
                                                       counts_mat, 
                                                       niterations, 
                                                       metric,
-                                                      BPPARAM = BPPARAM))
+                                                      count))
+  } else{
+    results <- deviationResultSet(lapply(motif_indices,
+                                         compute_deviations,
+                                         counts_mat, 
+                                         niterations, 
+                                         metric,
+                                         count))
+  }
+
 
   return(results)
 }
@@ -61,7 +77,8 @@ compute_deviations <- function(peak_set,
                                counts_mat, 
                                niterations = 50,
                                metric = c("z-score","old"),
-                               intermediate_results = FALSE){
+                               intermediate_results = FALSE,
+                               count = NULL){
 
   metric <- match.arg(metric)
 
@@ -76,7 +93,7 @@ compute_deviations <- function(peak_set,
                                           niterations = niterations)
 
   res <- compute_var_metrics(observed, sampled_counts, counts_mat,
-                             metric = metric)
+                             metric = metric, count = count)
   
   res@intermediate_results = list(observed = observed,
                                   sampled_counts = sampled_counts)
@@ -88,10 +105,13 @@ compute_deviations <- function(peak_set,
 
 # helper function, not exported
 compute_var_metrics <- function(observed, sampled_counts, counts_mat,
-                                metric = c("z-score","old")){
+                                metric = c("z-score","old"), count = NULL){
 
   metric <- match.arg(metric)
-
+  if (is.null(count)){
+    count = all_whole(observed)
+  }
+  
   if (metric == 'z-score'){
 
     expected_prob <- sum(observed)/counts_mat@total_fragments
@@ -100,13 +120,19 @@ compute_var_metrics <- function(observed, sampled_counts, counts_mat,
     expected <-  counts_mat@fragments_per_sample * expected_prob
     expected_sampled_counts <-  outer(counts_mat@fragments_per_sample,
                                      expected_sampled_prob)
-
-    raw_deviation <- (observed - expected) / sqrt(expected * (1 - expected_prob))
-    sampled_deviation <- (sampled_counts - expected_sampled_counts) / 
-      sqrt(expected_sampled_counts * 
+    
+    if (count){
+      raw_deviation <- (observed - expected) / sqrt(expected * (1 - expected_prob))
+      sampled_deviation <- (sampled_counts - expected_sampled_counts) / 
+        sqrt(expected_sampled_counts * 
              (1 - matrix(expected_sampled_prob, nrow = nrow(sampled_counts),
                          ncol = ncol(sampled_counts),byrow = T)))
 
+    } else{
+      raw_deviation <- observed - expected
+      sampled_deviation <- sampled_counts - expected_sampled_counts
+    }
+    
     mean_sampled_deviation <- rowMeans(sampled_deviation)
     sd_sampled_deviation <- apply(sampled_deviation, 1, sd)
 
