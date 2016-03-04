@@ -2,7 +2,7 @@
 #'
 #' The package provides three categories of important functions:
 #' functions!
-#' 
+#'
 #' @section Functions:
 #' The functions ...
 #'
@@ -12,6 +12,8 @@
 #' @import GenomicRanges
 #' @import Biostrings
 #' @import methods
+#' @importFrom Rcpp sourceCpp
+#' @useDynLib chromVAR
 #' @docType package
 #' @name chromVAR
 NULL
