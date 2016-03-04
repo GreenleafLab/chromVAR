@@ -274,7 +274,7 @@ subset_by_variability <- function(object, by = c("pvalue","top","metric","bound"
     pvals = get_pvalues(object, adjust = adjusted)
     object <- object[which(pvals <= cutoff)]
   } else if (by == "top"){
-    stopifnot(cutoff > 2)
+    stopifnot(cutoff >= 1)
     object <- object[which(rank(-1 * variability(object),
                                 ties.method="random") <= cutoff)]
   } else if (by == "metric"){
