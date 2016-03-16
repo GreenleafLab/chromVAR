@@ -1,0 +1,294 @@
+# Plotting ---------------------------------------------------------------------            
+
+#' plot_variability
+#' 
+#' Plots variability for deviationResultSet
+#' @return ggplot 
+#' @seealso \code{\link{metric}}, \code{\link{variability}} 
+setGeneric("plot_variability", function(object, ...) standardGeneric("plot_variability"))
+
+#' @param object \code{\link{deviationResultSet}} object
+#' @param xlab label for x-axis (default is "sorted bins")
+#' @param label_type which points to label? See Details.
+#' @param label_option See Details.
+#' @param only FALSE, p-value cutoff, or number of points.  See Details.
+#' @details Labelling of points is controlled by label_type and label_options.  
+#' label_type can be either "top", "names", or "none".  If "top", the top k most 
+#' variable points are labelled with their names. k can be set by passing an integer
+#' value to label_option.  By default, k will be 3.  Specific points chosen by 
+#' the user can be labelled by setting label_type to "name".  The names of the points 
+#' to label should then be passed to label_option.  Either character vectors of the 
+#' names can be given, or a numeric vector of the indices. If no input is given 
+#' to label_option when label_type is "name", all points are labelled. If 
+#' label_type is "none", no labelling is performed.\cr \cr
+#' Rather than plotting all results, you can also plot
+#' only significant results, a certain number of top results, or results by index
+#' or name.  For plotting only significant results, pass a numeric greater than
+#' 0 and less than 1 to the argument only; that value will be used as a p-value cutoff.  
+#' For plotting only the top points, 
+#' pass a numeric value greater than 1 to the argument only.  For plotting results
+#' by index or name, give a vector of indices or names.  If only is FALSE 
+#' (the default), then all results are plotted.  
+#' @rdname plot_variability
+#' @import ggplot2
+#' @export
+setMethod("plot_variability", "deviationResultSet",
+          function(object, xlab = "Sorted TFs", 
+                   label_type = c("top","names","none"), 
+                   label_option = NULL, 
+                   only = FALSE){
+            
+            label_type = match.arg(label_type)
+            
+            if (only != FALSE){
+              if (length(only) > 1){
+                object <- object[only]
+              } else if (is.numeric(only) && only > 0 && only < 1){
+                object <- object[which(get_pvalues(object) <= only)]
+              } else if (is.numeric(only) && only > 1){
+                object <- object[which(rank(-1 * variability(object),
+                                            ties.method="random") <= only)]
+              } else{
+                message("Invalid option to only, plotting all results. See 
+                        documentation for details on usage of only")
+              }
+              }
+            
+            res_df = data.frame(var = variability(object),
+                                min = variability_bounds(object, lower = TRUE),
+                                max = variability_bounds(object, lower = FALSE),
+                                tf = names(object),
+                                ranks = rank(-1 * variability(object),
+                                             ties.method="random"))
+            
+            ylab = "Variability"
+            
+            out = ggplot2::ggplot(res_df, ggplot2::aes_string(x = "ranks", 
+                                                              y = "var",
+                                                              min = "min", 
+                                                              max = "max")) + 
+              ggplot2::geom_point()+ ggplot2::geom_errorbar() +
+              ggplot2::xlab(xlab) + ggplot2::ylab(ylab) + 
+              ggplot2::scale_y_continuous(expand=c(0,0),
+                                          limits=c(0,max(res_df$max)*1.05))
+            
+            if (label_type =="top"){
+              if (!is.numeric(label_option)){
+                label_option = 3
+              }
+              top_df = res_df[res_df$ranks <= label_option,]
+              out = out + ggplot2::geom_text(data = top_df, 
+                                             ggplot2::aes_string(x = "ranks", 
+                                                                 y = "var", 
+                                                                 label = "tf"),
+                                             size = 2, hjust=-0.15,col = "Black")
+            } else if (label_type =="name"){
+              if (is.null(label_option)){
+                label_option = seq_along(object)
+              } else if (is.character(label_option)){
+                label_option = which(names(object) %in% label_option)
+              } else if (!is.numeric(label_option)){
+                stop("Labels must be numeric or character vector")
+              }
+              label_df = res_df[label_option,]
+              out = out + ggplot2::geom_text(data = label_df, 
+                                             ggplot2::aes_string(x = "ranks", 
+                                                                 y = "var",
+                                                                 label = "tf"), 
+                                             size = 2, hjust=-0.15,col = "Black")
+              
+            }
+            
+            return(out)
+            
+            })
+
+
+## helper functions (not exported) ----------------------------------------------
+
+pretty_scientific <- function(l) {
+  # format as scientific
+  l <- format(l, nsmall = 0, scientific = TRUE)
+  # remove + sign
+  l <- gsub("+", "", l, fixed=T)
+  # break into prefix and suffix
+  pre <- sapply(l, function(x) substr(x,1,gregexpr("e",x)[[1]][1]-1))
+  post <- format(as.numeric(sapply(l, function(x) substr(x,gregexpr("e",x)[[1]][1]+1,nchar(x)))))
+  # combine prefix and suffix with plotmath
+  out <- sapply(1:length(l), function(x) paste(pre[x],"%*%10^",post[x],sep="",collapse=""))
+  out[which(pre=="")]=NA
+  # return as expression
+  return(parse(text=out))
+}
+
+
+order_of_magnitude <- function(x){
+  if (x==0){
+    return(0)
+  }
+  else if (x< 0){
+    x = -1 * x
+  }
+  return(floor(log10(x)))
+}
+
+
+pretty_scale_format <- function(l){
+  digits = order_of_magnitude(max(l)) - order_of_magnitude(min(diff(l))) + 2
+  l = signif(l, digits = digits)
+  if (max(l)>1000){
+    return(pretty_scientific(l))
+  }
+  else if (max(l)<0.001){
+    return(pretty_scientific(l))
+  }
+  else{return(format(l, nsmall = 0))}
+}
+
+cor_dist <- function(x){
+  as.dist(1 - cor(t(x)))
+}
+
+#' plot_deviations
+#' @param object  \code{\link{deviationResultSet}} object
+#' @return ggplot object
+#' @export
+plot_deviations <- function(object, 
+                            xlabel = NA, 
+                            ylabel = NA,  
+                            name = NA, 
+                            cluster_row = TRUE, 
+                            cluster_col = TRUE, 
+                            cluster_row_dist = cor_dist, 
+                            cluster_col_dist = cor_dist,
+                            sample_annotation = NULL){
+  #Perform checks on arguments
+  stopifnot(inherits(object,"deviationResultSet"))
+  X = deviations(object)
+  
+  if (cluster_row){
+    rowclust = hclust(cluster_row_dist(X))
+    X = X[rowclust$order,]
+  }
+  if (cluster_col){
+    colclust = hclust(cluster_col_dist(t(X)))
+    X = X[,colclust$order]
+  }
+  
+  df = cbind(data.frame("y" = factor(rownames(X), levels = rownames(X), ordered=T)),X)
+  mdf = reshape2::melt(df, id = "y")
+  p = ggplot(mdf, aes(x=variable, y=y)) + 
+    geom_raster(aes(fill=value)) + 
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.background = element_blank(),
+      axis.line = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.text.y = element_text(size = 8),
+      axis.text.x = element_text(angle=90, vjust = 0.5, hjust = 1, size = 8),
+      plot.margin = grid::unit(c(0.1,0.1,0.1,0.1),"cm")
+    )
+  if (cluster_row){
+    dendro_row = ggdendro::dendro_data(rowclust)
+    dendro_segments_row = dendro_row$segments
+    dendro_segments_row[,c("y","yend")] = (dendro_segments_row[,c("y","yend")] * sqrt(nrow(X)*ncol(X)) / max(dendro_segments_row[,c("y","yend")]) * 0.4) + ncol(X) + 1
+    p = p + geom_segment(data = dendro_segments_row,  mapping = aes(x=y,xend=yend, y = x, yend = xend, col=NULL))
+  }
+  if (cluster_col){
+    dendro_col = ggdendro::dendro_data(colclust)
+    dendro_segments_col = dendro_col$segments
+    dendro_segments_col[,c("y","yend")] = (dendro_segments_col[,c("y","yend")]* sqrt(nrow(X)*ncol(X)) / max(dendro_segments_col[,c("y","yend")])  * 0.4) + nrow(X) + 1
+    p = p + geom_segment(data = dendro_segments_col,  mapping = aes(x=x,xend=xend, y = y, yend = yend, col=NULL))
+  }
+  
+  colors = c(scales::muted("blue"),"white",scales::muted("red"))
+  limits = c(min(mdf$value,na.rm=T), max(mdf$value,na.rm=T))
+  guidebreaks = c(limits[1],0,limits[2])
+
+  p = p + scale_fill_gradient2(name = "Deviation\nScore",limits = limits,low = colors[1], mid = colors[2], high = colors[3], 
+                               breaks = guidebreaks, label = pretty_scale_format, expand=c(0,0), midpoint = 0)
+  
+  if (!is.na(xlabel)){
+    p = p + xlab(xlabel)
+  } else{
+    p = p + theme(axis.title.x = element_blank())
+  }
+  if (!is.na(ylabel)){
+    p = p + ylab(ylabel)
+  } else{
+    p = p + theme(axis.title.y = element_blank())
+  }  
+  if (!is.na(name)){
+    p = p + ggtitle(name)
+  }
+  if (!is.null(sample_annotation)){
+    tmp_df = data.frame(x = 1:ncol(X) - 0.5, xend = 1:ncol(X) + 0.5, y = -2, yend = min(-2 - nrow(X) *0.025,-3), z = anno)
+    p = p  + geom_segment(data = tmp_df, 
+                        mapping= aes(x = x, y = y, xend = xend, yend = yend, colour = z, fill =NULL)) + 
+      scale_color_discrete(name = "Sample\nAnnotation") + theme(legend.box = "horizontal", legend.background=element_blank())
+  }
+  return(p)
+
+}
+
+# Plotting kmer group ----------------------------------------------------------
+
+
+plot_kmer_group <- function(a, similar_motifs, plot.consensus = TRUE){
+  p = ggplot()
+  for (i in 1:nrow(a)){
+    p = p + ggmotif(a$kmer[i], y.pos = (nrow(a)-i)*1.25, x.pos = a$shift[i])
+  }  
+  anno_df = data.frame(y = (nrow(a)-1)*1.25+0.5, label = "K-mers")
+  if (plot.consensus){  
+    consensus = Biostrings::consensusMatrix(Biostrings::DNAStringSet(a$kmer),
+                                            shift = a$shift - min(a$shift))[1:4,]
+    consensus_shift = align_pwms(consensus, seq_to_pwm(a$kmer[1]), both_strands = FALSE)$pos
+    tmp_y = min(sapply(ggplot_build(p)$data, function(obj) min(obj$y))) - 2
+    p = p + ggmotif(consensus / max(consensus), 
+                    y.pos = tmp_y, 
+                    x.pos = consensus_shift)
+    anno_df = rbind(anno_df, data.frame(y = tmp_y + 0.5, label = "Consensus"))
+  }
+  if (!is.null(motif_list)){
+    if (!plot.consensus){
+      consensus = Biostrings::consensusMatrix(Biostrings::DNAStringSet(a$kmer),
+                                              shift = a$shift - min(a$shift))[1:4,]
+      consensus_shift = align_pwms(consensus, seq_to_pwm(a$kmer[1]), both_strands = FALSE)$pos
+    }
+    tmp_y = min(sapply(ggplot_build(p)$data, function(obj) min(obj$y))) - 2
+    for (i in 1:length(similar_motifs)){
+      m = as.matrix(similar_motifs[[i]])
+      m = m / matrix(colSums(m), byrow = FALSE, nrow = nrow(m), ncol=ncol(m))
+      m2 = m + 0.1
+      m2 = m2 / matrix(colSums(m2), byrow = TRUE, nrow = nrow(m2), ncol= ncol(m2))
+      m2 = log(m2/0.25)
+      tmp_a = align_pwms(m2, consensus, both_strands = TRUE)
+      tmp_shift = tmp_a$pos[1] + consensus_shift
+      if (tmp_a$strand[1] == -1) m = Biostrings::reverseComplement(m)
+      p = p + ggmotif(m, 
+                      y.pos = tmp_y - (i-1) * 1.25, 
+                      x.pos = tmp_shift)
+      anno_df = rbind(anno_df, data.frame(y = tmp_y - (i-1) * 1.25 + 0.5, label = name(similar_motifs[[i]])))
+    }
+  }
+  
+  out = p + ggmotif_scale() + ggmotif:::ggmotif_theme() +
+    scale_x_continuous(breaks = 0:max(sapply(1:nrow(a), function(x) nchar(a$kmer[x]) + a$shift[x]))) +
+    scale_y_continuous(breaks = anno_df$y, labels = anno_df$label) +
+    xlab("position relative to start of seed kmer (bp)") +
+    theme(axis.line = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_text(face="bold",size=12),
+          axis.ticks = element_blank(),
+          axis.title = element_blank())
+  
+  return(out)
+}
+
+
+
+
+

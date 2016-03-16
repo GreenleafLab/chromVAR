@@ -19,6 +19,8 @@ An S4 class to store chromVAAR result
 \describe{
 \item{\code{deviations}}{}
 
+\item{\code{foldchange}}{}
+
 \item{\code{variability}}{}
 
 \item{\code{variability_bounds}}{}

@@ -18,7 +18,6 @@ variability(object, ...)
 }
 \description{
 Accessor for variability metric in deviationResult or deviationResultSet.
-Use \code{\link{metric}} to find metric
 }
 \section{Methods (by class)}{
 \itemize{
@@ -27,6 +26,6 @@ Use \code{\link{metric}} to find metric
 \item \code{deviationResultSet}: returns numeric vector of variability metric for all results in set
 }}
 \seealso{
-\code{\link{metric}}, \code{\link{variability_bounds}}
+\code{\link{variability_bounds}}
 }
 

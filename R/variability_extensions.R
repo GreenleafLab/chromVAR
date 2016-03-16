@@ -3,7 +3,6 @@ cor_helper <- function(a, b, ...){
   return(c(r = res$estimate[[1]],p = res$p.value))
 }
 
-#' @export
 get_correlated_results <- function(name, results, p.cutoff = 0.01, corr.cutoff = 0.5){
   mat = deviations(results)
   ix = which(names(results) == name)
@@ -12,8 +11,18 @@ get_correlated_results <- function(name, results, p.cutoff = 0.01, corr.cutoff =
   return(names(results)[sig[sig != ix]])
 }
 
+
+#' get_variable_peaks
+#' 
+#' function to find individual peaks with variability correlated with the variability 
+#' of a set of peaks
+#' @param counts_mat \code{\link{fragmentCounts}} object
+#' @param deviation_result  \code{\link{deviationResult}} object
+#' 
 #' @export
-get_peak_dev_assoc <- function(counts_mat, dev, bg.reps = 100, progress.bar = TRUE){
+get_variable_peaks <- function(counts_mat, deviation_result){
+  
+  dev = deviations(deviation_result)
   
   #break into groups of 500
   grpsize = 500
@@ -31,34 +40,30 @@ get_peak_dev_assoc <- function(counts_mat, dev, bg.reps = 100, progress.bar = TR
     densemat = as.matrix(counts_mat@counts[grp,])
     cor_res = sapply(1:length(grp), 
                      function(x) pcaPP::cor.fk(densemat[x,],
-                                               dev[sample.int(length(dev))]))
+                                               sample(dev)))
     return(cor_res)
   }
-  
   
   out <- do.call(c,BiocParallel::bplapply(grps, helperfun))
    
   countab = tabulate(counts_mat@fragments_per_peak)
   sig = rep(1, length(out))
-  if (progress.bar) pb = txtProgressBar()
   for (i in 1:length(countab)){
     if (countab[i] > 0){
-      if (progress.bar && (i %% 10 ==0)) setTxtProgressBar(pb, i/(length(countab)/10))
+      print(i)
       ix = which(counts_mat@fragments_per_peak == i)
-      ix.sub = ix[sample.int(length(ix), size = bg.reps, replace = TRUE)]
+      ix.sub = ix[sample.int(length(ix), size = length(out), replace = TRUE)]
       grps <- lapply(1:(bg.reps %/% grpsize + ((bg.reps %% grpsize)!=0)), function(x) ix.sub[((x-1)*grpsize +1):(min(x*grpsize,bg.reps))])
       bg <- do.call(c,BiocParallel::bplapply(grps, helperfun2))
-      sig[ix] = sapply(out[ix], function(x) (x - mean(bg))/sd(bg))
+      sig[ix] = sapply(out[ix], function(x) ifelse(mean(bg) > x, mean(bg < x),mean(bg>x)))
     }
   }
-  if (progress.bar) close(pb)
-  sig = pnorm(sig, lower.tail = FALSE)
-  sig[sig > 0.5] = 1 - sig[sig > 0.5]
+  #sig = pnorm(sig, lower.tail = FALSE)
+  #sig[sig > 0.5] = 1 - sig[sig > 0.5]
   out <- data.frame(cor = out, pval = sig)
   
   return(out)
 }
-
 
 
 #' @export
@@ -88,38 +93,27 @@ get_variability_synergy <- function(sets, results, counts_mat, niterations = 50,
 
 
 #' @export
-get_variability_boost <- function(set, sets, counts_mat, niterations= 50, nbg = 50, out = c("fold","z-score","raw")){
+get_variability_boost <- function(set, sets, counts_mat, niterations= 50, nbg = 50){
   tmpsets <- remove_nonoverlap(sets, set)
   tmpresults <- compute_variability(c(list(set),tmpsets), counts_mat, niterations = niterations)
   tmpvar <- variability(tmpresults)[2:length(tmpresults)]
   basevar <- variability(tmpresults)[1]
   out <- match.arg(out)
   
-  if(out == "raw"){
-    return(log2(tmpvar/basevar))
-  } else{
-    setlen = sapply(tmpsets,length)
-    
-    
-    bgsets <- unlist(lapply(setlen, function(x) lapply(1:nbg, function(y) sample(set, x, replace=FALSE))), recursive = F)
-    
-    bgresults <- compute_variability(bgsets, counts_mat, niterations = niterations)
-    bgvar <- variability(bgresults)
-    
-    if (out == "fold"){
-      var_boost <- sapply(seq_along(tmpvar), 
-                          function(x) log2(tmpvar[x]) - log2(mean(bgvar[((x-1)*nbg+1):(x*nbg)])))
-    } else{
-      var_boost <- sapply(seq_along(tmpvar), 
-                          function(x) (tmpvar[x] - mean(bgvar[((x-1)*nbg+1):(x*nbg)]))/ 
-                            sd(bgvar[((x-1)*nbg+1):(x*nbg)])  )
-    }
-    return(var_boost)
-  }
+  setlen = sapply(tmpsets,length)
+  
+  bgsets <- unlist(lapply(setlen, function(x) lapply(1:nbg, function(y) sample(set, x, replace=FALSE))), recursive = F)
+  
+  bgresults <- compute_variability(bgsets, counts_mat, niterations = niterations)
+  bgvar <- variability(bgresults)
+  
+  var_boost <- sapply(seq_along(tmpvar), 
+                      function(x) (tmpvar[x] - mean(bgvar[((x-1)*nbg+1):(x*nbg)]))/ 
+                        sd(bgvar[((x-1)*nbg+1):(x*nbg)])  )
+  return(var_boost)
 }
 
 
-#' @export
 get_independent_variability <- function(to.remove, 
                                         sets, 
                                         counts_mat,
@@ -133,31 +127,29 @@ get_independent_variability <- function(to.remove,
 
 
 #' @export
-get_top_sets <- function(results, sets, counts_mat,
+get_top_sets <- function(results,
+                          sets, 
+                          counts_mat,
                          niterations = 50,
                          p_cutoff = 0.01,
                          max_iter = 25){
   
   #Get only significant sets
   results <- subset_by_variability(results, cutoff = p_cutoff, adjusted = TRUE)
-  tmpsets <- sets[names(results)]
   p <- get_pvalues(results, adjust = TRUE)
   
   #get max variable
   max_var <- which(variability(results) == max(variability(results)))
   max_var_name <- names(results)[max_var]
-  min_p <- p[max_var]
   
   #initialize output
-  out <- results[max_var]
+  out <- c(max_var_name)
   
   #Iterate...
   iter = 2
   candidates <- names(tmpsets)[names(tmpsets) != max_var_name]
   while( length(candidates) > 0 && iter < max_iter){
-    cors <- get_peak_dev_assoc(counts_mat = fc[sets[[max_var_name]],], dev = deviations(results[[max_var_name]]), progress.bar = FALSE)
-    to.remove <- sets[[max_var_name]][intersect(which(cors$cor > 0), which(cors$pval < p_cutoff))]
-    tmpsets <- remove_overlap(tmpsets[candidates], to.remove)
+    tmpsets <- remove_overlap(sets[candidates], sets[[max_var_name]])
     tmpresults <- compute_variability(tmpsets, counts_mat, niterations = niterations)
     tmpresults <- set_nresult(tmpresults, results@nresult)
     tmpresults <- subset_by_variability(tmpresults, cutoff = p_cutoff, adjusted = TRUE)
@@ -167,17 +159,17 @@ get_top_sets <- function(results, sets, counts_mat,
     # get most variable...
     max_var <- which(variability(tmpresults) == max(variability(tmpresults)))
     max_var_name <-  names(tmpresults)[max_var]
-    min_p <- min(get_pvalues(tmpresults, adjust = TRUE))
     
-    out <- c(out, tmpresults[max_var])
-    candidates <- names(tmpresults)[-max_var]
-    iter <- iter + 1
+    out <- c(out, max_var_name)
+    if (length(tmpresults > 1)){
+      candidates <- names(tmpresults)[-max_var]
+      iter <- iter + 1
+    } else{
+      break
+    }
   }
-  
-  out <- set_nresult(out, results@nresult)
   
   return(out)
 }
-
 
 

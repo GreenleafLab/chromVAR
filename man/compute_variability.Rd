@@ -5,7 +5,7 @@
 \title{compute_variability}
 \usage{
 compute_variability(motif_indices, counts_mat, niterations = 50,
-  metric = c("z-score", "old"), count = NULL)
+  count = NULL)
 }
 \arguments{
 \item{motif_indices}{list of indices representing different sets of peaks}
@@ -13,8 +13,6 @@ compute_variability(motif_indices, counts_mat, niterations = 50,
 \item{counts_mat}{fragmentCounts object}
 
 \item{niterations}{number of background sets to sample}
-
-\item{metric}{which metric to use? default is z-score}
 
 \item{count}{is input data count data?  will determine based on data if not given}
 }

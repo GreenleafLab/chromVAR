@@ -5,8 +5,7 @@
 \title{compute_deviations}
 \usage{
 compute_deviations(peak_set, counts_mat, niterations = 50,
-  metric = c("z-score", "old"), intermediate_results = FALSE,
-  count = NULL)
+  intermediate_results = FALSE, count = NULL)
 }
 \arguments{
 \item{peak_set}{vector of indices for peaks in set}
@@ -15,7 +14,9 @@ compute_deviations(peak_set, counts_mat, niterations = 50,
 
 \item{niterations}{number of background sets to sample}
 
-\item{metric}{which metric to use?  default is z-score}
+\item{intermediate_results}{should intermediate results be comptuted?}
+
+\item{count}{is data count data?}
 }
 \value{
 \code{\link{deviationResult}}

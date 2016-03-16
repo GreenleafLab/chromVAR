@@ -26,7 +26,8 @@ Imports:
     gtools,
     plyr,
     methods,
-    Rcpp
+    Rcpp,
+    ggdendro
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     readr,
@@ -48,5 +49,6 @@ Collate:
     'motif_crap.R'
     'motifs.R'
     'peaks.R'
+    'plotting.R'
     'utils.R'
     'variability_extensions.R'

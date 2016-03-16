@@ -23,6 +23,25 @@ sampleBackgroundPeaks <- function(object, peak_set, niterations = 50){
   return(sampled_counts)
 }
 
+#' @export
+sampleBackgroundPeaks2 <- function(object, peak_set, niterations = 50){
+  
+  stopifnot(inherits(object, "fragmentCounts"))
+  stopifnot(niterations <= ncol(object@background_peaks))
+  
+  sample_mat = sparseMatrix(j = unlist(object@background_peaks[peak_set,1:niterations],use.names=FALSE), 
+                            i = rep(1:niterations, each = length(peak_set)), 
+                            x=1, 
+                            dims = c(niterations, object@npeak))
+  
+  sampled_counts =  as.matrix(t(sample_mat %*% ((object@counts - outer(object@fragments_per_peak, object@fragments_per_sample/object@total_fragments)) / 
+                                                  outer(sqrt(object@fragments_per_peak), sqrt(object@fragments_per_sample/object@total_fragments)))))
+  
+  return(sampled_counts)
+}
+
+
+
 
 #' getBackgroundPeakSets
 #' 
@@ -73,17 +92,6 @@ getBackgroundPeakSets <- function(counts_mat, niterations = 50, window = 500, wi
   counts_mat@background_peaks <- do.call(rbind, BiocParallel::bplapply(grps, bghelper, reflected, tmp_vals, with_replacement, niterations))
   return(counts_mat)
 }
-  
-#   
-#   nns <- FNN::get.knn(tmp_vals, k = window)$nn.index
-#   if (niterations == 1){
-#     counts_mat@background_peaks <- matrix(apply(nns[1:length(counts_mat@peaks),], 1, function(x) reflected$replace(sample(x, niterations, replace = with_replacement))),
-#                                           ncol = 1)
-#   } else{
-#     counts_mat@background_peaks <- t(apply(nns[1:length(counts_mat@peaks),], 1, function(x) reflected$replace(sample(x, niterations, replace = with_replacement))))
-#   }
-#   return(counts_mat)
-#}
 
 
 # helper function, not exported

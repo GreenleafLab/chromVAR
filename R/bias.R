@@ -34,8 +34,7 @@ setMethod("compute_bias","fragmentCounts",
             return(object)
           })
 
-#' @keywords internal
-#' @export
+
 make_bias_bins <- function(counts_mat, nbins = 25){
   npeaks = length(counts_mat@peaks)
   #make bias bins
@@ -60,16 +59,15 @@ make_bias_bins <- function(counts_mat, nbins = 25){
   bias_count_bins = sapply(1:nbins, function(x) sapply(1:nbins, function(y) intersect(tmp_bias_bins[[y]], tmp_count_bins[[x]])))
   names(bias_count_bins) = sapply(1:nbins, function(x) sapply(1:nbins, function(y) paste("bias_count_bin_",x,"_",y,sep="",collapse="")))
   tmp = c(bias_bins, count_bins, bias_count_bins)
-  out = lapply(tmp, function(x) sample(x, size = length(x)/3))
-  return(out)
+  #out = lapply(tmp, function(x) sample(x, size = length(x)/3))
+  #return(out)
+  return(tmp)
 }
 
-#' @keywords internal
-#' @export
 make_permuted_sets <- function(counts_mat, motif_indices, window = 10, count=TRUE){
   bg <- getBackgroundPeakSets(counts_mat, niterations = 1, window = window, count = count)
   sets <- lapply(seq_along(motif_indices), function(x) bg@background_peaks[motif_indices[[x]],1])
-  names(sets) <- sapply(names(motif_indices), function(x) paste("permuted_",x,collapse=""))
+  names(sets) <- sapply(names(motif_indices), function(x) paste("permuted.",x,collapse="",sep=""))
   return(sets)
 }
 

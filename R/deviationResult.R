@@ -3,6 +3,7 @@
 #' 
 #' An S4 class to store chromVAAR result
 #' @slot deviations 
+#' @slot foldchange
 #' @slot variability
 #' @slot variability_bounds
 #' @slot name
@@ -14,6 +15,7 @@
 #' @aliases deviations, variability, variability_bounds, name, metric, pvalues
 deviationResult <- setClass("deviationResult",
                             slots = c(deviations = 'numeric',
+                                      foldchange = 'numeric',
                                       variability = 'numeric',
                                       variability_bounds = 'numeric',
                                       name = 'character',
@@ -48,24 +50,12 @@ setMethod("set_nresult", "deviationResult",
             return(object)
             })
 
-#' metric
-#' 
-#' Accessor for which variability metric was used.
-#' @param object either \code{\link{deviationResult}} or \code{\link{deviationResultSet}} object
-#' @seealso \code{\link{variability}} 
-setGeneric("metric", function(object, ...) standardGeneric("metric"))
-
-#' @describeIn metric  returns name of metric used
-#' @export
-setMethod("metric", "deviationResult",
-          function(object){object@metric})
 
 #' deviations
 #' 
-#' Accessor for deviations metric in deviationResult.
-#' Use \code{\link{metric}} to find metric
+#' Accessor for deviations z-score in deviationResult.
 #' @param object either \code{\link{deviationResult}} or \code{\link{deviationResultSet}}
-#' @seealso \code{\link{metric}}, \code{\link{variability_bounds}} 
+#' @seealso \code{\link{foldchange}}, \code{\link{variability_bounds}} 
 setGeneric("deviations", function(object, ...) standardGeneric("deviations"))
 
 #' @describeIn deviations returns vector of deviations for samples
@@ -73,14 +63,28 @@ setGeneric("deviations", function(object, ...) standardGeneric("deviations"))
 setMethod("deviations", "deviationResult",
           function(object){object@deviations})
 
+#' foldchange
+#' 
+#' Accessor for foldchange in deviationResult.
+#' @param object either \code{\link{deviationResult}} or \code{\link{deviationResultSet}}
+#' @details foldchange returns the fold change difference between the observed accessibility
+#' for a set of peaks in a particular sample and the mean accessibility in sets of
+#' background peaks
+#' @seealso \code{\link{deviations}}, \code{\link{variability_bounds}} 
+setGeneric("foldchange", function(object, ...) standardGeneric("foldchange"))
+
+#' @describeIn foldchange returns vector of fold change for samples
+#' @export
+setMethod("foldchange", "deviationResult",
+          function(object){object@foldchange})
+
 
 
 #' variability
 #' 
 #' Accessor for variability metric in deviationResult or deviationResultSet.
-#' Use \code{\link{metric}} to find metric
 #' @param object either \code{\link{deviationResult}} or \code{\link{deviationResultSet}} object
-#' @seealso \code{\link{metric}}, \code{\link{variability_bounds}} 
+#' @seealso  \code{\link{variability_bounds}} 
 setGeneric("variability", function(object, ...) standardGeneric("variability"))
 
 #' @describeIn variability  returns single numeric value representing the variability metric for that result
@@ -116,11 +120,10 @@ setGeneric("get_pvalues", function(object, ...) standardGeneric("get_pvalues"))
 #' @export
 setMethod("get_pvalues", "deviationResult",
           function(object, what = c("deviations","variability"), adjust = TRUE){
-            stopifnot(metric(object)!="old")
             what = match.arg(what)
             if (what == "deviations"){
               if (adjust){
-                return(p.adjust(object@p_deviations, method = "BH", n = object@nsample))
+                return(p.adjust(object@p_deviations, method = "BH"))
               } else{
                 return(object@p_deviations)                
               }
@@ -172,17 +175,13 @@ setGeneric("differential_peaks", function(object, ...) standardGeneric("differen
 setMethod("differential_peaks", "deviationResult",
           function(object, counts_mat, cutoff1 = 0.05, cutoff2 = 0.05){
             changing = differential_samples(object, cutoff1)
-            mat = matrix(0, nrow = object@npeak, ncol = 2, dimnames = list(NULL, c("up","down","steady")))
-            mat[,"up"] = rowSums(counts_mat@counts[,changing@up])
-            mat[,"down"] = rowSums(counts_mat@counts[,changing@down])
-            mat[,"steady"] = rowSums(counts_mat@counts[,chaning@steady])
-            updowncounts = fragmentCounts(counts = Matrix(mat), peaks = object@peaks)
+            mat = matrix(0, nrow = counts_mat@npeak, ncol = 3, dimnames = list(NULL, c("up","down","steady")))
+            mat[,"up"] = rowSums(counts_mat@counts[,changing$up])
+            mat[,"down"] = rowSums(counts_mat@counts[,changing$down])
+            mat[,"steady"] = rowSums(counts_mat@counts[,changing$steady])
+            updowncounts = fragmentCounts(counts = Matrix(mat), peaks = counts_mat@peaks, background_peaks = counts_mat@background_peaks)
             devs = peak_deviations(updowncounts)
-            dev_sds = apply(peak_deviations,1,sd)
-            pvals = pchisq(2*(dev_sds**2), df = 2, lower.tail = FALSE)
-            out = cbind(devs,dev_sds,pvals)
-            colnames(out) = c("up","down","steady","sd","pvalue")
-            return(out)
+            return(devs)
           })
 
 

@@ -17,8 +17,7 @@ deviations(object, ...)
 \item{object}{either \code{\link{deviationResult}} or \code{\link{deviationResultSet}}}
 }
 \description{
-Accessor for deviations metric in deviationResult.
-Use \code{\link{metric}} to find metric
+Accessor for deviations z-score in deviationResult.
 }
 \section{Methods (by class)}{
 \itemize{
@@ -28,6 +27,6 @@ Use \code{\link{metric}} to find metric
 samples and rows representing annotation sets
 }}
 \seealso{
-\code{\link{metric}}, \code{\link{variability_bounds}}
+\code{\link{foldchange}}, \code{\link{variability_bounds}}
 }
 
