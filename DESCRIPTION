@@ -23,7 +23,6 @@ Imports:
     JASPAR2014,
     Rsamtools,
     S4Vectors,
-    gtools,
     plyr,
     methods,
     Rcpp,
@@ -33,22 +32,4 @@ Suggests:
     readr,
     testthat
 LinkingTo: Rcpp
-Collate:
-    'RcppExports.R'
-    'backgroundPeaks.R'
-    'fragmentCounts.R'
-    'bias.R'
-    'chromVAR.R'
-    'compute_variability.R'
-    'deviationResult.R'
-    'deviationResultSet.R'
-    'experimental.R'
-    'kmer.R'
-    'kmer_experimental.R'
-    'legacy.R'
-    'motif_crap.R'
-    'motifs.R'
-    'peaks.R'
-    'plotting.R'
-    'utils.R'
-    'variability_extensions.R'
+

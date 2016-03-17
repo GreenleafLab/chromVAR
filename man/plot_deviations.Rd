@@ -4,7 +4,7 @@
 \alias{plot_deviations}
 \title{plot_deviations}
 \usage{
-plot_deviations(object, xlabel = NA, ylabel = NA, name = NA,
+plot_deviations(X, xlabel = NA, ylabel = NA, name = NA,
   cluster_row = TRUE, cluster_col = TRUE, cluster_row_dist = cor_dist,
   cluster_col_dist = cor_dist, sample_annotation = NULL)
 }

@@ -38,12 +38,7 @@ get_motif_indices <- function(motifs,
                                peaks, 
                                genome =  BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, 
                                p.cutoff = 0.00005){
-  if (inherits(peaks,"fragmentCounts")){
-    peaks <- peaks@peaks
-  }
-  if (!inherits(peaks,"GenomicRanges")){
-    stop("peaks input must be fragmentCounts or GenomicRanges.")
-  }
+  stopifnot(inherits(peaks,"GenomicRanges"))
   # If PFMatrixList or PFMatrix, convert to PWM
   if (inherits(motifs,"PFMatrixList")){
     motifs <- do.call(TFBSTools::PWMatrixList,lapply(motifs, TFBSTools::toPWM))

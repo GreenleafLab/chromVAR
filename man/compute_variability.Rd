@@ -4,28 +4,19 @@
 \alias{compute_variability}
 \title{compute_variability}
 \usage{
-compute_variability(motif_indices, counts_mat, niterations = 50,
-  count = NULL)
+compute_variability(deviations, bootstrap_error = TRUE,
+  bootstrap_samples = 1000, bootstrap_quantiles = c(0.025, 0.975))
 }
 \arguments{
-\item{motif_indices}{list of indices representing different sets of peaks}
+\item{deviations}{output from \code{\link{compute_deviations}}}
 
-\item{counts_mat}{fragmentCounts object}
+\item{bootstrap_error}{compute bootstrap confidence interval}
 
-\item{niterations}{number of background sets to sample}
+\item{bootstrap_samples}{number of bootstrap samples to take}
 
-\item{count}{is input data count data?  will determine based on data if not given}
-}
-\value{
-\code{\link{deviationResultSet}}
+\item{bootstrap_quantiles}{quantiles for bootstrap}
 }
 \description{
-Computes variability across sets of annotations
-}
-\details{
-multiprocessing using \code{\link[BiocParallel]{bplapply}}
-}
-\seealso{
-\code{\link{deviationResultSet}}, \code{\link{variability}}, \code{\link{plot_variability}}
+function to compute overall variability of motif sets across samples
 }
 
