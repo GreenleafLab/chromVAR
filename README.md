@@ -17,17 +17,17 @@ Computing variability
 - compute variability for sets of peaks [100%]
 
 Basic extensions for variability
-- find samples with high or low accessibility for set of peaks [50%] 
+- find samples with high or low accessibility for set of peaks [90%] 
 - find peaks with high or low accessibility across set of samples [90%] 
 
 More complex extensions
-- find groups of annotations/motifs/kmers with independent variability [75%] 
+- find groups of annotations/motifs/kmers with independent variability [85%] 
 - for groups of kmers, group kmers that likely make up the same motif [80%] 
-- clustering of samples based on variability [30%]{?}
+- clustering of samples based on variability [70%]
 - correlation with gene expression [0%]
 
 Differential variablity
-- find sets with greater variability in one sample versus another [0%]{?}
+- find sets with greater variability in one sample versus another [0%]
 
 Visualization
 - plot variability [100%] 
