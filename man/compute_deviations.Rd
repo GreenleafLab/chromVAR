@@ -4,7 +4,7 @@
 \alias{compute_deviations}
 \title{compute_deviations}
 \usage{
-compute_deviations(counts_mat, background_peaks, motif_indices = NULL,
+compute_deviations(counts_mat, background_peaks, peak_indices = NULL,
   expectation = NULL)
 }
 \arguments{
@@ -12,7 +12,7 @@ compute_deviations(counts_mat, background_peaks, motif_indices = NULL,
 
 \item{background_peaks}{background peaks matrix}
 
-\item{motif_indices}{list of indices representing different sets of peaks}
+\item{peak_indices}{list of indices representing different sets of peaks}
 
 \item{expectation}{expectations computed using \code{\link{compute_expectations}}}
 }

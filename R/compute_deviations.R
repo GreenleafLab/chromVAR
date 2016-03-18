@@ -95,14 +95,14 @@ compute_deviations <- function(counts_mat,
   
   if (is.installed("BiocParallel")){
     results <- t(simplify2array(BiocParallel::bplapply(peak_indices,
-                                                         compute_deviations_single,
+                                                         compute_deviations_single_wrapper,
                                                          counts_mat, 
                                                          background_peaks,
                                                          expectation,
                                                          counts_info)))
   } else{
     results <- t(simplify2array(lapply(peak_indices,
-                                         compute_deviations_single,
+                                         compute_deviations_single_wrapper,
                                          counts_mat,
                                          background_peaks,
                                          expectation,
@@ -115,7 +115,23 @@ compute_deviations <- function(counts_mat,
 
 # Helper Functions -------------------------------------------------------------
 
-compute_deviations_single <- function(peak_set, 
+compute_deviations_single_wrapper <- function(peak_set, 
+                                              counts_mat, 
+                                              background_peaks,
+                                              expectation,
+                                              counts_info = NULL,
+                                              intermediate_results=FALSE){
+  if (is.null(counts_info)){
+    counts_info = counts_summary(counts_mat)
+  }
+  
+  out <- compute_deviations_single(peak_set - 1, counts_mat, background_peaks, expectation, counts_info)
+  names(out) <- colnames(counts_mat)
+  return(out)
+}
+
+
+compute_deviations_single_slow <- function(peak_set, 
                                 counts_mat, 
                                 background_peaks,
                                 expectation,
@@ -132,9 +148,9 @@ compute_deviations_single <- function(peak_set,
     observed <- (as.vector(counts_mat[peak_set,]) - (expectation[peak_set] * counts_info$fragments_per_sample)) /
       sqrt(expectation[peak_set] * counts_info$fragments_per_sample)
     names(observed) <- colnames(counts_mat)
-    sampled_counts <-  t((as.matrix(counts_mat[counts_info$background_peaks[peak_set,],]) -
-                            outer(expectation[counts_info$background_peaks[peak_set,]],counts_info$fragments_per_sample)) /    
-                           outer(sqrt(expectation[counts_info$background_peaks[peak_set,]]),
+    sampled_counts <-  t((as.matrix(counts_mat[background_peaks[peak_set,],]) -
+                            outer(expectation[background_peaks[peak_set,]],counts_info$fragments_per_sample)) /    
+                           outer(sqrt(expectation[background_peaks[peak_set,]]),
                                  sqrt(counts_info$fragments_per_sample)))
   }
   else {
@@ -148,7 +164,8 @@ compute_deviations_single <- function(peak_set,
     sampled_counts <- sample_background_peaks(counts_mat = counts_mat,
                                               background_peaks = background_peaks,
                                               peak_set = peak_set,
-                                              counts_info = counts_info)
+                                              counts_info = counts_info,
+                                              expectation = expectation)
   } 
   
   mean_sampled_deviation <- rowMeans(sampled_counts)
@@ -165,16 +182,16 @@ compute_deviations_single <- function(peak_set,
   }
 }
 
-sample_background_peaks <- function(counts_mat, peak_set, background_peaks, counts_info){
+sample_background_peaks <- function(counts_mat, peak_set, background_peaks, counts_info, expectation){
   
   niterations = ncol(background_peaks)
-  sample_mat = sparseMatrix(j = unlist(background_peaks[peak_set,1:niterations],use.names=FALSE), 
+  sample_mat = sparseMatrix(j = as.vector(background_peaks[peak_set,1:niterations]), 
                             i = rep(1:niterations, each = length(peak_set)), 
                             x=1, 
                             dims = c(ncol(background_peaks), counts_info$npeak))
   
-  sampled_counts =  as.matrix(t(sample_mat %*% ((counts_mat - outer(counts_info$fragments_per_peak, counts_info$fragments_per_sample/counts_info$total_fragments)) / 
-                                                  outer(sqrt(counts_info$fragments_per_peak), sqrt(counts_info$fragments_per_sample/counts_info$total_fragments)))))
+  sampled_counts =  as.matrix(t(sample_mat %*% ((counts_mat - outer(expectation, counts_info$fragments_per_sample)) / 
+                                                  outer(sqrt(expectation), sqrt(counts_info$fragments_per_sample)))))
   
   return(sampled_counts)
 }

@@ -31,5 +31,5 @@ Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     readr,
     testthat
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RcppArmadillo
 
