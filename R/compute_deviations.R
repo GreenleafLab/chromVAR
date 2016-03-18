@@ -124,9 +124,26 @@ compute_deviations_single_wrapper <- function(peak_set,
   if (is.null(counts_info)){
     counts_info = counts_summary(counts_mat)
   }
-  
-  out <- compute_deviations_single(peak_set - 1, counts_mat, background_peaks, expectation, counts_info)
-  names(out) <- colnames(counts_mat)
+  if (inherits(counts_mat,"dgCMatrix")){
+    if (intermediate_results){
+      out <- compute_deviations_single_sparse_with_intermediates(peak_set - 1, counts_mat, background_peaks, expectation, counts_info)       
+    } else{
+      out <- compute_deviations_single_sparse(peak_set - 1, counts_mat, background_peaks, expectation, counts_info)  
+    }   
+  } else{
+    if (intermediate_results){
+      out <- compute_deviations_single_dense_with_intermediates(peak_set - 1, counts_mat, background_peaks, expectation, counts_info)       
+    } else{
+      out <- compute_deviations_single_dense(peak_set - 1, as.matrix(counts_mat), background_peaks, expectation, counts_info)    
+    }
+  }
+  if (intermediate_results){
+    names(out[["deviations"]]) = colnames(counts_mat)
+    names(out[["observed"]]) = colnames(counts_mat)
+    rownames(out[["observed"]]) = colnames(counts_mat)
+  } else{
+    names(out) <- colnames(counts_mat)    
+  }
   return(out)
 }
 
