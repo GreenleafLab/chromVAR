@@ -26,6 +26,7 @@ Imports:
     plyr,
     methods,
     Rcpp,
+    RcppArmadillo,
     ggdendro
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,

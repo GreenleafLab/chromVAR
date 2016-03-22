@@ -218,7 +218,7 @@ NumericVector compute_deviations_single_sparse(const arma::urowvec peak_set,
 
 
 // [[Rcpp::export]]
-List compute_deviations_single_sparse_with_intermediate(const arma::urowvec peak_set, 
+List compute_deviations_single_sparse_with_intermediates(const arma::urowvec peak_set, 
                                 arma::sp_mat counts, 
                                 const arma::umat background_peaks,
                                 const arma::vec expectation,

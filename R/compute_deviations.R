@@ -124,6 +124,10 @@ compute_deviations_single_wrapper <- function(peak_set,
   if (is.null(counts_info)){
     counts_info = counts_summary(counts_mat)
   }
+  ### Determine if any sets have too low expected counts
+  expected_totals <- sum(expectation[peak_set]) * counts_info$fragments_per_sample
+  fail_filter <- which(expected_totals < 5)  
+  ###
   if (inherits(counts_mat,"dgCMatrix")){
     if (intermediate_results){
       out <- compute_deviations_single_sparse_with_intermediates(peak_set - 1, counts_mat, background_peaks, expectation, counts_info)       
@@ -138,10 +142,16 @@ compute_deviations_single_wrapper <- function(peak_set,
     }
   }
   if (intermediate_results){
+    if (length(fail_filter) > 0){
+      out[["deviations"]][fail_filter] <- NA  
+    }
     names(out[["deviations"]]) = colnames(counts_mat)
     names(out[["observed"]]) = colnames(counts_mat)
-    rownames(out[["observed"]]) = colnames(counts_mat)
+    colnames(out[["sampled"]]) = colnames(counts_mat)
   } else{
+    if (length(fail_filter) > 0){
+      out[["deviations"]][fail_filter] <- NA  
+    }
     names(out) <- colnames(counts_mat)    
   }
   return(out)
@@ -185,14 +195,14 @@ compute_deviations_single_slow <- function(peak_set,
                                               expectation = expectation)
   } 
   
-  mean_sampled_deviation <- rowMeans(sampled_counts)
-  sd_sampled_deviation <- apply(sampled_counts, 1, sd)
+  mean_sampled_deviation <- colMeans(sampled_counts)
+  sd_sampled_deviation <- apply(sampled_counts, 2, sd)
   
   res <- (observed - mean_sampled_deviation) / sd_sampled_deviation
   
   if (intermediate_results){
     out = list(deviations = res, observed = observed,
-               sampled_counts = sampled_counts)
+               sampled = sampled_counts)
     return(out)
   } else{
     return(res)
@@ -207,8 +217,8 @@ sample_background_peaks <- function(counts_mat, peak_set, background_peaks, coun
                             x=1, 
                             dims = c(ncol(background_peaks), counts_info$npeak))
   
-  sampled_counts =  as.matrix(t(sample_mat %*% ((counts_mat - outer(expectation, counts_info$fragments_per_sample)) / 
-                                                  outer(sqrt(expectation), sqrt(counts_info$fragments_per_sample)))))
+  sampled_counts =  as.matrix(sample_mat %*% ((counts_mat - outer(expectation, counts_info$fragments_per_sample)) / 
+                                                  outer(sqrt(expectation), sqrt(counts_info$fragments_per_sample))))
   
   return(sampled_counts)
 }

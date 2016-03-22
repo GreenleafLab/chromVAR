@@ -73,9 +73,9 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// compute_deviations_single_sparse_with_intermediate
-List compute_deviations_single_sparse_with_intermediate(const arma::urowvec peak_set, arma::sp_mat counts, const arma::umat background_peaks, const arma::vec expectation, const List counts_info);
-RcppExport SEXP chromVAR_compute_deviations_single_sparse_with_intermediate(SEXP peak_setSEXP, SEXP countsSEXP, SEXP background_peaksSEXP, SEXP expectationSEXP, SEXP counts_infoSEXP) {
+// compute_deviations_single_sparse_with_intermediates
+List compute_deviations_single_sparse_with_intermediates(const arma::urowvec peak_set, arma::sp_mat counts, const arma::umat background_peaks, const arma::vec expectation, const List counts_info);
+RcppExport SEXP chromVAR_compute_deviations_single_sparse_with_intermediates(SEXP peak_setSEXP, SEXP countsSEXP, SEXP background_peaksSEXP, SEXP expectationSEXP, SEXP counts_infoSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -84,7 +84,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::umat >::type background_peaks(background_peaksSEXP);
     Rcpp::traits::input_parameter< const arma::vec >::type expectation(expectationSEXP);
     Rcpp::traits::input_parameter< const List >::type counts_info(counts_infoSEXP);
-    __result = Rcpp::wrap(compute_deviations_single_sparse_with_intermediate(peak_set, counts, background_peaks, expectation, counts_info));
+    __result = Rcpp::wrap(compute_deviations_single_sparse_with_intermediates(peak_set, counts, background_peaks, expectation, counts_info));
     return __result;
 END_RCPP
 }

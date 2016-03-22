@@ -21,8 +21,8 @@ compute_deviations_single_sparse <- function(peak_set, counts, background_peaks,
     .Call('chromVAR_compute_deviations_single_sparse', PACKAGE = 'chromVAR', peak_set, counts, background_peaks, expectation, counts_info)
 }
 
-compute_deviations_single_sparse_with_intermediate <- function(peak_set, counts, background_peaks, expectation, counts_info) {
-    .Call('chromVAR_compute_deviations_single_sparse_with_intermediate', PACKAGE = 'chromVAR', peak_set, counts, background_peaks, expectation, counts_info)
+compute_deviations_single_sparse_with_intermediates <- function(peak_set, counts, background_peaks, expectation, counts_info) {
+    .Call('chromVAR_compute_deviations_single_sparse_with_intermediates', PACKAGE = 'chromVAR', peak_set, counts, background_peaks, expectation, counts_info)
 }
 
 p_to_score <- function(pwm, bg, p) {
