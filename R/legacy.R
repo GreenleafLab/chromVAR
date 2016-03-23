@@ -40,8 +40,7 @@ compute_deviations_legacy <- function(counts_mat,
   # remove sets of length 0
   peak_indices <- peak_indices[which(sapply(peak_indices,length)>0)]
   
-  if (is.installed("BiocParallel")){
-    results <- BiocParallel::bplapply(peak_indices,
+  results <- BiocParallel::bplapply(peak_indices,
                                       compute_deviations_single_legacy,
                                       counts_mat, 
                                       background_peaks,
@@ -49,15 +48,7 @@ compute_deviations_legacy <- function(counts_mat,
                                       counts_info,
                                       metric = metric)
     
-  } else{
-    results <- lapply(peak_indices,
-                      compute_deviations_single_legacy,
-                      counts_mat,
-                      background_peaks,
-                      expectation,
-                      counts_info,
-                      metric = metric)
-  }
+
   if (metric == "Buenrostro2015"){
     deviations <- t(simplify2array(lapply(results, function(x) x[["deviations"]])))
     variability <- sapply(results, function(x) x[["variability"]])

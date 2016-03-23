@@ -58,12 +58,8 @@ get_background_peaks <- function(counts_mat, bias, niterations = 50, window = 50
     }
   }
   
-  if (is.installed("BiocParallel")){
-    background_peaks <- do.call(rbind, BiocParallel::bplapply(grps, bghelper, reflected, tmp_vals, with_replacement, niterations))
-  } else{
-    background_peaks <- do.call(rbind, lapply(grps, bghelper, reflected, tmp_vals, with_replacement, niterations))
-  }
-  
+  background_peaks <- do.call(rbind, BiocParallel::bplapply(grps, bghelper, reflected, tmp_vals, with_replacement, niterations))
+
   return(background_peaks)
 }
 

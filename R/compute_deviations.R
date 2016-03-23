@@ -95,23 +95,14 @@ compute_deviations <- function(counts_mat,
   # remove sets of length 0
   peak_indices <- peak_indices[which(sapply(peak_indices,length)>0)]
   
-  if (is.installed("BiocParallel")){
-    results <- BiocParallel::bplapply(peak_indices,
+  results <- BiocParallel::bplapply(peak_indices,
                                       compute_deviations_single_wrapper,
                                       counts_mat, 
                                       background_peaks,
                                       expectation,
                                       counts_info,
                                       norm = norm)
-  } else{
-    results <- lapply(peak_indices,
-                      compute_deviations_single_wrapper,
-                      counts_mat,
-                      background_peaks,
-                      expectation,
-                      counts_info,
-                      norm = norm)
-  }
+  
   out <- list()
   out$z <- t(vapply(results, function(x) x[["z"]], rep(0,counts_info$nsample))) 
   out$fc <- t(vapply(results, function(x) x[["fc"]], rep(0,counts_info$nsample))) 
