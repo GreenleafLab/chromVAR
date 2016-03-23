@@ -52,7 +52,7 @@ get_peaks <- function(filename, extra_cols = c()){
   if (is.installed('readr')){
     bed <- readr::read_tsv(file = filename, col_names = FALSE)[, c(1:3, extra_cols)]
   } else{
-    bed <- read.delim(file = filename, col.names = FALSE, sep = "\t", stringsAsFactors = FALSE)[, c(1:3, extra_cols)]
+    bed <- read.delim(file = filename, header = FALSE, sep = "\t", stringsAsFactors = FALSE)[, c(1:3, extra_cols)]
   }
   colnames(bed) <- c("chr", "start", "end", names(extra_cols))
   bed[,"start"] <- bed[,"start"] + 1
@@ -281,7 +281,7 @@ get_sample_depths_from_beds <- function(beds){
   if (is.installed('readr')){
     tmp <- readr::read_tsv(file = filename, col_names = FALSE)
   } else{
-    tmp <- read.delim(file = filename, col.names = FALSE, sep = "\t", stringsAsFactors = FALSE)
+    tmp <- read.delim(file = filename, header = FALSE, sep = "\t", stringsAsFactors = FALSE)
   }
   return(nrow(tmp))
 }
