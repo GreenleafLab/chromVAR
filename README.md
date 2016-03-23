@@ -1,6 +1,6 @@
 
 ```{r}
-devtools::devtools_install("GreenleafLab/chromVAR")
+devtools::install_github("GreenleafLab/chromVAR")
 ```
 
 ```{r}
