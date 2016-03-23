@@ -25,9 +25,13 @@ BiocParallel::register(BiocParallel::MulticoreParam(16))
 bed <- "my_bedfile.bed"
 bamfiles <- c('bam1.bam','bam2.bam')
 
-
 inputs <- get_inputs(bed,bamfiles, by_rg=TRUE, paired=TRUE, format = "bam")
 ```
+
+The function `get_inputs` returns a list with two elements.  The first is a GenomicRanges object with the peaks.  The second is a Matrix of fragment counts per sample/cell for each peak.  The Matrix package is used so that if the matrix is sparse, the matrix will be stored as a sparse Matrix.  If you want to manipulate the counts data in any way in addition to use by chromVAR packages, it is a good idea to load the Matrix package (`library(Matrix)`).
+
+The function also does some filtering of cells/samples and peaks.  Cells/samples with insufficient reads or percentage of reads in peaks are discarded.  Peaks with insufficient counts are also discarded.  By default, 1 read is required across all samples per peak.  Filtering can be turned off by setting the `filter_samples` and/or the `filter_peaks` arguments to `{r}FALSE`. 
+
 
 ##Finding background peaks
 First, compute the gc content from the peaks.  Then use that output as well as the counts to determine background peaks.  
@@ -36,7 +40,7 @@ bias <- get_gc(inputs$peaks)
 bg <- get_background_peaks(counts_mat = inputs$counts, bias = bias)
 ```
 
-Note that the function get_gc also takes in an argument for a BSgenome object.  The default is BSgenome.Hsapiens.UCSC.hg19, so if using a different genome build be sure to provide the correct genome. For example, if using sacCer3 you could do:
+Note that the function `get_gc` also takes in an argument for a BSgenome object.  The default is BSgenome.Hsapiens.UCSC.hg19, so if using a different genome build be sure to provide the correct genome. For example, if using sacCer3 you could do:
 ```{r}
 library(BSgenome.Scerevisiae.UCSC.sacCer3)
 bias <- get_gc(inputs$peaks, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
@@ -72,6 +76,6 @@ Another option is the p.cutoff for determing how stringent motif calling should 
 deviations <- compute_deviations(counts_mat = inputs$counts, background_peaks = bg, peak_indices = motif_ix)
 ```
 
-The function `compute_deviations` returns a list with two matrices. The first matrix (deviations$z if using command above) will give the deviation z-score for each set of peaks (rows) for each cell or sample (columns).  These z-scores represent how accessible the set of peaks is relative to the expectation based on equal chromatin accessibility profiles across cells/samples, normalized by a set of background peak sets matched for GC and average accessability.   The second matrix (deviations$fc) will give the log2 fold change in accessibility for each set of peaks relative to the expected, again normalized the be set of background peaks.  
+The function `compute_deviations` returns a list with two matrices. The first matrix (deviations$z if using command above) will give the deviation z-score for each set of peaks (rows) for each cell or sample (columns).  These z-scores represent how accessible the set of peaks is relative to the expectation based on equal chromatin accessibility profiles across cells/samples, normalized by a set of background peak sets matched for GC and average accessability.   The second matrix (deviations$fc) will give the log2 fold change in accessibility for each set of peaks relative to the expected, again normalized by the set of background peaks.  
 
 
