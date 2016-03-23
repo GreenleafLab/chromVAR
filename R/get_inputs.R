@@ -3,14 +3,16 @@
 # Wrapper function to read everything in ---------------------------------------
 
 #'@export
-get_inputs <- function(bamfiles, bedfile, paired, by_rg, filter_samples = TRUE, filter_peaks = TRUE){
-  message("Reading in bedfile")
-  peaks <- get_peaks(bedfile)
-  message("Reading in fragment counts from bamfiles")
-  counts <- get_counts(bamfiles, peaks, paired = paired, by_rg = by_rg)
+get_inputs <- function(peakfile, alignments, paired, by_rg = FALSE, format = c("bam","bed"), 
+                       filter_samples = TRUE, filter_peaks = TRUE){
+  format = match.arg(format)
+  message("Reading in peak file")
+  peaks <- get_peaks(peakfile)
+  message("Reading in fragment counts")
+  counts <- get_counts(alignments, peaks, paired = paired, by_rg = by_rg, format = format)    
   if (filter_samples){
     message("Filtering samples based on read depth and fraction reads in peaks")
-    depths <- get_sample_depths(bamfiles, paired = paired, by_rg = by_rg)
+    depths <- get_sample_depths(alignments, paired = paired, by_rg = by_rg, format = format)
     if (is.logical(filter_samples)){
       keep_samples = filter_samples(counts_mat = counts, depths = depths)
     } else{
@@ -44,7 +46,7 @@ get_inputs <- function(bamfiles, bedfile, paired, by_rg, filter_samples = TRUE, 
 #' Note that in output GenomicRanges output, start and end indices are both 1-based.
 #' Extra columns can be added as metadata or strand information if provided, but the user must 
 #' indicate column index and name using named vector for extra_cols.  
-#' @seealso \code{\link{get_counts}},  \code{\link{get_inputs}}, \code{\link{filter_peaks}}
+#' @seealso \code{\link{get_counts}}, \code{\link{get_inputs}}, \code{\link{filter_peaks}}
 #'  @export
 get_peaks <- function(filename, extra_cols = c()){
   if (is.installed('readr')){
@@ -70,17 +72,29 @@ get_peaks <- function(filename, extra_cols = c()){
 
 # Main function for reading in counts from bam ---------------------------------
 
-#' getFragmentCounts
+#' get_counts
 #' 
-#' makes matrix of fragment counts in peaks using one or multiple bam files
-#' @param bams filenames for bam file with aligned reads
+#' makes matrix of fragment counts in peaks using one or multiple bam or bed files
+#' @param alignment_files filenames for bam or bed files with aligned reads
 #' @param peaks GRanges object with peaks 
-#' @param by_rg use RG tags to separate groups?
+#' @param by_rg use RG tags in bam to separate groups?
 #' @param paired paired end data?
+#' @param format bam or bed?  default is bam
 #' @return \code{\link[Matrix]{Matrix}} object
 #' @seealso \code{\link{get_sample_depths}},  \code{\link{get_inputs}}, \code{\link{filter_samples}} 
 #' @export
-get_counts <- function(bams, peaks, paired, by_rg = FALSE){
+get_counts<- function(alignment_files, peaks, paired, by_rg = FALSE, format = c("bam","bed")){
+  
+  format = match.arg(format)
+  if (format == "bam"){
+    return(get_counts_from_bams(alignment_files, peaks, paired, by_rg))
+  } else{
+    return(get_counts_from_beds(alignment_files, peaks, paired))
+  }
+}
+
+
+get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE){
   
   if (by_rg){
     counts_mat <- do.call(cBind, lapply(bams, getFragmentCountsByRG, peaks = peaks, paired = paired))
@@ -98,7 +112,44 @@ get_counts <- function(bams, peaks, paired, by_rg = FALSE){
   return(counts_mat)
 }
 
+
+get_counts_from_beds <- function(beds, peaks, paired){
+
+  mat = matrix(nrow = length(peaks), ncol = length(bams))
+  
+  for (i in seq_along(beds)){
+    fragments = readAlignmentFromBed(beds[i], paired = paired)
+    mat[,i] = GenomicRanges::countOverlaps(peaks, fragments, type="any", ignore.strand=TRUE)
+  }
+  colnames(mat) = basename(beds)
+  counts_mat = Matrix(mat)   
+  
+  return(counts_mat)
+}
+
+
+
 # Helper functions for reading in counts from bam ------------------------------
+
+readAlignmentFromBed <- function(bed, paired){
+  if (is.installed('readr')){
+    tmp <- readr::read_tsv(file = filename, col_names = FALSE)
+  } else{
+    tmp <- read.delim(file = filename, col.names = FALSE, sep = "\t", stringsAsFactors = FALSE)
+  }
+    tmp <- tmp[,1:3]
+    colnames(tmp) <- c("chr", "start", "end")
+    tmp[,"start"] <- tmp[,"start"] + 1
+    tmp <- makeGRangesFromDataFrame(tmp)  
+  if (paired){
+    left <- resize(tmp, width = 1, fix = "start", ignore.strand = TRUE)
+    right <- resize(tmp, width = 1, fix = "end", ignore.strand = TRUE)
+    out <- left_right_to_grglist(left,right)
+  } else{
+    out <- resize(tmp, width = 1, ignore.strand = FALSE)
+  }
+  return(out)
+}
 
 left_right_to_grglist <- function(left, right){
   stopifnot(length(left) == length(right))
@@ -194,13 +245,22 @@ getFragmentCountsByRG <- function(bam, peaks, paired){
 #' get_sample_depths
 #' 
 #' makes vector of read depths in bam files or RG groups within bam files
-#' @param bams filenames for bam file with aligned reads
+#' @param alignment_files filenames for bam or bed file(s) with aligned reads
 #' @param by_rg use RG tags to separate groups?
 #' @param paired paired end data?
+#' @param format bam or bed format? default is bam
 #' @return numeric vector
 #' @seealso \code{\link{get_counts}},  \code{\link{get_inputs}}, \code{\link{filter_samples}}
 #' @export
-get_sample_depths <- function(bams, paired = TRUE, by_rg = FALSE){
+get_sample_depths <- function(alignment_files, paired = TRUE, by_rg = FALSE, format = c("bam","bed")){
+  format = match.arg(format)
+  if (format == "bam"){
+    return(get_sample_depths_from_bams(alignment_files, paired, by_rg))
+  } else{
+    return(get_sample_depths_from_beds(alignment_files))
+  }
+}
+get_sample_depths_from_bams <- function(bams, paired = TRUE, by_rg = FALSE){
   if (by_rg){
     out <- do.call(c, lapply(bams, getSampleDepthsByRG, paired = paired))
   } else{
@@ -215,6 +275,15 @@ get_sample_depths <- function(bams, paired = TRUE, by_rg = FALSE){
     names(out) <- sapply(bams, basename)
   }
   return(out)
+}
+
+get_sample_depths_from_beds <- function(beds){
+  if (is.installed('readr')){
+    tmp <- readr::read_tsv(file = filename, col_names = FALSE)
+  } else{
+    tmp <- read.delim(file = filename, col.names = FALSE, sep = "\t", stringsAsFactors = FALSE)
+  }
+  return(nrow(tmp))
 }
 
 getSampleDepthsByRG <- function(bamfile, paired = TRUE){

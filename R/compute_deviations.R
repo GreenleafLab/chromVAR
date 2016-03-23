@@ -58,11 +58,14 @@ compute_expectations <- function(counts_mat,
 compute_deviations <- function(counts_mat, 
                                background_peaks,
                                peak_indices = NULL, 
-                               expectation = NULL){
+                               expectation = NULL,
+                               norm = TRUE){
   
   stopifnot(inherits(counts_mat,"Matrix") || inherits(counts_mat,"matrix"))
   stopifnot(nrow(counts_mat) == nrow(background_peaks))
   
+  counts_info <- counts_summary(counts_mat)
+      
   if (is.null(peak_indices)){
     peak_indices <- lapply(1:counts_info$npeak, function(x) x)
   } else if (!is.list(peak_indices) && is.vector(peak_indices)){
@@ -76,8 +79,7 @@ compute_deviations <- function(counts_mat,
   
   stopifnot(inherits(peak_indices,"list"))
   
-  counts_info <- counts_summary(counts_mat)
-    
+
   # check that indices fall within appropriate bounds
   tmp <- unlist(peak_indices, use.names =F)
   if (is.null(tmp) ||
@@ -94,23 +96,27 @@ compute_deviations <- function(counts_mat,
   peak_indices <- peak_indices[which(sapply(peak_indices,length)>0)]
   
   if (is.installed("BiocParallel")){
-    results <- t(simplify2array(BiocParallel::bplapply(peak_indices,
-                                                         compute_deviations_single_wrapper,
-                                                         counts_mat, 
-                                                         background_peaks,
-                                                         expectation,
-                                                         counts_info)))
+    results <- BiocParallel::bplapply(peak_indices,
+                                      compute_deviations_single_wrapper,
+                                      counts_mat, 
+                                      background_peaks,
+                                      expectation,
+                                      counts_info,
+                                      norm = norm)
   } else{
-    results <- t(simplify2array(lapply(peak_indices,
-                                         compute_deviations_single_wrapper,
-                                         counts_mat,
-                                         background_peaks,
-                                         expectation,
-                                         counts_info)))
+    results <- lapply(peak_indices,
+                      compute_deviations_single_wrapper,
+                      counts_mat,
+                      background_peaks,
+                      expectation,
+                      counts_info,
+                      norm = norm)
   }
+  out <- list()
+  out$z <- t(vapply(results, function(x) x[["z"]], rep(0,counts_info$nsample))) 
+  out$fc <- t(vapply(results, function(x) x[["fc"]], rep(0,counts_info$nsample))) 
   
-  
-  return(results)
+  return(out)
 }
 
 # Helper Functions -------------------------------------------------------------
@@ -120,7 +126,8 @@ compute_deviations_single_wrapper <- function(peak_set,
                                               background_peaks,
                                               expectation,
                                               counts_info = NULL,
-                                              intermediate_results=FALSE){
+                                              intermediate_results=FALSE,
+                                              norm = TRUE){
   if (is.null(counts_info)){
     counts_info = counts_summary(counts_mat)
   }
@@ -129,31 +136,26 @@ compute_deviations_single_wrapper <- function(peak_set,
   fail_filter <- which(expected_totals < 5)  
   ###
   if (inherits(counts_mat,"dgCMatrix")){
-    if (intermediate_results){
-      out <- compute_deviations_single_sparse_with_intermediates(peak_set - 1, counts_mat, background_peaks, expectation, counts_info)       
+    if (length(peak_set) == 1){
+      out <- compute_deviations_single_peak_sparse(peak_set[1] - 1, counts_mat, background_peaks, expectation, counts_info, intermediate_results, norm)  
     } else{
-      out <- compute_deviations_single_sparse(peak_set - 1, counts_mat, background_peaks, expectation, counts_info)  
-    }   
-  } else{
-    if (intermediate_results){
-      out <- compute_deviations_single_dense_with_intermediates(peak_set - 1, counts_mat, background_peaks, expectation, counts_info)       
-    } else{
-      out <- compute_deviations_single_dense(peak_set - 1, as.matrix(counts_mat), background_peaks, expectation, counts_info)    
+      out <- compute_deviations_single_sparse(peak_set - 1, counts_mat, background_peaks, expectation, counts_info, intermediate_results, norm)        
     }
+  } else{
+    out <- compute_deviations_single_dense(peak_set - 1, counts_mat, background_peaks, expectation, counts_info, intermediate_results, norm)       
   }
+  sample_names = colnames(counts_mat)
+  if (length(fail_filter) > 0){
+      out[["z"]][fail_filter] <- NA  
+    }  
+  names(out[["z"]]) = sample_names
+  names(out[["fc"]]) = sample_names
   if (intermediate_results){
-    if (length(fail_filter) > 0){
-      out[["deviations"]][fail_filter] <- NA  
-    }
-    names(out[["deviations"]]) = colnames(counts_mat)
-    names(out[["observed"]]) = colnames(counts_mat)
-    colnames(out[["sampled"]]) = colnames(counts_mat)
-  } else{
-    if (length(fail_filter) > 0){
-      out[["deviations"]][fail_filter] <- NA  
-    }
-    names(out) <- colnames(counts_mat)    
-  }
+    names(out[["observed_deviations"]]) = sample_names
+    colnames(out[["sampled_deviations"]]) = sample_names
+    names(out[["observed"]]) = sample_names
+    colnames(out[["sampled"]]) = sample_names
+  } 
   return(out)
 }
 

@@ -2,24 +2,27 @@
 % Please edit documentation in R/get_inputs.R
 \name{get_counts}
 \alias{get_counts}
-\title{getFragmentCounts}
+\title{get_counts}
 \usage{
-get_counts(bams, peaks, paired, by_rg = FALSE)
+get_counts(alignment_files, peaks, paired, by_rg = FALSE, format = c("bam",
+  "bed"))
 }
 \arguments{
-\item{bams}{filenames for bam file with aligned reads}
+\item{alignment_files}{filenames for bam or bed files with aligned reads}
 
 \item{peaks}{GRanges object with peaks}
 
 \item{paired}{paired end data?}
 
-\item{by_rg}{use RG tags to separate groups?}
+\item{by_rg}{use RG tags in bam to separate groups?}
+
+\item{format}{bam or bed?  default is bam}
 }
 \value{
 \code{\link[Matrix]{Matrix}} object
 }
 \description{
-makes matrix of fragment counts in peaks using one or multiple bam files
+makes matrix of fragment counts in peaks using one or multiple bam or bed files
 }
 \seealso{
 \code{\link{get_sample_depths}},  \code{\link{get_inputs}}, \code{\link{filter_samples}}

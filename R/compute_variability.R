@@ -1,4 +1,16 @@
 
+quantile_helper <- function(values, quantiles, na.rm){
+  if (na.rm){
+    out <- quantile(values, quantiles, na.rm = TRUE)
+  } else{
+    if (!all_false(is.na(values))){
+      out <- rep(NA,length(quantiles))
+    } else{
+      out <- quantile(values, quantiles)
+    }
+  }
+  return(out)
+}
 
 #'compute_variability
 #'
@@ -7,14 +19,16 @@
 #'@param bootstrap_error compute bootstrap confidence interval
 #'@param bootstrap_samples number of bootstrap samples to take
 #'@param bootstrap_quantiles quantiles for bootstrap 
+#'@param na.rm remove NAs? default is true
 #'@export
 compute_variability <- function(deviations, 
                                 bootstrap_error = TRUE, 
                                 bootstrap_samples = 1000, 
-                                bootstrap_quantiles = c(0.025,0.975)){
+                                bootstrap_quantiles = c(0.025,0.975),
+                                na.rm = TRUE){
   
 
-  sd_deviations <- apply(deviations, 1, sd)
+  sd_deviations <- apply(deviations, 1, sd, na.rm = na.rm)
   
   p_sd <- pchisq((ncol(deviations)-1) * (sd_deviations**2), 
                  df = (ncol(deviations)-1), 
@@ -34,11 +48,11 @@ compute_variability <- function(deviations,
                                 replace=TRUE)
     
     sd_error <- apply(deviations, 1, function(x){
-      quantile(sapply(1:bootstrap_samples, 
+      quantile_helper(sapply(1:bootstrap_samples, 
                       function(y) 
                         sd(x[bootstrap_indexes[(1 + (y-1)*ncol(deviations)):
-                                                 (y*ncol(deviations))]])),
-               bootstrap_quantiles)
+                                                 (y*ncol(deviations))]], na.rm = na.rm)),
+               bootstrap_quantiles, na.rm = na.rm)
     })
     
     

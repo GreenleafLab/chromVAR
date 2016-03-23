@@ -4,14 +4,17 @@
 \alias{get_sample_depths}
 \title{get_sample_depths}
 \usage{
-get_sample_depths(bams, paired = TRUE, by_rg = FALSE)
+get_sample_depths(alignment_files, paired = TRUE, by_rg = FALSE,
+  format = c("bam", "bed"))
 }
 \arguments{
-\item{bams}{filenames for bam file with aligned reads}
+\item{alignment_files}{filenames for bam or bed file(s) with aligned reads}
 
 \item{paired}{paired end data?}
 
 \item{by_rg}{use RG tags to separate groups?}
+
+\item{format}{bam or bed format? default is bam}
 }
 \value{
 numeric vector

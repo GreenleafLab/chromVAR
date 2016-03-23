@@ -5,7 +5,8 @@
 \title{compute_variability}
 \usage{
 compute_variability(deviations, bootstrap_error = TRUE,
-  bootstrap_samples = 1000, bootstrap_quantiles = c(0.025, 0.975))
+  bootstrap_samples = 1000, bootstrap_quantiles = c(0.025, 0.975),
+  na.rm = TRUE)
 }
 \arguments{
 \item{deviations}{output from \code{\link{compute_deviations}}}
@@ -15,6 +16,8 @@ compute_variability(deviations, bootstrap_error = TRUE,
 \item{bootstrap_samples}{number of bootstrap samples to take}
 
 \item{bootstrap_quantiles}{quantiles for bootstrap}
+
+\item{na.rm}{remove NAs? default is true}
 }
 \description{
 function to compute overall variability of motif sets across samples

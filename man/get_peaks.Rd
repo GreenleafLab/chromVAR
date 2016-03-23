@@ -25,6 +25,6 @@ Extra columns can be added as metadata or strand information if provided, but th
 indicate column index and name using named vector for extra_cols.
 }
 \seealso{
-\code{\link{get_counts}},  \code{\link{get_inputs}}, \code{\link{filter_peaks}}
+\code{\link{get_counts}}, \code{\link{get_inputs}}, \code{\link{filter_peaks}}
 }
 

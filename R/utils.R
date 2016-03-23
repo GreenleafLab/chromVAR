@@ -14,6 +14,9 @@ se <- function(x) sqrt(var(x,na.rm=TRUE)/length(na.omit(x)))
 
 '%ni%' = Negate('%in%')
 
+# last element--------------------------------------------------------------------
+last_element <- function(x) x[length(x)]
+
 # check for installed package --------------------------------------------------
 
 is.installed <- function(pkg) is.element(pkg, installed.packages()[,1]) 
@@ -58,6 +61,13 @@ all_false <- function(x){
   stopifnot(inherits(x,"logical"))
   ifelse(sum(x)==0, TRUE, FALSE)
 }
+
+all_equal <- function(x){
+  stopifnot(is.vector(x))
+  all_true(x == x[1])
+}
+
+
 
 # Function to test whether vector is all whole number
 
