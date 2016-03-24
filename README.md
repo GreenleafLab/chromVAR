@@ -3,9 +3,13 @@
 ##Installation
 Installation is easiest using the devtools package.  The function `install_github` will install the package.
 ```{r}
-devtools::install_github("GreenleafLab/chromVAR")
+devtools::install_github("GreenleafLab/chromVAR", auth_token = "my_token")
 ```
+The argument auth_token takes in your github [personal acces token](https://github.com/settings/applications).  This token is needed because at the moment this repository is private.  
+
 A number of needed packages are installed in this process. Note that for functions that require a genome sequence, the package BSgenome.Hsapiens.UCSC.hg19 is used as a default argument. However that package will not be automatically installed -- if using the default argument and that genome build, you will need to install that package.  If using another genome build, the appropraiate BSgenome object for your species should be passed to functions requiring a genome build (e.g. `get_motif_indices`, `get_gc`, and `get_kmer_indices`).
+
+Depending on your repository settings, the Bioconductor dependencies may fail to install.  Use `setRepositories(graphics=F)` to see what repositories you have activated and to add the BioC software repository if need be.  
 
 ##Loading the package
 Use library or require to load package.
