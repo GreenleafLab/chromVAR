@@ -20,10 +20,14 @@ library(chromVAR)
 ##Setting multiprocessing options
 The package uses BiocParallel to do the multiprocessing.  Check the documentation for BiocParallel to see available options.  The settings can be set using the register function.  For example, to use MulticoreParam with 16 cores:
 ```{r}
-
 BiocParallel::register(BiocParallel::MulticoreParam(16))
-
 ```
+
+To enable progress bars for multiprocessed tasks, use 
+```{r}
+BiocParallel::register(BiocParallel::MulticoreParam(16, progressbar = TRUE))
+```
+
 ##Reading in inputs
 ```{r}
 bed <- "my_bedfile.bed"
