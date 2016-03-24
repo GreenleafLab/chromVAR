@@ -49,7 +49,7 @@ counts = counts[,samples_to_keep]
 
 Two parameters are used for filtering -- min_in_peaks and min_depth.  If not provided (as above), these cutoffs are estimated based on the medians from the data.  min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  min_depth is set to the maximum of 500 or 10% of the median library size. 
 
-Unless `{r}plot = FALSE` given as argument to function `filter_samples`, the following type of plot will be generated:
+Unless `plot = FALSE` given as argument to function `filter_samples`, the following type of plot will be generated:
 ![proportion_in_peaks_vs_depth_plot](example_plot1.png)
 
 For both bulk and single cell data, peaks should be filtered based on having at least a certain number of reads. At minimum, each peak should have at least one peak across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data).
