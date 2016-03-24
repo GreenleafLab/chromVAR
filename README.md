@@ -52,7 +52,7 @@ Two parameters are used for filtering -- min_in_peaks and min_depth.  If not pro
 Unless `plot = FALSE` given as argument to function `filter_samples`, the following type of plot will be generated:
 ![proportion_in_peaks_vs_depth_plot](example_plot1.png)
 
-For both bulk and single cell data, peaks should be filtered based on having at least a certain number of reads. At minimum, each peak should have at least one peak across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data).
+For both bulk and single cell data, peaks should be filtered based on having at least a certain number of fragments. At minimum, each peak should have at least one fragment across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data). Otherwise, downstream functions won't work. 
 
 ```{r}
 peaks_to_keep = filter_peaks(counts)
