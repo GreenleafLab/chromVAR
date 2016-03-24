@@ -16,6 +16,7 @@ Imports:
     GenomicRanges,
     IRanges,
     ggplot2,
+    FNN,
     BiocParallel,
     BiocGenerics,
     Biostrings,
