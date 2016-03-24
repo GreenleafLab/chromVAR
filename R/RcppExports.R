@@ -5,22 +5,6 @@ get_normalized_counts <- function(counts, expectation, fragments_per_sample) {
     .Call('chromVAR_get_normalized_counts', PACKAGE = 'chromVAR', counts, expectation, fragments_per_sample)
 }
 
-dummy0 <- function(peak, counts, background_peaks, expectation, counts_info, intermediates, norm) {
-    invisible(.Call('chromVAR_dummy0', PACKAGE = 'chromVAR', peak, counts, background_peaks, expectation, counts_info, intermediates, norm))
-}
-
-get_normalized_counts <- function(counts, expectation, fragments_per_sample) {
-    .Call('chromVAR_get_normalized_counts', PACKAGE = 'chromVAR', counts, expectation, fragments_per_sample)
-}
-
-dummy1 <- function(mat1, mat2) {
-    .Call('chromVAR_dummy1', PACKAGE = 'chromVAR', mat1, mat2)
-}
-
-compute_deviations_single_peak_sparse2 <- function(peak, counts, background_peaks, expectation, counts_info, intermediates, norm) {
-    .Call('chromVAR_compute_deviations_single_peak_sparse2', PACKAGE = 'chromVAR', peak, counts, background_peaks, expectation, counts_info, intermediates, norm)
-}
-
 p_to_score <- function(pwm, bg, p) {
     .Call('chromVAR_p_to_score', PACKAGE = 'chromVAR', pwm, bg, p)
 }
