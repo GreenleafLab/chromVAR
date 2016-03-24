@@ -19,6 +19,64 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// dummy0
+void dummy0(const arma::uword peak, arma::sp_mat counts, const arma::umat background_peaks, const arma::vec expectation, const List counts_info, bool intermediates, bool norm);
+RcppExport SEXP chromVAR_dummy0(SEXP peakSEXP, SEXP countsSEXP, SEXP background_peaksSEXP, SEXP expectationSEXP, SEXP counts_infoSEXP, SEXP intermediatesSEXP, SEXP normSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const arma::uword >::type peak(peakSEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type counts(countsSEXP);
+    Rcpp::traits::input_parameter< const arma::umat >::type background_peaks(background_peaksSEXP);
+    Rcpp::traits::input_parameter< const arma::vec >::type expectation(expectationSEXP);
+    Rcpp::traits::input_parameter< const List >::type counts_info(counts_infoSEXP);
+    Rcpp::traits::input_parameter< bool >::type intermediates(intermediatesSEXP);
+    Rcpp::traits::input_parameter< bool >::type norm(normSEXP);
+    dummy0(peak, counts, background_peaks, expectation, counts_info, intermediates, norm);
+    return R_NilValue;
+END_RCPP
+}
+// get_normalized_counts
+arma::sp_mat get_normalized_counts(arma::sp_mat counts, const arma::vec expectation, const arma::rowvec fragments_per_sample);
+RcppExport SEXP chromVAR_get_normalized_counts(SEXP countsSEXP, SEXP expectationSEXP, SEXP fragments_per_sampleSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::sp_mat >::type counts(countsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec >::type expectation(expectationSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec >::type fragments_per_sample(fragments_per_sampleSEXP);
+    __result = Rcpp::wrap(get_normalized_counts(counts, expectation, fragments_per_sample));
+    return __result;
+END_RCPP
+}
+// dummy1
+arma::mat dummy1(const arma::sp_mat mat1, const arma::sp_mat mat2);
+RcppExport SEXP chromVAR_dummy1(SEXP mat1SEXP, SEXP mat2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const arma::sp_mat >::type mat1(mat1SEXP);
+    Rcpp::traits::input_parameter< const arma::sp_mat >::type mat2(mat2SEXP);
+    __result = Rcpp::wrap(dummy1(mat1, mat2));
+    return __result;
+END_RCPP
+}
+// compute_deviations_single_peak_sparse2
+List compute_deviations_single_peak_sparse2(const arma::uword peak, arma::sp_mat counts, const arma::umat background_peaks, const arma::vec expectation, const List counts_info, bool intermediates, bool norm);
+RcppExport SEXP chromVAR_compute_deviations_single_peak_sparse2(SEXP peakSEXP, SEXP countsSEXP, SEXP background_peaksSEXP, SEXP expectationSEXP, SEXP counts_infoSEXP, SEXP intermediatesSEXP, SEXP normSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const arma::uword >::type peak(peakSEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type counts(countsSEXP);
+    Rcpp::traits::input_parameter< const arma::umat >::type background_peaks(background_peaksSEXP);
+    Rcpp::traits::input_parameter< const arma::vec >::type expectation(expectationSEXP);
+    Rcpp::traits::input_parameter< const List >::type counts_info(counts_infoSEXP);
+    Rcpp::traits::input_parameter< bool >::type intermediates(intermediatesSEXP);
+    Rcpp::traits::input_parameter< bool >::type norm(normSEXP);
+    __result = Rcpp::wrap(compute_deviations_single_peak_sparse2(peak, counts, background_peaks, expectation, counts_info, intermediates, norm));
+    return __result;
+END_RCPP
+}
 // p_to_score
 double p_to_score(const NumericMatrix pwm, const NumericVector bg, const double p);
 RcppExport SEXP chromVAR_p_to_score(SEXP pwmSEXP, SEXP bgSEXP, SEXP pSEXP) {
