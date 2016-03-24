@@ -3,3 +3,4 @@
 R/experimental.R
 R/motif_crap.R
 R/kmer_experimental.R
+*.png

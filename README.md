@@ -25,13 +25,41 @@ BiocParallel::register(BiocParallel::MulticoreParam(16))
 bed <- "my_bedfile.bed"
 bamfiles <- c('bam1.bam','bam2.bam')
 
-inputs <- get_inputs(bed,bamfiles, by_rg=TRUE, paired=TRUE, format = "bam")
+peaks <- get_peaks(bed)
+counts <- get_counts(bamfiles, peaks, paired =  TRUE, by_rg = TRUE, format = "bam")
 ```
 
 The function `get_inputs` returns a list with two elements.  The first is a GenomicRanges object with the peaks.  The second is a Matrix of fragment counts per sample/cell for each peak.  The Matrix package is used so that if the matrix is sparse, the matrix will be stored as a sparse Matrix.  If you want to manipulate the counts data in any way in addition to use by chromVAR packages, it is a good idea to load the Matrix package (`library(Matrix)`).
 
-The function also does some filtering of cells/samples and peaks.  Cells/samples with insufficient reads or percentage of reads in peaks are discarded.  Peaks with insufficient counts are also discarded.  By default, 1 read is required across all samples per peak.  Filtering can be turned off by setting the `filter_samples` and/or the `filter_peaks` arguments to `{r}FALSE`. 
+##Filtering inputs
 
+If working with single cell data, it is advisable to filter out samples with insufficient reads or a low proportion of reads in peaks as these may represent empty wells or dead cells. 
+
+```{r}
+#compute sequencing depth from bamfiles
+depths = get_sample_depths(bamfiles, paired =  TRUE, by_rg = TRUE, format = "bam")
+
+#find indices of samples to keep
+samples_to_keep = filter_samples(counts, depths)
+
+#filter counts matrix
+counts = counts[,samples_to_keep]
+
+```
+
+Two parameters are used for filtering -- min_in_peaks and min_depth.  If not provided (as above), these cutoffs are estimated based on the medians from the data.  min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  min_depth is set to the maximum of 500 or 10% of the median library size. 
+
+Unless plot argument is set to fault in function `filter_samples`, the following type of plot will be generated:
+![proportion_in_peaks_vs_depth_plot](example_plot1.png)
+
+For both bulk and single cell data, peaks should be filtered based on having at least a certain number of reads. At minimum, each peak should have at least one peak across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data).
+
+```{r}
+peaks_to_keep = filter_peaks(counts)
+
+counts = counts[peaks_to_keep,]
+peaks = peaks[peaks_to_keep] #to keep peaks consistent with counts
+```
 
 ##Finding background peaks
 First, compute the gc content from the peaks.  Then use that output as well as the counts to determine background peaks.  

@@ -28,7 +28,8 @@ Imports:
     methods,
     Rcpp,
     RcppArmadillo,
-    ggdendro
+    ggdendro,
+    grid
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     readr,

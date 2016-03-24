@@ -1,38 +1,5 @@
 ################# Functions for reading in inputs ##############################
 
-# Wrapper function to read everything in ---------------------------------------
-
-#'@export
-get_inputs <- function(peakfile, alignments, paired, by_rg = FALSE, format = c("bam","bed"), 
-                       filter_samples = TRUE, filter_peaks = TRUE){
-  format = match.arg(format)
-  message("Reading in peak file")
-  peaks <- get_peaks(peakfile)
-  message("Reading in fragment counts")
-  counts <- get_counts(alignments, peaks, paired = paired, by_rg = by_rg, format = format)    
-  if (filter_samples){
-    message("Filtering samples based on read depth and fraction reads in peaks")
-    depths <- get_sample_depths(alignments, paired = paired, by_rg = by_rg, format = format)
-    if (is.logical(filter_samples)){
-      keep_samples = filter_samples(counts_mat = counts, depths = depths)
-    } else{
-      keep_samples = do.call(filter_samples, c(list(counts_mat = counts, depths = depths),filter_samples))
-    }
-    counts <- counts[,keep_samples]
-  }
-  if (filter_peaks){
-    message("Filtering peaks based on reads per peak across samples and overlaps")
-    if (is.logical(filter_samples)){
-      keep_peaks = filter_peaks(counts_mat = counts, peaks = peaks)      
-    } else{
-      keep_peaks = do.call(filter_samples, c(list(counts_mat = counts, peaks = peaks),filter_samples))
-    }
-    counts <- counts[keep_peaks,]
-    peaks <- peaks[keep_peaks]
-  }
-  return(list(peaks = peaks, counts = counts))
-}
-
 # Read in peaks ----------------------------------------------------------------
 
 #' get_peaks
@@ -102,6 +69,7 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE){
     mat = matrix(nrow = length(peaks), ncol = length(bams))
     
     for (i in seq_along(bams)){
+      message(paste("Reading in file: ",bams[i], sep="",collapse=""))
       fragments = bamToFragments(bams[i], paired = paired)
       mat[,i] = GenomicRanges::countOverlaps(peaks, fragments, type="any", ignore.strand=T)
     }
@@ -118,6 +86,7 @@ get_counts_from_beds <- function(beds, peaks, paired){
   mat = matrix(nrow = length(peaks), ncol = length(bams))
   
   for (i in seq_along(beds)){
+    message(paste("Reading in file: ",beds[i], sep="",collapse=""))
     fragments = readAlignmentFromBed(beds[i], paired = paired)
     mat[,i] = GenomicRanges::countOverlaps(peaks, fragments, type="any", ignore.strand=TRUE)
   }
@@ -224,7 +193,7 @@ bamToFragments <- function(bamfile, paired){
 }
 
 getFragmentCountsByRG <- function(bam, peaks, paired){
-  
+  message(paste("Reading in file: ",bam, sep="",collapse=""))
   rg_fragments <- bamToFragmentsByRG(bam, paired)
   
   tmpfun <- function(frags){
@@ -314,17 +283,37 @@ getSampleDepthsByRG <- function(bamfile, paired = TRUE){
 #' @param depths vector of sequencing depth per samples, as computed by
 #' \code{\link{getSampleDepths}}
 #' @param min_in_peaks minimum fraction of samples within peaks 
-#' @param min_fragments minimum number of fragments within peaks
-#' @return vector of indices, representing samples that should be kept
+#' @param min_depth minimum library size
+#' @param plot show plot?
+#' @details If unspecified, min_in_peaks and min_depth cutoffs will be estimated based on data.
+#' min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  min_depth is 
+#' set to the maximum of 500 or 10% of the median library size.
+#' @return indices of samples to keep
 #' @seealso \code{\link{get_counts}},  \code{\link{get_inputs}}, \code{\link{filter_peaks}}
 #' @export          
-filter_samples <- function(counts_mat, depths, min_in_peaks = 0.25, min_fragments = 1000){
+filter_samples <- function(counts_mat, depths, min_in_peaks = NULL, min_depth = NULL, plot = TRUE){
   stopifnot(length(depths) == ncol(counts_mat))
   stopifnot(all_true(names(depths) %in% colnames(counts_mat)))
   fragments_per_sample = colSums(counts_mat)
-  keep_samples <- intersect(which(fragments_per_sample >= min_fragments), 
-                            which(fragments_per_sample/depths >= min_in_peaks)) 
-  return(keep_samples)
+  if (is.null(min_in_peaks)){
+    min_in_peaks = round(median(fragments_per_sample/depths)*0.5, digits = 3)
+    message(paste("min_in_peaks set to ",min_in_peaks,sep="",collapse=""))
+  } 
+  if (is.null(min_depth)){
+    min_depth = max(500,median(depths)*0.1)
+    message(paste("min_depth set to ",min_depth,sep="",collapse=""))
+  }
+  keep_samples <- intersect(which(depths >= min_depth), 
+                            which(fragments_per_sample/depths >= min_in_peaks))   
+  tmp_df = data.frame(x = depths, y= fragments_per_sample/depths, z = ((1:length(fragments_per_sample)) %in% keep_samples))
+  p = ggplot(tmp_df, aes_string(x="x", y="y",col="z")) + geom_point() +
+    xlab("Library size") + ylab("Proportion of fragments in peaks") + scale_x_log10() + annotation_logticks(sides="b") + 
+    scale_y_continuous(expand =c(0,0), limits =c(0, min(1,max(tmp_df$y)*1.2)))+
+    scale_color_manual(name = "Pass filters?",values = c("gray","black"),breaks = c(TRUE,FALSE), labels = c("Yes","No")) +
+                           chromVAR_theme()
+  p = p + geom_hline(yintercept = min_in_peaks, col="red", lty = 2) + geom_vline(xintercept = min_depth, col="red", lty=2)
+  if (plot) print(p)
+  return(keep_samples)    
 }
 
 # Filter peaks based on counts -------------------------------------------------
