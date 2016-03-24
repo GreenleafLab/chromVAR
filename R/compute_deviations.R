@@ -52,7 +52,8 @@ compute_expectations <- function(counts_mat,
 #' @param background_peaks background peaks matrix
 #' @param expectation expectations computed using \code{\link{compute_expectations}}
 #' @details multiprocessing using \code{\link[BiocParallel]{bplapply}}
-#' @return  matrix with deviation scores
+#' @return  list with two elements: 1) z: matrix with deviation z-scores, 
+#' 2) fc: matrix with deviation log2 fold-changes
 #' @seealso  \code{\link{compute_variability}}, \code{\link{plot_variability}}
 #' @export
 compute_deviations <- function(counts_mat, 
@@ -65,7 +66,7 @@ compute_deviations <- function(counts_mat,
   stopifnot(nrow(counts_mat) == nrow(background_peaks))
   
   counts_info <- counts_summary(counts_mat)
-      
+       
   if (is.null(peak_indices)){
     peak_indices <- lapply(1:counts_info$npeak, function(x) x)
   } else if (!is.list(peak_indices) && is.vector(peak_indices)){
@@ -75,6 +76,7 @@ compute_deviations <- function(counts_mat,
     expectation <- compute_expectations(counts_mat)
   } else{
     stopifnot(length(expectation) != nrow(counts_mat))
+    stopifnot(length(expectation) == nrow(counts_mat))
   }
   
   stopifnot(inherits(peak_indices,"list"))
@@ -133,6 +135,10 @@ compute_deviations_single <- function(peak_set,
                                            norm = TRUE){
   ### counts_mat should already be normed!
   tf_count <- length(peak_set)
+  ### Determine if any sets have too low expected counts
+  expected_totals <- sum(expectation[peak_set]) * counts_info$fragments_per_sample
+  fail_filter <- which(expected_totals < 5)  
+  
   if (tf_count == 1){
     observed <- as.vector(counts_mat[peak_set,])
     expected <- expectation[peak_set] * counts_info$fragments_per_sample
@@ -163,9 +169,9 @@ compute_deviations_single <- function(peak_set,
     
     niterations = ncol(background_peaks)
     sample_mat = sparseMatrix(j = as.vector(background_peaks[peak_set,1:niterations]), 
-                              i = rep(1:niterations, each = length(peak_set)), 
+                              i = rep(1:niterations, each = tf_count), 
                               x=1, 
-                              dims = c(ncol(background_peaks), counts_info$npeak))
+                              dims = c(niterations, counts_info$npeak))
     
     sampled = as.matrix(sample_mat %*% counts_mat);
     if (norm){
@@ -181,6 +187,7 @@ compute_deviations_single <- function(peak_set,
   sd_sampled_deviation <- apply(sampled_deviation, 2, sd)
   
   z <- (observed_deviation - mean_sampled_deviation) / sd_sampled_deviation
+  z[fail_filter] = NA
   
   logfc = log2(observed/expected) - log2(colMeans(sampled/sampled_expected));
   
