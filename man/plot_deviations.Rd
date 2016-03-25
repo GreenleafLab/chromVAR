@@ -6,15 +6,31 @@
 \usage{
 plot_deviations(X, xlabel = NA, ylabel = NA, name = NA,
   cluster_row = TRUE, cluster_col = TRUE, cluster_row_dist = cor_dist,
-  cluster_col_dist = cor_dist, sample_annotation = NULL)
+  cluster_col_dist = cor_dist, sample_annotation = NULL, set_names = NULL)
 }
 \arguments{
-\item{object}{\code{\link{deviationResultSet}} object}
+\item{X}{deviations matrix (either z-score or fold change)}
+
+\item{xlabel}{label for x axis}
+
+\item{ylabel}{label for y axis}
+
+\item{name}{title for plot}
+
+\item{cluster_row}{cluster rows?}
+
+\item{cluster_col}{cluster columns?}
+
+\item{cluster_row_dist}{distance function to use for clustering rows}
+
+\item{cluster_col_dist}{distance function to use for clustering columns}
+
+\item{sample_annotation}{annotation of sample}
 }
 \value{
 ggplot object
 }
 \description{
-plot_deviations
+plot heatmap of deviations
 }
 

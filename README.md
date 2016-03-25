@@ -114,6 +114,7 @@ deviations <- compute_deviations(counts_mat = counts, background_peaks = bg, pea
 
 The function `compute_deviations` returns a list with two matrices. The first matrix (deviations$z if using command above) will give the deviation z-score for each set of peaks (rows) for each cell or sample (columns).  These z-scores represent how accessible the set of peaks is relative to the expectation based on equal chromatin accessibility profiles across cells/samples, normalized by a set of background peak sets matched for GC and average accessability.   The second matrix (deviations$fc) will give the log2 fold change in accessibility for each set of peaks relative to the expected, again normalized by the set of background peaks.  
 
+
 ##Compute variability
 
 ```{r}
@@ -129,8 +130,15 @@ The function `compute_variability` returns a data.frame that contains the variab
 ![variability_plot](example_plot2.png)
 
 
+The function `plot_deviations` can be used to generate a heatmap of deviations.
 
+```{r}
+plot_deviations(deviations$z[which(variability$p_value_adj<0.01),], sample_annotation = anno, set_names = TFBSTools::name(motifs[rownames(variability)])[which(variability$p_value_adj<0.01)]) 
+```
 
+![deviations_plot](example_plot3.png)
+
+Only the deviations for TFs that varied significantly were plotted. Sample annotations (in this case replicate number) was given to label the x axis. Motif names were given to label the y axis.  
 
 
 

@@ -146,8 +146,19 @@ cor_dist <- function(x){
   as.dist(1 - cor(t(x)))
 }
 
+
 #' plot_deviations
-#' @param object  \code{\link{deviationResultSet}} object
+#' 
+#' plot heatmap of deviations
+#' @param X deviations matrix (either z-score or fold change)
+#' @param xlabel label for x axis
+#' @param ylabel label for y axis
+#' @param name title for plot
+#' @param cluster_row cluster rows?
+#' @param cluster_col cluster columns?
+#' @param cluster_row_dist distance function to use for clustering rows
+#' @param cluster_col_dist distance function to use for clustering columns
+#' @param sample_annotation annotation of sample
 #' @return ggplot object
 #' @export
 plot_deviations <- function(X, 
@@ -158,15 +169,22 @@ plot_deviations <- function(X,
                             cluster_col = TRUE, 
                             cluster_row_dist = cor_dist, 
                             cluster_col_dist = cor_dist,
-                            sample_annotation = NULL){
+                            sample_annotation = NULL,
+                            set_names = NULL){
   
   if (cluster_row){
     rowclust = hclust(cluster_row_dist(X))
     X = X[rowclust$order,]
+    if (!is.null(set_names)){
+      set_names = set_names[rowclust$order]
+    }
   }
   if (cluster_col){
     colclust = hclust(cluster_col_dist(t(X)))
     X = X[,colclust$order]
+    if (!is.null(sample_annotation)){
+      sample_annotation = sample_annotation[colclust$order]
+    }
   }
   
   df = cbind(data.frame("y" = factor(rownames(X), levels = rownames(X), ordered=T)),X)
@@ -180,8 +198,8 @@ plot_deviations <- function(X,
       axis.line = element_blank(),
       axis.ticks.x = element_blank(),
       axis.ticks.y = element_blank(),
-      axis.text.y = element_text(size = 8),
-      axis.text.x = element_text(angle=90, vjust = 0.5, hjust = 1, size = 8),
+      axis.text.y = element_text(size = 6),
+      axis.text.x = element_text(angle=90, vjust = 0.5, hjust = 1, size = 6),
       plot.margin = grid::unit(c(0.1,0.1,0.1,0.1),"cm")
     )
   if (cluster_row){
@@ -203,7 +221,9 @@ plot_deviations <- function(X,
 
   p = p + scale_fill_gradient2(name = "Deviation\nScore",limits = limits,low = colors[1], mid = colors[2], high = colors[3], 
                                breaks = guidebreaks, label = pretty_scale_format, expand=c(0,0), midpoint = 0)
-  
+  if (!is.null(set_names)){
+    p = p + scale_y_discrete(breaks = levels(mdf$y), labels = set_names)  
+  }
   if (!is.na(xlabel)){
     p = p + xlab(xlabel)
   } else{
@@ -217,11 +237,14 @@ plot_deviations <- function(X,
   if (!is.na(name)){
     p = p + ggtitle(name)
   }
-  if (!is.null(sample_annotation)){
-    tmp_df = data.frame(x = 1:ncol(X) - 0.5, xend = 1:ncol(X) + 0.5, y = -2, yend = min(-2 - nrow(X) *0.025,-3), z = anno)
-    p = p  + geom_segment(data = tmp_df, 
-                        mapping= aes(x = x, y = y, xend = xend, yend = yend, colour = z, fill =NULL)) + 
-      scale_color_discrete(name = "Sample\nAnnotation") + theme(legend.box = "horizontal", legend.background=element_blank())
+  if (!is.null(sample_annotation)){  
+    cols = RColorBrewer::brewer.pal(n  = length(levels(sample_annotation)), "Dark2")
+    anno_col = cols[as.integer(sample_annotation)]
+    tmp_df = data.frame(x = 1:ncol(X),  y = -2.75,  z = anno)
+    p = p +  annotate("rect",xmin = 1:ncol(X) -0.5, xmax = 1:ncol(X) + 0.5, ymax = -1.5, ymin = min(-2 - nrow(X) *0.025,-3), col = anno_col,
+                      fill = anno_col) + geom_point(data = tmp_df, 
+                        mapping= aes(x = x, y =y, colour = z, fill = NULL), size = 0) + 
+      scale_color_brewer(name = "Sample\nAnnotation", palette = "Dark2") + theme(legend.box = "horizontal", legend.background=element_blank(), axis.text.x = element_blank())
   }
   return(p)
 
