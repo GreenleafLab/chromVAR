@@ -2,10 +2,8 @@
 compute_deviations_legacy <- function(counts_mat, 
                                        background_peaks,
                                        peak_indices = NULL, 
-                                       expectation = NULL,
-                                       metric = c("z-score","Buenrostro2015")){
+                                       expectation = NULL){
   
-  metric = match.arg(metric)
   
   stopifnot(inherits(counts_mat,"Matrix") || inherits(counts_mat,"matrix"))
   stopifnot(nrow(counts_mat) == nrow(background_peaks))
@@ -45,17 +43,12 @@ compute_deviations_legacy <- function(counts_mat,
                                       counts_mat, 
                                       background_peaks,
                                       expectation,
-                                      counts_info,
-                                      metric = metric)
+                                      counts_info)
     
 
-  if (metric == "Buenrostro2015"){
-    deviations <- t(simplify2array(lapply(results, function(x) x[["deviations"]])))
-    variability <- sapply(results, function(x) x[["variability"]])
-    results <- list(deviations = deviations, variability = variability)    
-  } else{
-    results <- t(simplify2array(results))
-  } 
+  deviations <- t(vapply(results, function(x) x[["deviations"]], rep(0,counts_info$nsample)))
+  variability <- sapply(results, function(x) x[["variability"]])
+  results <- list(deviations = deviations, variability = variability)    
   
   return(results)
 }
@@ -67,11 +60,8 @@ compute_deviations_single_legacy <- function(peak_set,
                                       background_peaks,
                                       expectation,
                                       counts_info = NULL,
-                                      intermediate_results = FALSE,
-                                      metric = c("z-score","Buenrostro2015")){
-  
-  metric = match.arg(metric)
-  
+                                      intermediate_results = FALSE){
+    
   if (is.null(counts_info)){
     counts_info = counts_summary(counts_mat)
   }
@@ -101,31 +91,17 @@ compute_deviations_single_legacy <- function(peak_set,
   expected_sampled_counts <- outer(apply(background_peaks, 2, function(x) sum(expectation[x[peak_set]])),
                                    counts_info$fragments_per_sample)
   
-  if (metric == "z-score"){
-    observed_deviation <- (observed - expected) / sqrt(expected)
-    sampled_deviation <- (sampled_counts - expected_sampled_counts) / 
-      sqrt(expected_sampled_counts)
-    mean_sampled_deviation <- colMeans(sampled_deviation)
-    sd_sampled_deviation <- apply(sampled_deviation, 2, sd)    
-    res <- (observed_deviation - mean_sampled_deviation) / sd_sampled_deviation 
-    if (intermediate_results){
-      out = list(deviations = res, observed = observed_deviation,
-               sampled = sampled_deviation)
-    } else{
-      out = res
-    }
+
+  observed_deviation <- observed - expected
+  sampled_deviation <- sampled_counts - expected_sampled_counts
+  rms_sampled_deviation <- apply(sampled_deviation, 2, rms)
+  normdev <- observed_deviation / rms_sampled_deviation
+  normvar <- sqrt(sum(observed_deviation**2)/mean(rowSums(sampled_deviation**2)))
+  if (intermediate_results){
+      out = list(deviations = normdev, variability = normvar, observed = observed,
+                 sampled = sampled, expected = expected, expected_sampled = expected_sampled_counts)
   } else{
-    observed_deviation <- observed - expected
-    sampled_deviation <- sampled_counts - expected_sampled_counts
-    rms_sampled_deviation <- apply(sampled_deviation, 2, rms)
-    normdev <- observed_deviation / rms_sampled_deviation
-    normvar <- sqrt(sum(observed_deviation**2)/mean(rowSums(sampled_deviation**2)))
-    if (intermediate_results){
-      out = list(deviations = normdev, variability = normvar, observed = observed_deviation,
-                 sampled = sampled_deviation)
-    } else{
-      out = list(deviations = normdev, variability = normvar)
-    }
+    out = list(deviations = normdev, variability = normvar)
   }
   return(out)  
 }
