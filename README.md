@@ -133,7 +133,9 @@ The function `compute_variability` returns a data.frame that contains the variab
 The function `plot_deviations` can be used to generate a heatmap of deviations.
 
 ```{r}
-plot_deviations(deviations$z[which(variability$p_value_adj<0.01),], sample_annotation = anno, set_names = TFBSTools::name(motifs[rownames(variability)])[which(variability$p_value_adj<0.01)]) 
+plot_deviations(deviations$z[which(variability$p_value_adj<0.01),], 
+                sample_annotation = anno, 
+                set_names = TFBSTools::name(motifs[rownames(variability)])[which(variability$p_value_adj<0.01)]) 
 ```
 
 ![deviations_plot](example_plot3.png)
