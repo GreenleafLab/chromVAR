@@ -231,12 +231,12 @@ get_sample_depths_from_bams <- function(bams, paired = TRUE, by_rg = FALSE){
     out <- do.call(c, lapply(bams, getSampleDepthsByRG, paired = paired))
   } else{
     if (paired){
-      out <- lapply(bams, 
+      out <- sapply(bams, 
                     Rsamtools::countBam, 
                     param = Rsamtools::ScanBamParam(Rsamtools::scanBamFlag(isMinusStrand=FALSE,
                                                                      isProperPair = TRUE)))
     } else{
-      out <- lapply(bams, Rsamtools::countBam)
+      out <- sapply(bams, Rsamtools::countBam)
     }
     names(out) <- sapply(bams, basename)
   }
@@ -245,11 +245,12 @@ get_sample_depths_from_bams <- function(bams, paired = TRUE, by_rg = FALSE){
 
 get_sample_depths_from_beds <- function(beds){
   if (is.installed('readr')){
-    tmp <- readr::read_tsv(file = filename, col_names = FALSE)
+    out = do.call(c, BiocParallel::bplapply(beds, function(filename) nrow(readr::read_tsv(file = filename, col_names = FALSE))))
   } else{
-    tmp <- read.delim(file = filename, header = FALSE, sep = "\t", stringsAsFactors = FALSE)
+    out = do.call(c, BiocParallel::bplapply(beds, function(filename) nrow(read.delim(file = filename, header = FALSE, sep = "\t", stringsAsFactors = FALSE))))
   }
-  return(nrow(tmp))
+  names(out) <- sapply(beds, basename)
+  return(out)
 }
 
 getSampleDepthsByRG <- function(bamfile, paired = TRUE){
