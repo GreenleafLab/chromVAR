@@ -30,7 +30,7 @@ get_gc <- function(peaks,
 get_background_peaks <- function(counts_mat, bias, niterations = 50, window = 500, with_replacement = TRUE, count = TRUE){
 
   countsum <- counts_summary(counts_mat)
-  
+  if (min(countsum$fragments_per_peaks <= 0)) stop("All peaks must have at least one fragment in one sample")
   if (!with_replacement && niterations > window){
     stop("If with_replacement is FALSE, then niterations must be less than window")
   }

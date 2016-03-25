@@ -3,63 +3,51 @@
 #' plot_variability
 #' 
 #' plot variability of motifs/etc
-#' @param object \code{\link{deviationResultSet}} object
-#' @param xlab label for x-axis (default is "sorted bins")
-#' @param label_type which points to label? See Details.
-#' @param label_option See Details.
-#' @param only FALSE, p-value cutoff, or number of points.  See Details.
-#' @details Labelling of points is controlled by label_type and label_options.  
-#' label_type can be either "top", "names", or "none".  
+#' @param variability output from \code{\link{compute_variability}}
+#' @param xlab label for x-axis (default is "Sorted TFs")
+#' @param n  number of toppoints to label?
+#' @param labels names of sets. if not given, uses rownames of variability
 #' @import ggplot2
 #' @export
 plot_variability <- function(variability, xlab = "Sorted TFs", 
-                   label_type = c("top","names","none"), 
-                   label_option = NULL, 
-                   only = FALSE){
+                   n = 3, labels = NULL){
   
-  label_type = match.arg(label_type)
-  
+  if (is.null(labels)) labels = rownames(variability)
   res_df = cbind(variability,ranks = rank(-1 * variability$variability,
                                           ties.method="random"),
-                 tf = rownames(variability))
+                 tf = labels)
   
   ylab = "Variability"
   
-  out = ggplot2::ggplot(res_df, ggplot2::aes_string(x = "ranks", 
+  if ("bootstrap_lower_bound" %ni% colnames(variability)){
+    
+    out = ggplot2::ggplot(res_df, ggplot2::aes_string(x = "ranks", 
+                                                      y = "variability")) + 
+      ggplot2::xlab(xlab) + ggplot2::ylab(ylab) + 
+      ggplot2::scale_y_continuous(expand=c(0,0),
+                                  limits=c(0,max(res_df$variability)*1.05)) +
+      chromVAR_theme() 
+  } else{
+    
+    out = ggplot2::ggplot(res_df, ggplot2::aes_string(x = "ranks", 
                                                     y = "variability",
                                                     min = "bootstrap_lower_bound", 
                                                     max = "bootstrap_upper_bound")) + 
     ggplot2::geom_point()+ ggplot2::geom_errorbar() +
     ggplot2::xlab(xlab) + ggplot2::ylab(ylab) + 
     ggplot2::scale_y_continuous(expand=c(0,0),
-                                limits=c(0,max(res_df$bootstrap_upper_bound)*1.05))
+                                limits=c(0,max(res_df$bootstrap_upper_bound)*1.05)) +
+    chromVAR_theme()    
+  }
   
-  if (label_type =="top"){
-    if (!is.numeric(label_option)){
-      label_option = 3
-    }
-    top_df = res_df[res_df$ranks <= label_option,]
+  if (n >=1){
+    top_df = res_df[res_df$ranks <= n,]
     out = out + ggplot2::geom_text(data = top_df, 
                                    ggplot2::aes_string(x = "ranks", 
                                                        y = "variability", 
                                                        label = "tf"),
-                                   size = 2, hjust=-0.15,col = "Black")
-  } else if (label_type =="name"){
-    if (is.null(label_option)){
-      label_option = seq_along(object)
-    } else if (is.character(label_option)){
-      label_option = which(names(object) %in% label_option)
-    } else if (!is.numeric(label_option)){
-      stop("Labels must be numeric or character vector")
-    }
-    label_df = res_df[label_option,]
-    out = out + ggplot2::geom_text(data = label_df, 
-                                   ggplot2::aes_string(x = "ranks", 
-                                                       y = "var",
-                                                       label = "tf"), 
-                                   size = 2, hjust=-0.15,col = "Black")
-    
-  }
+                                   size = 3, hjust=-0.45,col = "Black")
+  } 
   
   return(out)
   

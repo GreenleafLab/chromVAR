@@ -7,7 +7,7 @@ devtools::install_github("GreenleafLab/chromVAR", auth_token = "my_token")
 ```
 The argument auth_token takes in your github [personal acces token](https://github.com/settings/applications).  This token is needed because at the moment this repository is private.  
 
-A number of needed packages are installed in this process. Note that for functions that require a genome sequence, the package BSgenome.Hsapiens.UCSC.hg19 is used as a default argument. However that package will not be automatically installed -- if using the default argument and that genome build, you will need to install that package.  If using another genome build, the appropraiate BSgenome object for your species should be passed to functions requiring a genome build (e.g. `get_motif_indices`, `get_gc`, and `get_kmer_indices`).
+A number of needed packages are installed in this process. Note that for functions that require a genome sequence, the package [BSgenome.Hsapiens.UCSC.hg19](https://bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg19.html) is used as a default argument. However that package will not be automatically installed -- if using the default argument and that genome build, you will need to install that package.  If using another genome build, the appropraiate BSgenome object for your species should be passed to functions requiring a genome build (e.g. `get_motif_indices`, `get_gc`, and `get_kmer_indices`).
 
 Depending on your repository settings, the Bioconductor dependencies may fail to install.  Use `setRepositories(graphics=F)` to see what repositories you have activated and to add the BioC software repository if need be.  
 
@@ -72,14 +72,14 @@ peaks = peaks[peaks_to_keep] #to keep peaks consistent with counts
 ##Finding background peaks
 First, compute the gc content from the peaks.  Then use that output as well as the counts to determine background peaks.  
 ```{r}
-bias <- get_gc(inputs$peaks)
-bg <- get_background_peaks(counts_mat = inputs$counts, bias = bias)
+bias <- get_gc(peaks)
+bg <- get_background_peaks(counts_mat = counts, bias = bias)
 ```
 
 Note that the function `get_gc` also takes in an argument for a BSgenome object.  The default is BSgenome.Hsapiens.UCSC.hg19, so if using a different genome build be sure to provide the correct genome. For example, if using sacCer3 you could do:
 ```{r}
 library(BSgenome.Scerevisiae.UCSC.sacCer3)
-bias <- get_gc(inputs$peaks, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
+bias <- get_gc(peaks, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
 ```
 
 Check out `available.genomes` from the BSgenome package for what genomes are available. For making your own BSgenome object, check out `BSgenomeForge`.  
@@ -88,7 +88,7 @@ Check out `available.genomes` from the BSgenome package for what genomes are ava
 The function `get_motifs` fetches motifs from the JASPAR database.  The function `get_motif_indices` finds which peaks contain which motifs.
 ```{r}
 motifs <- get_motifs()
-motif_ix <- get_motif_indices(motifs = motifs, peaks = inputs$peaks)
+motif_ix <- get_motif_indices(motifs = motifs, peaks = peaks)
 ```
 
 The function get_motifs() by default gets human motifs from JASPAR core database.  For other species motifs, change the species argument.  
@@ -102,16 +102,38 @@ The `get_motifs` function is simply a wrapper around `getMatrixSet` from TFBSToo
 For the function `get_motif_indices` a genome sequence is again required.  So for sacCer3 for example:
 
 ```{r}
-motif_ix <- get_motif_indices(motifs = motifs, peaks = inputs$peaks, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
+motif_ix <- get_motif_indices(motifs = motifs, peaks = peaks, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
 ```
 
 Another option is the p.cutoff for determing how stringent motif calling should be. The default value is 0.00005, which tends to give reasonable numbers of motif matches.  
 
 ##Compute deviations
 ```{r}
-deviations <- compute_deviations(counts_mat = inputs$counts, background_peaks = bg, peak_indices = motif_ix)
+deviations <- compute_deviations(counts_mat = counts, background_peaks = bg, peak_indices = motif_ix)
 ```
 
 The function `compute_deviations` returns a list with two matrices. The first matrix (deviations$z if using command above) will give the deviation z-score for each set of peaks (rows) for each cell or sample (columns).  These z-scores represent how accessible the set of peaks is relative to the expectation based on equal chromatin accessibility profiles across cells/samples, normalized by a set of background peak sets matched for GC and average accessability.   The second matrix (deviations$fc) will give the log2 fold change in accessibility for each set of peaks relative to the expected, again normalized by the set of background peaks.  
+
+##Compute variability
+
+```{r}
+variability <- compute_variability(deviations$z)
+
+plot_variability(variability, labels = TFBSTools::name(motifs[rownames(variability)])) 
+```
+
+The function `compute_variability` returns a data.frame that contains the variability (standard deviation of the z scores computed above across all cell/samples for a set of peaks), bootstrap confidence intervals for that variability (by resampling cells/samples), and a p-value for the variability being greater than the null hypothesis of 1.  
+
+`plot_variability` takes the output of `compute_variability` and returns a plot like this:
+
+![variability_plot](example_plot2.png)
+
+
+
+
+
+
+
+
 
 

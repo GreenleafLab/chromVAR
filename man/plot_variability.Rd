@@ -4,25 +4,18 @@
 \alias{plot_variability}
 \title{plot_variability}
 \usage{
-plot_variability(variability, xlab = "Sorted TFs", label_type = c("top",
-  "names", "none"), label_option = NULL, only = FALSE)
+plot_variability(variability, xlab = "Sorted TFs", n = 3, labels = NULL)
 }
 \arguments{
-\item{xlab}{label for x-axis (default is "sorted bins")}
+\item{variability}{output from \code{\link{compute_variability}}}
 
-\item{label_type}{which points to label? See Details.}
+\item{xlab}{label for x-axis (default is "Sorted TFs")}
 
-\item{label_option}{See Details.}
+\item{n}{number of toppoints to label?}
 
-\item{only}{FALSE, p-value cutoff, or number of points.  See Details.}
-
-\item{object}{\code{\link{deviationResultSet}} object}
+\item{labels}{names of sets. if not given, uses rownames of variability}
 }
 \description{
 plot variability of motifs/etc
-}
-\details{
-Labelling of points is controlled by label_type and label_options.
-label_type can be either "top", "names", or "none".
 }
 

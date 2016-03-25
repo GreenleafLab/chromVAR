@@ -4,8 +4,8 @@
 \alias{filter_samples}
 \title{filter_samples}
 \usage{
-filter_samples(counts_mat, depths, min_in_peaks = 0.25,
-  min_fragments = 1000)
+filter_samples(counts_mat, depths, min_in_peaks = NULL, min_depth = NULL,
+  plot = TRUE)
 }
 \arguments{
 \item{counts_mat}{matrix of fragment counts per peak per sample, as computed
@@ -16,13 +16,20 @@ by \code{\link{getFragmentCounts}}}
 
 \item{min_in_peaks}{minimum fraction of samples within peaks}
 
-\item{min_fragments}{minimum number of fragments within peaks}
+\item{min_depth}{minimum library size}
+
+\item{plot}{show plot?}
 }
 \value{
-vector of indices, representing samples that should be kept
+indices of samples to keep
 }
 \description{
 function to get indices of samples that pass filtters
+}
+\details{
+If unspecified, min_in_peaks and min_depth cutoffs will be estimated based on data.
+min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  min_depth is
+set to the maximum of 500 or 10% of the median library size.
 }
 \seealso{
 \code{\link{get_counts}},  \code{\link{get_inputs}}, \code{\link{filter_peaks}}

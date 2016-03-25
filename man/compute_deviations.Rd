@@ -17,7 +17,8 @@ compute_deviations(counts_mat, background_peaks, peak_indices = NULL,
 \item{expectation}{expectations computed using \code{\link{compute_expectations}}}
 }
 \value{
-matrix with deviation scores
+list with two elements: 1) z: matrix with deviation z-scores,
+2) fc: matrix with deviation log2 fold-changes
 }
 \description{
 Computes deviations across sets of annotations

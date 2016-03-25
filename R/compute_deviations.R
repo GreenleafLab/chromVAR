@@ -75,7 +75,6 @@ compute_deviations <- function(counts_mat,
   if (is.null(expectation)){
     expectation <- compute_expectations(counts_mat)
   } else{
-    stopifnot(length(expectation) != nrow(counts_mat))
     stopifnot(length(expectation) == nrow(counts_mat))
   }
   
@@ -154,8 +153,7 @@ compute_deviations_single <- function(peak_set,
                                  counts_info$fragments_per_sample / sqrt(counts_info$fragments_per_sample))
     }
     sampled_deviation = sampled - sampled_expected
-   }
-  else {
+   } else {
     tf_vec <- sparseMatrix(j = peak_set, i = rep(1,tf_count), x = 1, 
                            dims = c(1, counts_info$npeak))
     
@@ -187,7 +185,7 @@ compute_deviations_single <- function(peak_set,
   sd_sampled_deviation <- apply(sampled_deviation, 2, sd)
   
   z <- (observed_deviation - mean_sampled_deviation) / sd_sampled_deviation
-  z[fail_filter] = NA
+  if (length(fail_filter) > 0) z[fail_filter] = NA
   
   logfc = log2(observed/expected) - log2(colMeans(sampled/sampled_expected));
   
