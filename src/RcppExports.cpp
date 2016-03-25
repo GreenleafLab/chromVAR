@@ -46,28 +46,14 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// motif_multi_match
-List motif_multi_match(List pwms, std::vector< std::string > x, NumericVector nuc_freqs, const double p);
-RcppExport SEXP chromVAR_motif_multi_match(SEXP pwmsSEXP, SEXP xSEXP, SEXP nuc_freqsSEXP, SEXP pSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< List >::type pwms(pwmsSEXP);
-    Rcpp::traits::input_parameter< std::vector< std::string > >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type nuc_freqs(nuc_freqsSEXP);
-    Rcpp::traits::input_parameter< const double >::type p(pSEXP);
-    __result = Rcpp::wrap(motif_multi_match(pwms, x, nuc_freqs, p));
-    return __result;
-END_RCPP
-}
 // motif_match_score
-NumericVector motif_match_score(NumericMatrix mat, std::vector< std::string > x);
+NumericVector motif_match_score(const NumericMatrix mat, const std::vector< std::string > x);
 RcppExport SEXP chromVAR_motif_match_score(SEXP matSEXP, SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
-    Rcpp::traits::input_parameter< std::vector< std::string > >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< const std::vector< std::string > >::type x(xSEXP);
     __result = Rcpp::wrap(motif_match_score(mat, x));
     return __result;
 END_RCPP

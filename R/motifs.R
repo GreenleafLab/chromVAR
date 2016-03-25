@@ -29,7 +29,7 @@ get_motifs <- function(species = "Homo sapiens", collection = "CORE", ...){
 #' 
 #' Function to get indices of peaks that contain motifs
 #' @param motifs \code{\link[TFBSTools]{PFMatrixList}} or \code{\link[TFBSTools]{PWMatrixList}}
-#' @param peaks \code{\link[GenomicRanges]{GenomicRanges}} or \code{\link{fragmentCounts}}
+#' @param peaks \code{\link[GenomicRanges]{GenomicRanges}} 
 #' @param genome \code{\link[BSgenome]{BSgenome}} object
 #' @param p.cutoff default is 0.00005
 #' @return A list with a vector of peak indices for each motif.
@@ -67,3 +67,81 @@ get_motif_indices <- function(motifs,
 
   return(motif_ix)
 }
+
+#' get_max_motif_scores
+#' 
+#' Function to get max motif score within each peak
+#' @param motif \code{\link[TFBSTools]{PFMatrix}} or \code{\link[TFBSTools]{PWMatrix}}
+#' @param peaks \code{\link[GenomicRanges]{GenomicRanges}} 
+#' @param genome \code{\link[BSgenome]{BSgenome}} object
+#' @return A numeric vector with the max motif score for each peak
+#' @export
+get_max_motif_scores <- function(motif, 
+                                 peaks, 
+                                 genome=  BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19){
+  
+  if (inherits(motifs, "PFMatrix")){
+    motif <- TFBSTools::toPWM(motif)
+  }
+  # Check class
+  if (!inherits(motifs, "PWMatrix")){
+    stop("motif must be PFMatrix or PWMatrix object")
+  }
+  seqs <- as.character(Biostrings::getSeq(genome, peaks))
+  motif_mat <- TFBSTools::as.matrix(motif)
+  out <- motif_match_score(motif_mat, seqs)
+  return(out)
+}
+
+
+get_motif_positions <- function(motif, 
+                                peaks,
+                                matches = NULL,
+                                genome=  BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
+                                p.cutoff = 0.00005,
+                                top = TRUE){
+  if (inherits(motif, "PFMatrix")){
+    motif <- TFBSTools::toPWM(motif)
+  }
+  # Check class
+  if (!inherits(motif, "PWMatrix")){
+    stop("motif must be PFMatrix or PWMatrix object")
+  }
+  seqs <- Biostrings::getSeq(genome, peaks)
+  nucFreqs <-  get_nuc_freqs(seqs)
+  motif_mat <- TFBSTools::as.matrix(motif)
+  minScore <- p_to_score(motif_mat, nucFreqs, p.cutoff)
+  if (is.null(matches)){
+    matches = motif_match(motif_mat, as.character(seqs), nucFreqs, p.cutoff)
+  }
+  motif_pos <- do.call(c,BiocParallel::bplapply(matches, function(x){
+    positions = GenomicRanges::GRanges()
+    forward_matches <- Biostrings::matchPWM(motif_mat, seqs[[x]], 
+                                            min.score = minScore, with.score = TRUE)
+    if (length(forward_matches) > 0){
+      tmp_positions = GenomicRanges::resize(GenomicRanges::shift(rep(peaks[x],length(forward_matches)), shift = start(forward_matches)-1), width(forward_matches),fix = "start")
+      strand(tmp_positions) = "+"
+      mcols(tmp_positions)$score = mcols(forward_matches)$score
+      positions = c(positions, tmp_positions)
+    }
+    reverse_matches <- Biostrings::matchPWM(Biostrings::reverseComplement(motif_mat),
+                                            seqs[[x]], 
+                                            min.score = minScore, with.score = TRUE)
+    if (length(reverse_matches) > 0){
+      tmp_positions = GenomicRanges::resize(GenomicRanges::shift(rep(peaks[x],length(reverse_matches)), shift = start(reverse_matches)-1), width(reverse_matches),fix = "start")
+      strand(tmp_positions) = "-"
+      mcols(tmp_positions)$score = mcols(reverse_matches)$score
+      positions = c(positions, tmp_positions)
+    }
+    if (top){
+      top_match = positions[which.max(mcols(positions)$score)]
+      return(top_match)
+    } else{
+      return(positions)      
+    }
+  }))
+  return(motif_pos)
+}
+
+
+

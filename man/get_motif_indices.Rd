@@ -11,7 +11,7 @@ get_motif_indices(motifs, peaks,
 \arguments{
 \item{motifs}{\code{\link[TFBSTools]{PFMatrixList}} or \code{\link[TFBSTools]{PWMatrixList}}}
 
-\item{peaks}{\code{\link[GenomicRanges]{GenomicRanges}} or \code{\link{fragmentCounts}}}
+\item{peaks}{\code{\link[GenomicRanges]{GenomicRanges}}}
 
 \item{genome}{\code{\link[BSgenome]{BSgenome}} object}
 

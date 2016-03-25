@@ -132,24 +132,8 @@ std::vector<int> motif_match(const NumericMatrix mat,
 
 
 
-
 // [[Rcpp::export]]
-List motif_multi_match(List pwms, std::vector< std::string > x, NumericVector nuc_freqs, const double p){
-  int npwm = pwms.size();
-  CharacterVector pwm_names = pwms.names();
-  List out(npwm);
-  for (int i = 0; i < npwm; ++i){
-    NumericMatrix pwm = as<NumericMatrix>(pwms[i]);
-    out[i] = motif_match(pwm, x, nuc_freqs, p);
-  }
-  out.names() = pwm_names;
-  return out;}
-
-
-
-
-// [[Rcpp::export]]
-NumericVector motif_match_score(NumericMatrix mat, std::vector< std::string > x){
+NumericVector motif_match_score(const NumericMatrix mat, const std::vector< std::string > x){
 
   size_t motif_len = mat.ncol();
   size_t nstrings = x.size();
@@ -165,18 +149,19 @@ NumericVector motif_match_score(NumericMatrix mat, std::vector< std::string > x)
       double rc_score = 0;
       for (size_t j = 0; j < motif_len; ++j){
         char letter = v[i+j];
+        int j_rc = motif_len - 1 - j;
         if (letter == 'A'){
           score += mat(0,j);  
-          rc_score += mat(3,motif_len-1-j);
+          rc_score += mat(3,j_rc);
         } else if (letter =='C'){
           score += mat(1,j);
-          rc_score += mat(1,motif_len-1-j);
+          rc_score += mat(2,j_rc);
         } else if (letter =='G'){
           score += mat(2,j);
-          rc_score += mat(1,motif_len-1-j);
+          rc_score += mat(1,j_rc);
         } else if (letter =='T'){
           score += mat(3,j);
-          rc_score += mat(0,motif_len-1-j);
+          rc_score += mat(0,j_rc);
         }
       }
       if (score > max_score){

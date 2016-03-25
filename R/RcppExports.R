@@ -13,10 +13,6 @@ motif_match <- function(mat, x, nuc_freqs, p) {
     .Call('chromVAR_motif_match', PACKAGE = 'chromVAR', mat, x, nuc_freqs, p)
 }
 
-motif_multi_match <- function(pwms, x, nuc_freqs, p) {
-    .Call('chromVAR_motif_multi_match', PACKAGE = 'chromVAR', pwms, x, nuc_freqs, p)
-}
-
 motif_match_score <- function(mat, x) {
     .Call('chromVAR_motif_match_score', PACKAGE = 'chromVAR', mat, x)
 }
