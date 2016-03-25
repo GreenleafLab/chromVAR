@@ -66,7 +66,8 @@ compute_deviations <- function(counts_mat,
   stopifnot(nrow(counts_mat) == nrow(background_peaks))
   
   counts_info <- counts_summary(counts_mat)
-       
+  if (min(counts_info$fragments_per_peaks)<=0) stop("All peaks must have at least one fragment in one sample")
+  
   if (is.null(peak_indices)){
     peak_indices <- lapply(1:counts_info$npeak, function(x) x)
   } else if (!is.list(peak_indices) && is.vector(peak_indices)){

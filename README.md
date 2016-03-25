@@ -60,10 +60,10 @@ Two parameters are used for filtering -- min_in_peaks and min_depth.  If not pro
 Unless `plot = FALSE` given as argument to function `filter_samples`, the following type of plot will be generated:
 ![proportion_in_peaks_vs_depth_plot](example_plot1.png)
 
-For both bulk and single cell data, peaks should be filtered based on having at least a certain number of fragments. At minimum, each peak should have at least one fragment across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data). Otherwise, downstream functions won't work. 
+For both bulk and single cell data, peaks should be filtered based on having at least a certain number of fragments. At minimum, each peak should have at least one fragment across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data). Otherwise, downstream functions won't work. The function `filter_peaks` will also reduce the peak set to non-overlapping peaks (keeping the peak with higher counts for peaks that overlap) if non_overlapping argument is set to TRUE (which is default). 
 
 ```{r}
-peaks_to_keep = filter_peaks(counts)
+peaks_to_keep = filter_peaks(counts, peaks, non_overlapping = TRUE)
 
 counts = counts[peaks_to_keep,]
 peaks = peaks[peaks_to_keep] #to keep peaks consistent with counts

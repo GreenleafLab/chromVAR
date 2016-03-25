@@ -325,26 +325,30 @@ filter_samples <- function(counts_mat, depths, min_in_peaks = NULL, min_depth = 
 #' by \code{\link{getFragmentCounts}}
 #' @param peaks GenomicRanges object
 #' \code{\link{read_peaks}}
-#' @param min_fragments_per_peak minimum number of fragmins in peaks across all samples 
+#' @param min_fragments_per_peak minimum number of fragmints in peaks across all samples 
+#' @param non_overlapping reduce peak set to non-overlapping peaks, see details
+#' @details if non_overlapping is set to true, when peaks overlap the overlapping peak with lower counts is removed
 #' @return vector of indices, representing peaks that should be kept
 #' @seealso \code{\link{get_peaks}},  \code{\link{get_inputs}}, \code{\link{filter_samples}},
 #' \code{\link{get_counts}}
 #' @export          
-filter_peaks <- function(counts_mat, peaks, min_fragments_per_peak = 1){
+filter_peaks <- function(counts_mat, peaks, min_fragments_per_peak = 1, non_overlapping = TRUE){
   fragments_per_peak = rowSums(counts_mat)
   keep_peaks <- which(fragments_per_peak >= min_fragments_per_peak)
-  strand(peaks) <- "*"
-  while (!(isDisjoint(peaks[keep_peaks]))){
-    chr_names = seqnames(peaks[keep_peaks])
-    starts = start(peaks[keep_peaks])
-    ends = end(counts_mat@peaks[keep_peaks])
-    
-    overlap_next = intersect(which(chr_names[1:(length(keep_peaks) -1)] == chr_names[2:(length(keep_peaks))]),
-                             which(ends[1:(length(keep_peaks) -1)] > starts[2:(length(keep_peaks))]))
-    overlap_previous = overlap_next + 1
-    overlap_comparison = fragments_per_pea[keep_peaks[overlap_previous]] > fragments_per_peak[keep_peaks[overlap_previous]]
-    discard = keep_peaks[c(overlap_previous[!overlap_comparison], overlap_next[overlap_comparison])]
-    keep_peaks = keep_peaks[keep_peaks %ni% discard]
+  if (non_overlapping){
+    strand(peaks) <- "*"
+    while (!(isDisjoint(peaks[keep_peaks]))){
+      chr_names = seqnames(peaks[keep_peaks])
+      starts = start(peaks[keep_peaks])
+      ends = end(counts_mat@peaks[keep_peaks])
+      
+      overlap_next = intersect(which(chr_names[1:(length(keep_peaks) -1)] == chr_names[2:(length(keep_peaks))]),
+                               which(ends[1:(length(keep_peaks) -1)] > starts[2:(length(keep_peaks))]))
+      overlap_previous = overlap_next + 1
+      overlap_comparison = fragments_per_pea[keep_peaks[overlap_previous]] > fragments_per_peak[keep_peaks[overlap_previous]]
+      discard = keep_peaks[c(overlap_previous[!overlap_comparison], overlap_next[overlap_comparison])]
+      keep_peaks = keep_peaks[keep_peaks %ni% discard]
+    }   
   }
   return(keep_peaks)
 }

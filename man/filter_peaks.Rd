@@ -4,7 +4,8 @@
 \alias{filter_peaks}
 \title{filter_peaks}
 \usage{
-filter_peaks(counts_mat, peaks, min_fragments_per_peak = 1)
+filter_peaks(counts_mat, peaks, min_fragments_per_peak = 1,
+  non_overlapping = TRUE)
 }
 \arguments{
 \item{counts_mat}{matrix of fragment counts per peak per sample, as computed
@@ -13,13 +14,18 @@ by \code{\link{getFragmentCounts}}}
 \item{peaks}{GenomicRanges object
 \code{\link{read_peaks}}}
 
-\item{min_fragments_per_peak}{minimum number of fragmins in peaks across all samples}
+\item{min_fragments_per_peak}{minimum number of fragmints in peaks across all samples}
+
+\item{non_overlapping}{reduce peak set to non-overlapping peaks, see details}
 }
 \value{
 vector of indices, representing peaks that should be kept
 }
 \description{
 function to get indices of peaks that pass filters
+}
+\details{
+if non_overlapping is set to true, when peaks overlap the overlapping peak with lower counts is removed
 }
 \seealso{
 \code{\link{get_peaks}},  \code{\link{get_inputs}}, \code{\link{filter_samples}},
