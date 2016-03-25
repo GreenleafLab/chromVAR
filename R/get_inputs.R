@@ -82,14 +82,11 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE){
 
 
 get_counts_from_beds <- function(beds, peaks, paired){
-
-  mat = matrix(nrow = length(peaks), ncol = length(beds))
   
-  for (i in seq_along(beds)){
-    message(paste("Reading in file: ",beds[i], sep="",collapse=""))
+  mat = simplify2array(BiocParallel::bplapply(seq_along(beds), function(i){
     fragments = readAlignmentFromBed(beds[i], paired = paired)
-    mat[,i] = GenomicRanges::countOverlaps(peaks, fragments, type="any", ignore.strand=TRUE)
-  }
+    return(GenomicRanges::countOverlaps(peaks, fragments, type="any", ignore.strand=TRUE))
+  }))
   colnames(mat) = basename(beds)
   counts_mat = Matrix(mat)   
   
