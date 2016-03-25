@@ -83,7 +83,7 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE){
 
 get_counts_from_beds <- function(beds, peaks, paired){
 
-  mat = matrix(nrow = length(peaks), ncol = length(bams))
+  mat = matrix(nrow = length(peaks), ncol = length(beds))
   
   for (i in seq_along(beds)){
     message(paste("Reading in file: ",beds[i], sep="",collapse=""))
@@ -100,7 +100,7 @@ get_counts_from_beds <- function(beds, peaks, paired){
 
 # Helper functions for reading in counts from bam ------------------------------
 
-readAlignmentFromBed <- function(bed, paired){
+readAlignmentFromBed <- function(filename, paired){
   if (is.installed('readr')){
     tmp <- readr::read_tsv(file = filename, col_names = FALSE)
   } else{
