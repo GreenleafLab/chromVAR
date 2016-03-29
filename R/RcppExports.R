@@ -25,7 +25,7 @@ pwm_dist_single <- function(mat1, mat2) {
     .Call('chromVAR_pwm_dist_single', PACKAGE = 'chromVAR', mat1, mat2)
 }
 
-pwm_dist <- function(pwms) {
-    .Call('chromVAR_pwm_dist', PACKAGE = 'chromVAR', pwms)
+compute_pwm_dist <- function(pwms) {
+    .Call('chromVAR_compute_pwm_dist', PACKAGE = 'chromVAR', pwms)
 }
 
