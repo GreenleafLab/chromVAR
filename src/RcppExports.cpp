@@ -58,3 +58,38 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// pwm_euclidean
+double pwm_euclidean(arma::mat mat1, arma::mat mat2);
+RcppExport SEXP chromVAR_pwm_euclidean(SEXP mat1SEXP, SEXP mat2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type mat1(mat1SEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type mat2(mat2SEXP);
+    __result = Rcpp::wrap(pwm_euclidean(mat1, mat2));
+    return __result;
+END_RCPP
+}
+// pwm_dist_single
+double pwm_dist_single(arma::mat mat1, arma::mat mat2);
+RcppExport SEXP chromVAR_pwm_dist_single(SEXP mat1SEXP, SEXP mat2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type mat1(mat1SEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type mat2(mat2SEXP);
+    __result = Rcpp::wrap(pwm_dist_single(mat1, mat2));
+    return __result;
+END_RCPP
+}
+// pwm_dist
+arma::mat pwm_dist(List pwms);
+RcppExport SEXP chromVAR_pwm_dist(SEXP pwmsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type pwms(pwmsSEXP);
+    __result = Rcpp::wrap(pwm_dist(pwms));
+    return __result;
+END_RCPP
+}

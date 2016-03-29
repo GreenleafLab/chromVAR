@@ -17,3 +17,15 @@ motif_match_score <- function(mat, x) {
     .Call('chromVAR_motif_match_score', PACKAGE = 'chromVAR', mat, x)
 }
 
+pwm_euclidean <- function(mat1, mat2) {
+    .Call('chromVAR_pwm_euclidean', PACKAGE = 'chromVAR', mat1, mat2)
+}
+
+pwm_dist_single <- function(mat1, mat2) {
+    .Call('chromVAR_pwm_dist_single', PACKAGE = 'chromVAR', mat1, mat2)
+}
+
+pwm_dist <- function(pwms) {
+    .Call('chromVAR_pwm_dist', PACKAGE = 'chromVAR', pwms)
+}
+
