@@ -62,7 +62,10 @@ compute_deviations <- function(counts_mat,
                                expectation = NULL,
                                norm = TRUE){
   
-  stopifnot(inherits(counts_mat,"Matrix") || inherits(counts_mat,"matrix"))
+  if (inherits(counts_mat,"matrix")){
+    counts_mat = Matrix(counts_mat)
+  }
+  stopifnot(inherits(counts_mat,"Matrix"))
   stopifnot(nrow(counts_mat) == nrow(background_peaks))
   
   counts_info <- counts_summary(counts_mat)
@@ -108,10 +111,10 @@ compute_deviations <- function(counts_mat,
   
   results <- BiocParallel::bplapply(peak_indices,
                                       compute_deviations_single,
-                                      counts_mat, 
-                                      background_peaks,
-                                      expectation,
-                                      counts_info,
+                                      counts_mat  = counts_mat, 
+                                      background_peaks = background_peaks,
+                                      expectation = expectation,
+                                      counts_info = counts_info,
                                       norm = norm)
   
   out <- list()
@@ -133,6 +136,9 @@ compute_deviations_single <- function(peak_set,
                                            counts_info,
                                            intermediate_results = FALSE,
                                            norm = TRUE){
+  #require Matrix (for some multiprocessing options)
+  suppressPackageStartupMessages(library(Matrix, quietly = TRUE, warn.conflicts = FALSE))   
+  
   ### counts_mat should already be normed!
   tf_count <- length(peak_set)
   ### Determine if any sets have too low expected counts
