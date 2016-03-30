@@ -66,23 +66,38 @@ arma::vec pwm_dist_single(arma::mat mat1, arma::mat mat2){
 }
 
 
+
 // [[Rcpp::export]]
 List compute_pwm_dist(List pwms){
   
   arma::uword n = pwms.size();
   arma::mat out1(n, n, arma::fill::zeros);
   arma::imat out2(n, n, arma::fill::zeros);
-  arma::vec res;
-  for (arma::uword i = 1; i < n; i++){
+  CharacterMatrix out3(n,n);
+  arma::vec res, res_rc;
+  for (arma::uword i = 0; i < n; i++){
     arma::mat mat1 = as<arma::mat>(pwms[i]);
-    for (arma::uword j = 0; j < i; j++){
+    for (arma::uword j = 0; j <= i; j++){
       arma::mat mat2 = as<arma::mat>(pwms[j]);
       res = pwm_dist_single(mat1, mat2);
-      out1(i,j) = res(0);
-      out1(j,i) = res(0);
-      out2(i,j) = (int)res(1);
-      out2(j,i) = -(int)res(1);
+      //rc
+      res_rc = pwm_dist_single(mat1, arma::fliplr(arma::flipud(mat2)));
+      if (res(0) <= res_rc(0)){
+        out1(i,j) = res(0);
+        out1(j,i) = res(0);
+        out2(i,j) = (int)res(1);
+        out2(j,i) = -(int)res(1); 
+        out3(i,j) = "+";
+        out3(j,i) = "+";
+      } else{
+        out1(i,j) = res_rc(0);
+        out1(j,i) = res_rc(0);
+        out2(i,j) = (int)res_rc(1);
+        out2(j,i) = -(int)res_rc(1); 
+        out3(i,j) = "-";
+        out3(j,i) = "-";
+      }
     }
   } 
-  return List::create(Rcpp::Named("dist") = out1, Rcpp::Named("offset") = out2);
+  return List::create(Rcpp::Named("dist") = out1, Rcpp::Named("offset") = out2, Rcpp::Named("strand") = out3);
 }
