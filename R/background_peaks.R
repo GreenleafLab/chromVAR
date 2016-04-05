@@ -96,3 +96,115 @@ add_reflections <- function(x, window = 1000, as_ranks = FALSE){
   return(list("data" = out, "replace" = replace_reflected, "identify" = identify_same))
 }
 
+get_background_peaks2 <- function(counts_mat, bias, niterations = 50, w = 0.1){
+  
+  countsum <- counts_summary(counts_mat)
+  if (min(countsum$fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
+
+  intensity = log10(countsum$fragments_per_peak)
+  norm_mat = matrix(c(intensity, bias), ncol = 2, byrow = FALSE)
+  inv_cov_mat <- solve(cov(norm_mat))
+  
+  density <- do.call(c, BiocParallel::bplapply(1:nrow(counts_mat), maha_density, intensity, bias, inv_cov_mat, w))
+  background_peaks <- do.call(rbind,BiocParallel::bplapply(1:nrow(counts_mat), bg_sample, intensity, bias, inv_cov_mat, density, niterations, w))
+  
+  return(background_peaks)
+}
+
+get_background_peaks3 <- function(counts_mat, bias, niterations = 50, w = 0.1){
+  
+  countsum <- counts_summary(counts_mat)
+  if (min(countsum$fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
+  
+  intensity = log10(countsum$fragments_per_peak)
+  norm_mat = matrix(c(intensity, bias), ncol = 2, byrow = FALSE)
+  
+  chol_cov_mat <- chol(cov(norm_mat))
+    
+  #make bins
+  intensity_bins = seq(min(intensity), max(intensity), length.out = 50)
+  bias_bins = seq(min(bias), max(bias), length.out = 50)
+  
+  bin_data = do.call(rbind,lapply(1:50, function(x) matrix(c(rep(intensity_bins[x], 50),bias_bins), ncol = 2, byrow = FALSE)))
+  tmp_vals <- t(forwardsolve(t(chol_cov_mat),t(bin_data)))
+  
+  bin_dist = as.matrix(dist(tmp_vals))
+  bin_p = dnorm(bin_dist, 0, w)
+  tmp_vals2 <- t(forwardsolve(t(chol_cov_mat),t(norm_mat)))
+  
+  bin_membership <- FNN::get.knnx(tmp_vals, query = tmp_vals2, k = 1)$nn.index
+  
+  bin_density <- tabulate2(bin_membership, min_val = 1, max_val = 2500)
+  
+  n = length(bin_membership)
+  background_peaks <- matrix(nrow = n, ncol = niterations)
+  for (i in seq_along(bin_density)){
+    ix = which(bin_membership == i)
+    background_peaks[ix,] = sample(n, size = niterations * length(ix), replace = TRUE, 
+                                   prob = bin_p[i, bin_membership] / bin_density[bin_membership])
+  }
+    
+  return(background_peaks)
+}
+
+
+
+get_background_peaks4 <- function(counts_mat, bias, niterations = 50, w = 0.1){
+  
+  countsum <- counts_summary(counts_mat)
+  if (min(countsum$fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
+  
+  intensity = log10(countsum$fragments_per_peak)
+  norm_mat = matrix(c(intensity, bias), ncol = 2, byrow = FALSE)
+  
+  chol_cov_mat <- chol(cov(norm_mat))
+  
+  #make bins
+  intensity_bins = seq(min(intensity), max(intensity), length.out = 50)
+  bias_bins = seq(min(bias), max(bias), length.out = 50)
+  
+  bin_data = do.call(rbind,lapply(1:50, function(x) matrix(c(rep(intensity_bins[x], 50),bias_bins), ncol = 2, byrow = FALSE)))
+  tmp_vals <- t(forwardsolve(t(chol_cov_mat),t(bin_data)))
+  
+  bin_dist = as.matrix(dist(tmp_vals))
+  bin_p = dnorm(bin_dist, 0, w)
+  tmp_vals2 <- t(forwardsolve(t(chol_cov_mat),t(norm_mat)))
+  
+  bin_membership <- FNN::get.knnx(tmp_vals, query = tmp_vals2, k = 1)$nn.index
+  
+  bin_density <- tabulate2(bin_membership, min_val = 1, max_val = 2500)
+  
+  background_peaks <- bg_sample_helper(bin_membership-1, bin_p, bin_density, niterations)
+  
+  return(background_peaks)
+}
+
+get_background_peaks5 <- function(counts_mat, bias, niterations = 50, w = 0.1, bs = 50){
+  
+  countsum <- counts_summary(counts_mat)
+  if (min(countsum$fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
+  
+  intensity = log10(countsum$fragments_per_peak)
+  norm_mat = matrix(c(intensity, bias), ncol = 2, byrow = FALSE)
+  
+  chol_cov_mat <- chol(cov(norm_mat))
+  trans_norm_mat <- t(forwardsolve(t(chol_cov_mat),t(norm_mat)))  
+  
+  #make bins
+  bins1 = seq(min(trans_norm_mat[,1]), max(trans_norm_mat[,1]), length.out = bs)
+  bins2 = seq(min(trans_norm_mat[,2]), max(trans_norm_mat[,2]), length.out = bs)
+  
+  bin_data = do.call(rbind,lapply(1:50, function(x) matrix(c(rep(bins1[x], bs),bins2), ncol = 2, byrow = FALSE)))
+  
+  bin_dist = as.matrix(dist(bin_data))
+  bin_p = dnorm(bin_dist, 0, w)
+  
+  bin_membership <- FNN::get.knnx(bin_data, query = trans_norm_mat, k = 1)$nn.index
+  
+  bin_density <- tabulate2(bin_membership, min_val = 1, max_val = bs**2)
+  
+  background_peaks <- bg_sample_helper(bin_membership-1, bin_p, bin_density, niterations)
+  
+  return(background_peaks)
+}
+

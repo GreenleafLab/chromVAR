@@ -305,7 +305,7 @@ filter_samples <- function(counts_mat, depths, min_in_peaks = NULL, min_depth = 
                             which(fragments_per_sample/depths >= min_in_peaks))   
   tmp_df = data.frame(x = depths, y= fragments_per_sample/depths, z = ((1:length(fragments_per_sample)) %in% keep_samples))
   p = ggplot(tmp_df, aes_string(x="x", y="y",col="z")) + geom_point() +
-    xlab("Library size") + ylab("Proportion of fragments in peaks") + scale_x_log10() + annotation_logticks(sides="b") + 
+    xlab("Number of fragments") + ylab("Proportion of fragments in peaks") + scale_x_log10() + annotation_logticks(sides="b") + 
     scale_y_continuous(expand =c(0,0), limits =c(0, min(1,max(tmp_df$y)*1.2)))+
     scale_color_manual(name = "Pass filters?",values = c("gray","black"),breaks = c(TRUE,FALSE), labels = c("Yes","No")) +
                            chromVAR_theme()
