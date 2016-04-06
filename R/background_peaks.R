@@ -194,4 +194,41 @@ get_background_peaks2 <- function(counts_mat, bias, niterations = 50, window = 5
   return(background_peaks)
 }
 
-
+get_background_peaks3 <- function(counts_mat, bias, niterations = 50, window = 1000, s = 0.1, with_replacement = TRUE, count = TRUE){
+  
+  countsum <- counts_summary(counts_mat)
+  if (min(countsum$fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
+  if (!with_replacement && niterations > window){
+    stop("If with_replacement is FALSE, then niterations must be less than window")
+  }
+  if (count){
+    norm_mat <- cbind(log10(countsum$fragments_per_peak), bias)
+  } else{
+    norm_mat <- cbind(countsum$fragments_per_peak, bias)
+  }
+  chol_cov_mat <- chol(cov(norm_mat))
+  tmp_vals <- t(forwardsolve(t(chol_cov_mat),t(norm_mat)))
+  
+  grpsize <- 2000
+  grps <- lapply(1:(countsum$npeak %/% grpsize + ((countsum$npeak %% grpsize)!=0)), function(x) ((x-1)*grpsize +1):(min(x*grpsize,countsum$npeak)))
+  
+  densities <- get_2d_density(tmp_vals[,1], tmp_vals[,2], n = 50, s = 0.1)
+  
+  bghelper <- function(grp, w, tmp_vals, with_replacement, niterations, densities, s){
+    in2 = tmp_vals[grp,]
+    tmp_nns <- w$query(in2, k = window, eps = 0)
+    if (niterations == 1){
+      return(matrix(sapply(1:length(grp), function(x) sample(tmp_nns$nn.idx[x,], niterations, replace = with_replacement, 
+                                                               prob = dnorm(tmp_nns$nn.dists[x,],0,s) / densities[tmp_nns$nn.idx[x,]] )),
+                    ncol = 1))
+    } else{
+      return(t(sapply(1:length(grp), function(x) sample(tmp_nns$nn.idx[x,], niterations, replace = with_replacement, 
+                                                          prob = dnorm(tmp_nns$nn.dists[x,],0,s) / densities[tmp_nns$nn.idx[x,]] ))))
+    }
+  }
+  
+  knn_kd_tree = nabor::WKNND(tmp_vals)
+  background_peaks <- do.call(rbind, BiocParallel::bplapply(grps, bghelper, knn_kd_tree, tmp_vals, with_replacement, niterations, densities, s))
+  
+  return(background_peaks)
+}

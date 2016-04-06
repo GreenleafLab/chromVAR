@@ -300,4 +300,44 @@ counts_summary <- function(counts_mat){
   return(out)
 }
 
+# get density ------------------------------------------------------------------
+
+#adapted from MASS and Fields packages
+get_2d_density <- function (x, y, n = 25, s = 0.1, lims = c(range(x), range(y))) {
+  nx <- length(x)
+  if (length(y) != nx) 
+    stop("data vectors must be the same length")
+  if (any(!is.finite(x)) || any(!is.finite(y))) 
+    stop("missing or infinite values in the data are not allowed")
+  if (any(!is.finite(lims))) 
+    stop("only finite values are allowed in 'lims'")
+  n <- rep(n, length.out = 2L)
+  gx <- seq.int(lims[1L], lims[2L], length.out = n[1L])
+  gy <- seq.int(lims[3L], lims[4L], length.out = n[2L])
+  ax <- outer(gx, x, "-") / 0.25
+  ay <- outer(gy, y, "-") / 0.25
+  z <- tcrossprod(matrix(dnorm(ax, 0, s), , nx), matrix(dnorm(ay,0,s), 
+                                                  , nx))/(nx) * 16
+  
+  #interpolations
+  lx <- approx(gx, 1:n[1L], x)$y
+  ly <- approx(gy, 1:n[2L], y)$y
+  lx1 <- floor(lx)
+  ly1 <- floor(ly)
+  ex <- lx - lx1
+  ey <- ly - ly1
+  ex[lx1 == n[1L]] <- 1
+  ey[ly1 == n[2L]] <- 1
+  lx1[lx1 == n[1L]] <- n[1L] - 1
+  ly1[ly1 == n[2L]] <- n[2L] - 1
+  return(z[cbind(lx1, ly1)] * (1 - ex) * (1 - ey) + z[cbind(lx1 + 
+                                                              1, ly1)] * ex * (1 - ey) + z[cbind(lx1, ly1 + 1)] * (1 - 
+                                                                                                                     ex) * ey + z[cbind(lx1 + 1, ly1 + 1)] * ex * ey)
+}
+
+
+
+
+
+
 
