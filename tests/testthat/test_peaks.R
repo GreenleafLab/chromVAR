@@ -21,3 +21,10 @@ test_that("can read peaks file with several extra columns", {
   expect_is(peaks, "GenomicRanges")
   expect_equal(colnames(mcols(peaks)), c("name","score")) 
 })
+
+test_that("reduce peaks works as expected"){
+  tmp = GenomicRanges::GRanges(c("chr1","chr1","chr1","chr1","chr2","chr2"), 
+                               IRanges::IRanges(start = c(1,10,20,30,10,11), end = c(9,23,33,42,18,14)))
+  tmp2 = matrix(c(1,3,2,4,7,3), ncol = 1)
+  expect_equal(filter_peaks(tmp2, tmp), c(1,2,4,5))
+}

@@ -15,9 +15,9 @@
 #' indicate column index and name using named vector for extra_cols.  
 #' @seealso \code{\link{get_counts}}, \code{\link{get_inputs}}, \code{\link{filter_peaks}}
 #'  @export
-get_peaks <- function(filename, extra_cols = c()){
+get_peaks <- function(filename, extra_cols = c(), sort = TRUE){
   if (is.installed('readr')){
-    bed <- readr::read_tsv(file = filename, col_names = FALSE)[, c(1:3, extra_cols)]
+    bed <- as.data.frame(readr::read_tsv(file = filename, col_names = FALSE)[, c(1:3, extra_cols)])
   } else{
     bed <- read.delim(file = filename, header = FALSE, sep = "\t", stringsAsFactors = FALSE)[, c(1:3, extra_cols)]
   }
@@ -33,6 +33,51 @@ get_peaks <- function(filename, extra_cols = c()){
     warning('Peaks are not equal width! 
             Use resize(peaks, width = x, fix = "center") to make peaks equal in size, 
             where x is the desired size of the peaks)')
+  }
+  sorted_bed = sort(bed)
+  if (sort){
+    if (!isTRUE(all.equal(sorted_bed, bed))){
+      message("Peaks sorted")
+    }
+    return(sorted_bed)
+  } else{
+    if (!isTRUE(all.equal(sorted_bed, bed))){
+      warning("Peaks not sorted")
+    }
+    return(bed)
+  }
+}
+
+#'@export
+read_macs2_narrowpeaks <- function(filename, width = 500, non_overlapping = TRUE){
+  if (is.installed('readr')){
+    bed <- as.data.frame(readr::read_tsv(file = filename, 
+                                         col_names = c("chr","start","end","name","score","strand","fc","pval","qval","summit")))
+  } else{
+    bed <- read.delim(file = filename, header = FALSE, sep = "\t", stringsAsFactors = FALSE, 
+                      col.names= c("chr","start","end","name","score","strand","fc","pval","qval","summit"))
+  }
+  bed[,"summit"] <- bed[,"start"] + bed[,"summit"]
+  bed <- makeGRangesFromDataFrame(bed[,c("chr","summit","score","qval","name")], 
+                                  start.field = "summit",
+                                  end.field = "summit",
+                                  keep.extra.columns = TRUE)
+  bed <- resize(bed, width = width, fix = "center")
+  bed <- sort(bed)
+  if (non_overlapping){
+    keep_peaks = 1:length(bed)
+    while (!(isDisjoint(bed[keep_peaks]))){
+      chr_names = seqnames(bed[keep_peaks])
+      starts = start(bed[keep_peaks])
+      ends = end(bed[keep_peaks])     
+      overlap_next = intersect(which(chr_names[1:(length(keep_peaks) -1)] == chr_names[2:(length(keep_peaks))]),
+                               which(ends[1:(length(keep_peaks) -1)] >= starts[2:(length(keep_peaks))]))
+      overlap_previous = overlap_next + 1
+      overlap_comparison = bed[keep_peaks[overlap_previous]]$qval > bed[keep_peaks[overlap_next]]$qval
+      discard = keep_peaks[c(overlap_previous[!overlap_comparison], overlap_next[overlap_comparison])]
+      keep_peaks = keep_peaks[keep_peaks %ni% discard]
+    }
+    bed = bed[keep_peaks]
   }
   return(bed)
 }
@@ -334,16 +379,18 @@ filter_peaks <- function(counts_mat, peaks, min_fragments_per_peak = 1, non_over
   fragments_per_peak = rowSums(counts_mat)
   keep_peaks <- which(fragments_per_peak >= min_fragments_per_peak)
   if (non_overlapping){
-    strand(peaks) <- "*"
+    strand(peaks) <- "*"    
+    if (!isTRUE(all.equal(peaks, sort(peaks)))){
+      stop("peaks must be sorted to be able to filter non-overlapping peaks!")
+    }
     while (!(isDisjoint(peaks[keep_peaks]))){
       chr_names = seqnames(peaks[keep_peaks])
       starts = start(peaks[keep_peaks])
-      ends = end(counts_mat@peaks[keep_peaks])
-      
+      ends = end(peaks[keep_peaks])      
       overlap_next = intersect(which(chr_names[1:(length(keep_peaks) -1)] == chr_names[2:(length(keep_peaks))]),
-                               which(ends[1:(length(keep_peaks) -1)] > starts[2:(length(keep_peaks))]))
+                               which(ends[1:(length(keep_peaks) -1)] >= starts[2:(length(keep_peaks))]))
       overlap_previous = overlap_next + 1
-      overlap_comparison = fragments_per_pea[keep_peaks[overlap_previous]] > fragments_per_peak[keep_peaks[overlap_previous]]
+      overlap_comparison = fragments_per_peak[keep_peaks[overlap_previous]] > fragments_per_peak[keep_peaks[overlap_next]]
       discard = keep_peaks[c(overlap_previous[!overlap_comparison], overlap_next[overlap_comparison])]
       keep_peaks = keep_peaks[keep_peaks %ni% discard]
     }   
