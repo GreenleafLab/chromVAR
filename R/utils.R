@@ -19,12 +19,12 @@ last_element <- function(x) x[length(x)]
 
 # check for installed package --------------------------------------------------
 
-is.installed <- function(pkg) is.element(pkg, installed.packages()[,1]) 
+is.installed <- function(pkg) is.element(pkg, installed.packages()[,1])
 
 # Mathematical shortcuts -------------------------------------------------------
 
 mean_smooth <- function(X, window){
-  if (is.na(as.integer(window)) || length(window) != 1 || window < 2 || 
+  if (is.na(as.integer(window)) || length(window) != 1 || window < 2 ||
         indow >= length(X)){
     stop("window must be an integer between 2 and length(X)")
   }
@@ -74,7 +74,7 @@ all_equal <- function(x){
 
 all_whole <- function(x, tol = .Machine$double.eps^0.5){
   all_true(abs(x - round(x)) < tol)
-}  
+}
 
 # Function to merge lists, either by name or order -----------------------------
 
@@ -117,7 +117,7 @@ merge_lists <- function(..., by = c("order","name")){
         common_names = names(output)[which(names(output) %in% names(tmp))]
         unique_old = names(output)[which(names(output) %ni% common_names)]
         unique_new = names(tmp)[which(names(tmp) %ni% common_names)]
-        output = c(Map(c,output[common_names],tmp[common_names]), 
+        output = c(Map(c,output[common_names],tmp[common_names]),
                    output[unique_old],tmp[unique_new])
       }
       return(output)
@@ -129,24 +129,24 @@ merge_lists <- function(..., by = c("order","name")){
 remove_overlap <- function(x, to.remove){
   #removes items in vector to.remove from x
   if (inherits(x, "list")){
-    return(lapply(x, function(y) y[which(y %ni% to.remove)]))    
+    return(lapply(x, function(y) y[which(y %ni% to.remove)]))
   } else if (inherits(x, "vector")){
     return(x[which(x %ni% to.remove)])
   } else{
     stop("x must be list or vector")
   }
-} 
+}
 
 remove_nonoverlap <- function(x, to.keep){
   #keep only items in x that are in to.keep
   if (inherits(x, "list")){
-    return(lapply(x, function(y) y[which(y %in% to.keep)]))    
+    return(lapply(x, function(y) y[which(y %in% to.keep)]))
   } else if (inherits(x, "vector")){
     return(x[which(x %in% to.keep)])
   } else{
     stop("x must be list or vector")
   }
-} 
+}
 
 # Modified tabulate funcion ----------------------------------------------------
 
@@ -191,7 +191,7 @@ tabulate2<-function(x,min_val,max_val){
   else{
     stop("something may be amiss with min_val or max_val")
   }
-} 
+}
 
 
 # Functions with ranges --------------------------------------------------------
@@ -224,11 +224,8 @@ split_alpha_numeric <- function(x){
 }
 
 mxsort <- function(x){
-  if (!is.character(x)) 
+  if (!is.character(x))
     return(sort(x))
-  nonnumeric <- function(x) {
-    ifelse(is.na(numeric(x)), toupper(x), NA)
-  }
   which.nas <- which(is.na(x))
   which.blanks <- which(x == "")
   split_x <- lapply(x, split_alpha_numeric)
@@ -245,10 +242,14 @@ mxsort <- function(x){
     })
   }
   vecs <- do.call(merge_lists,split_x)
-  ord <- do.call(order, c(vecs,list(na.last=FALSE))) 
-  return(x[ord])  
+  make.numeric <- function(x){
+     ifelse(!(is.na(suppressWarnings(as.numeric(x)))), suppressWarnings(as.numeric(x)), x)
+  }
+  vecs <- lapply(vecs, make.numeric)
+  ord <- do.call(order, c(vecs,list(na.last=FALSE)))
+  return(x[ord])
 }
-  
+
 # making permutations ----------------------------------------------------------
 
 make_bias_bins <- function(counts_mat, bias, nbins = 25){
