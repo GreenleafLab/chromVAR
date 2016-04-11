@@ -85,10 +85,9 @@ bias <- get_gc(peaks, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
 Check out `available.genomes` from the BSgenome package for what genomes are available. For making your own BSgenome object, check out `BSgenomeForge`.  
 
 ##Get motifs and what peaks contain motifs
-The function `get_motifs` fetches motifs from the JASPAR database.  The function `get_motif_indices` finds which peaks contain which motifs.
+The function `get_motifs` fetches motifs from the JASPAR database.  
 ```{r}
 motifs <- get_motifs()
-motif_ix <- get_motif_indices(motifs = motifs, peaks = peaks)
 ```
 
 The function get_motifs() by default gets human motifs from JASPAR core database.  For other species motifs, change the species argument.  
@@ -99,10 +98,22 @@ For using a collection other than core, use the `core` argument.  Options includ
 
 The `get_motifs` function is simply a wrapper around `getMatrixSet` from TFBSTools-- you can also use that function to fetch motifs from JASPAR if you prefer, and/or check out the documentation for that function for more information.  
 
-For the function `get_motif_indices` a genome sequence is again required.  So for sacCer3 for example:
+The function `match_pwms` from the MOODSR package finds which peaks contain which motifs.  Install MOODSR using:
+```{r}
+devtools::install_github("AliciaSchep/MOODSR")
+```
+No auth token needed, as it is a public repo.
 
 ```{r}
-motif_ix <- get_motif_indices(motifs = motifs, peaks = peaks, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
+require(MOODSR)
+
+motif_ix <- match_pwms(motifs = motifs, peaks = peaks, out = "match")
+```
+
+For the function `match_pwm` a genome sequence is again required.  So for sacCer3 for example:
+
+```{r}
+motif_ix <- match_pwms(motifs = motifs, peaks = peaks, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
 ```
 
 Another option is the p.cutoff for determing how stringent motif calling should be. The default value is 0.00005, which tends to give reasonable numbers of motif matches.  

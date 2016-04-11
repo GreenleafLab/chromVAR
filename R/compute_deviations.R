@@ -73,17 +73,18 @@ compute_deviations <- function(counts_mat,
 
   if (is.null(peak_indices)){
     peak_indices <- lapply(1:counts_info$npeak, function(x) x)
+  } else if (inherits(peak_indices, "Matrix") || inherits(peak_indices, "matrix")){
+    peak_indices <- lapply(1:ncol(peak_indices), function(x) which(peak_indices[,x] != 0))
   } else if (!is.list(peak_indices) && is.vector(peak_indices)){
     peak_indices = list(peak_indices)
   }
+  stopifnot(inherits(peak_indices,"list"))  
+  
   if (is.null(expectation)){
     expectation <- compute_expectations(counts_mat)
   } else{
     stopifnot(length(expectation) == nrow(counts_mat))
   }
-
-  stopifnot(inherits(peak_indices,"list"))
-
 
   # check that indices fall within appropriate bounds
   tmp <- unlist(peak_indices, use.names =F)
@@ -97,8 +98,7 @@ compute_deviations <- function(counts_mat,
   if(is.null(names(peak_indices))){
     names(peak_indices) = 1:length(peak_indices)
   }
-  # remove sets of length 0
-  peak_indices <- peak_indices[which(sapply(peak_indices,length)>0)]
+
   sample_names <- colnames(counts_mat)
 
   if (norm){
@@ -136,8 +136,13 @@ compute_deviations_single <- function(peak_set,
                                            counts_info,
                                            intermediate_results = FALSE,
                                            norm = TRUE){
+  
   #require Matrix (for some multiprocessing options)
   suppressPackageStartupMessages(library(Matrix, quietly = TRUE, warn.conflicts = FALSE))
+  
+  if (length(peak_set) == 0){
+    return(list(z = rep(NA, counts_info$nsample), fc = rep(NA,counts_info$nsample)))
+  }
 
   ### counts_mat should already be normed!
   tf_count <- length(peak_set)

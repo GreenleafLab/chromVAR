@@ -5,18 +5,6 @@ get_normalized_counts <- function(counts, expectation, fragments_per_sample) {
     .Call('chromVAR_get_normalized_counts', PACKAGE = 'chromVAR', counts, expectation, fragments_per_sample)
 }
 
-p_to_score <- function(pwm, bg, p) {
-    .Call('chromVAR_p_to_score', PACKAGE = 'chromVAR', pwm, bg, p)
-}
-
-motif_match <- function(mat, x, nuc_freqs, p) {
-    .Call('chromVAR_motif_match', PACKAGE = 'chromVAR', mat, x, nuc_freqs, p)
-}
-
-motif_match_score <- function(mat, x) {
-    .Call('chromVAR_motif_match_score', PACKAGE = 'chromVAR', mat, x)
-}
-
 pwm_euclidean <- function(mat1, mat2) {
     .Call('chromVAR_pwm_euclidean', PACKAGE = 'chromVAR', mat1, mat2)
 }

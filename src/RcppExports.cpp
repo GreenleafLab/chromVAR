@@ -19,45 +19,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// p_to_score
-double p_to_score(const NumericMatrix pwm, const NumericVector bg, const double p);
-RcppExport SEXP chromVAR_p_to_score(SEXP pwmSEXP, SEXP bgSEXP, SEXP pSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< const NumericMatrix >::type pwm(pwmSEXP);
-    Rcpp::traits::input_parameter< const NumericVector >::type bg(bgSEXP);
-    Rcpp::traits::input_parameter< const double >::type p(pSEXP);
-    __result = Rcpp::wrap(p_to_score(pwm, bg, p));
-    return __result;
-END_RCPP
-}
-// motif_match
-std::vector<int> motif_match(const NumericMatrix mat, const std::vector< std::string > x, const NumericVector nuc_freqs, const double p);
-RcppExport SEXP chromVAR_motif_match(SEXP matSEXP, SEXP xSEXP, SEXP nuc_freqsSEXP, SEXP pSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< const NumericMatrix >::type mat(matSEXP);
-    Rcpp::traits::input_parameter< const std::vector< std::string > >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const NumericVector >::type nuc_freqs(nuc_freqsSEXP);
-    Rcpp::traits::input_parameter< const double >::type p(pSEXP);
-    __result = Rcpp::wrap(motif_match(mat, x, nuc_freqs, p));
-    return __result;
-END_RCPP
-}
-// motif_match_score
-NumericVector motif_match_score(const NumericMatrix mat, const std::vector< std::string > x);
-RcppExport SEXP chromVAR_motif_match_score(SEXP matSEXP, SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< const NumericMatrix >::type mat(matSEXP);
-    Rcpp::traits::input_parameter< const std::vector< std::string > >::type x(xSEXP);
-    __result = Rcpp::wrap(motif_match_score(mat, x));
-    return __result;
-END_RCPP
-}
 // pwm_euclidean
 double pwm_euclidean(arma::mat mat1, arma::mat mat2);
 RcppExport SEXP chromVAR_pwm_euclidean(SEXP mat1SEXP, SEXP mat2SEXP) {
