@@ -15,6 +15,7 @@ Imports:
     Matrix,
     GenomicRanges,
     IRanges,
+    GenomeInfoDb,
     ggplot2,
     nabor,
     BiocParallel,

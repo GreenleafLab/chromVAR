@@ -62,11 +62,13 @@ compute_variability <- function(deviations,
                       bootstrap_lower_bound = sd_error[1,], 
                       bootstrap_upper_bound = sd_error[2,],
                       p_value = p_sd,
-                      p_value_adj = p_adj)    
+                      p_value_adj = p_adj,
+                      row.names = rownames(deviations))    
   } else{
     out <- data.frame(variability = sd_deviations,
                       p_value = p_sd,
-                      p_value_adj = p_adj)    
+                      p_value_adj = p_adj,
+                      row.names = rownames(deviations))    
   }
   return(out)
 }

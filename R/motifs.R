@@ -59,14 +59,27 @@ get_motif_indices <- function(motifs,
   
   motif_mats <- lapply(motifs, function(x) TFBSTools::as.matrix(x))
   
-  motif_ix = BiocParallel::bplapply(motif_mats,
-                                      motif_match,
+  grpsize <- BiocParallel::bpparam()
+  if (grpsize > 2){
+    motif_mat_grps <- lapply(1:(length(motif_mats) %/% grpsize + ((length(motif_mats) %% grpsize)!=0)), function(x) motif_mats[((x-1)*grpsize +1):(min(x*grpsize,countsum$npeak))])
+    motif_ix = do.call(c, BiocParallel::bplapply(motif_mats,
+                                      motif_match_helper,
                                       seqs,
                                       nucFreqs,
-                                      p.cutoff)
+                                      p.cutoff))
+  } else{
+    motif_ix = multi_motif_match_helper(motif_mats, seqs, nucFreqs, p.cutoff)
+  }
 
   return(motif_ix)
 }
+
+motif_match_helper <- function(motif_mats, seqs, nuc_freqs, p.cutoff){
+  out = multi_motif_match(motif_mats, seqs, nuc_freqs, p.cutoff)
+  names(out) = names(motif_mats)
+  return(out)
+}
+
 
 #' get_max_motif_scores
 #' 
@@ -78,7 +91,8 @@ get_motif_indices <- function(motifs,
 #' @export
 get_max_motif_scores <- function(motif, 
                                  peaks, 
-                                 genome=  BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19){
+                                 genome=  BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
+                                 p = 0.00005){
   
   if (inherits(motifs, "PFMatrix")){
     motif <- TFBSTools::toPWM(motif)
@@ -87,9 +101,12 @@ get_max_motif_scores <- function(motif,
   if (!inherits(motifs, "PWMatrix")){
     stop("motif must be PFMatrix or PWMatrix object")
   }
-  seqs <- as.character(Biostrings::getSeq(genome, peaks))
+  seqs <- Biostrings::getSeq(genome, peaks)  
+  nucFreqs <-  get_nuc_freqs(seqs)  
+  seqs <- as.character(seqs)
   motif_mat <- TFBSTools::as.matrix(motif)
-  out <- motif_match_score(motif_mat, seqs)
+  out <- motif_match_score(motif_mat, seq_ixs, nucFreqs, p)
+  names(out) = c("ix","scores")
   return(out)
 }
 

@@ -100,6 +100,123 @@ arma::mat dynamic_thresholds(const arma::mat mat, double threshold){
   return out;
 }
 
+// [[Rcpp::export]]
+arma::vec seq_to_ix(std::string s){
+  std::vector<char> v(s.begin(), s.end());
+  arma::vec out(v.size());
+  for (size_t j = 0; j < v.size(); j++){
+    char letter = v[j];
+    if (letter == 'A'){
+      out(j) = 0;          
+    } else if (letter =='C'){
+      out(j) = 1;
+    } else if (letter =='G'){
+      out(j) = 2;
+    } else if (letter =='T'){
+      out(j) = 3;      
+    } else{
+      out(j) = 4;
+    }
+  }
+  return(out);
+}
+
+
+// [[Rcpp::export]]
+std::vector<int> motif_match2(const arma::mat mat, 
+                            const std::vector< std::string > x,
+                            const arma::vec nuc_freqs,
+                            const double p){
+  
+  double minScore = p_to_score2(mat, nuc_freqs, p);
+  arma::mat control_mat = dynamic_thresholds(mat, minScore);
+
+  size_t motif_len = mat.n_cols;
+  size_t nstrings = x.size();
+  
+  std::vector<int> out;
+  out.reserve(nstrings);
+  
+  for (size_t y=0; y < nstrings; y++){
+    int num_substr = x[y].length() - motif_len + 1;
+    std::vector<char> v(x[y].begin(), x[y].end());
+    bool matched = false;
+    for (size_t i = 0; i < num_substr; ++i){
+      double score = 0;
+      double rc_score = 0;
+      for (size_t j = 0; j < motif_len; ++j){
+        char letter = v[i+j];
+        int j_rc = motif_len - 1 - j;
+        if (letter == 'A'){
+          score += mat(0,j);  
+          rc_score += mat(3,j_rc);
+        } else if (letter =='C'){
+          score += mat(1,j);
+          rc_score += mat(2,j_rc);
+        } else if (letter =='G'){
+          score += mat(2,j);
+          rc_score += mat(1,j_rc);
+        } else if (letter =='T'){
+          score += mat(3,j);
+          rc_score += mat(0,j_rc);
+        }
+        if (score >= control_mat(1,j) || rc_score >= control_mat(3,j)){
+          out.push_back(y+1);
+          matched = true;
+          break;
+        } else if (score < control_mat(0,j) && rc_score < control_mat(2,j)){
+          break;
+        }         
+      }
+      if (matched) break;
+    }
+  }  
+  return out;
+}
+
+// [[Rcpp::export]]
+std::vector<int> motif_match4(const arma::mat mat, 
+                            const std::vector< std::string > x,
+                            const arma::vec nuc_freqs,
+                            const double p){
+  
+  double minScore = p_to_score2(mat, nuc_freqs, p);
+  arma::mat control_mat = dynamic_thresholds(mat, minScore);
+  
+  size_t motif_len = mat.n_cols;
+  size_t nstrings = x.size();  
+  
+  arma::mat rc_mat = arma::fliplr(arma::flipud(mat));
+  arma::mat pad(1, motif_len, arma::fill::zeros);
+  arma::mat pad_mat = arma::join_vert(mat, pad);
+  arma::mat pad_rc_mat = arma::join_vert(rc_mat, pad);
+
+  std::vector<int> out;
+  out.reserve(nstrings);
+  
+  for (size_t y=0; y < nstrings; y++){
+    int num_substr = x[y].length() - motif_len + 1;
+    arma::vec seq_ix = seq_to_ix(x[y]);
+    bool matched = false;
+    for (size_t i = 0; i < num_substr; ++i){
+      double score = 0;
+      double rc_score = 0;
+      for (size_t j = 0; j < motif_len; ++j){
+        score += pad_mat(seq_ix(i+j),j);
+        rc_score += pad_rc_mat(seq_ix(i+j),j);
+        if (score >= control_mat(1,j) || rc_score >= control_mat(3,j)){
+          out.push_back(y+1);
+          matched = true;
+          break;
+        } else if (score < control_mat(0,j) && rc_score < control_mat(2,j)){
+          break;
+        }         
+      }
+      if (matched) break;
+    }
+  }  
+  return out;
+}
 
 // [[Rcpp::export]]
 std::vector< std::vector<int> > seq_to_ix_list(std::vector<std::string> x){
@@ -126,14 +243,13 @@ std::vector< std::vector<int> > seq_to_ix_list(std::vector<std::string> x){
   return(out);
 }
 
-
 // [[Rcpp::export]]
-std::vector<int> motif_match(const arma::mat mat, 
+std::vector<int> motif_match5(const arma::mat mat, 
                             const std::vector< std::vector<int> > x,
                             const arma::vec nuc_freqs,
                             const double p){
   
-  double minScore = p_to_score(mat, nuc_freqs, p);
+  double minScore = p_to_score2(mat, nuc_freqs, p);
   arma::mat control_mat = dynamic_thresholds(mat, minScore);
   
   size_t motif_len = mat.n_cols;
@@ -170,14 +286,13 @@ std::vector<int> motif_match(const arma::mat mat,
   return out;
 }
 
-
 // [[Rcpp::export]]
 std::vector< std::vector<double> > motif_match_score2(const arma::mat mat, 
                             const std::vector< std::vector<int> > x,
                             const arma::vec nuc_freqs,
                             const double p){
 
-  double minScore = p_to_score(mat, nuc_freqs, p);
+  double minScore = p_to_score2(mat, nuc_freqs, p);
   arma::mat control_mat = dynamic_thresholds(mat, minScore);
   
   size_t motif_len = mat.n_cols;
@@ -226,16 +341,7 @@ std::vector< std::vector<double> > motif_match_score2(const arma::mat mat,
   return out;
 }  
 
-// [[Rcpp::export]]
-std::vector< std::vector<int> > multi_motif_match(const List mats, 
-                            const std::vector< std::string > seqs,
-                            const arma::vec nuc_freqs,
-                            const double p){
-  std::vector< std::vector<int> > out(mats.size());
-  std::vector< std::vector<int> > seq_ixs = seq_to_ix_list(seqs);
-  for (size_t i = 0; i < mats.size(); i++){
-    arma::mat tmp = as<arma::mat>(mats(i));
-    out[i] = motif_match(tmp, seq_ixs, nuc_freqs, p);
-  }
-  return out;
-}
+
+
+
+ 
