@@ -17,3 +17,15 @@ compute_pwm_dist <- function(pwms) {
     .Call('chromVAR_compute_pwm_dist', PACKAGE = 'chromVAR', pwms)
 }
 
+col_sds <- function(X, na_rm = FALSE) {
+    .Call('chromVAR_col_sds', PACKAGE = 'chromVAR', X, na_rm)
+}
+
+row_sds <- function(X, na_rm = FALSE) {
+    .Call('chromVAR_row_sds', PACKAGE = 'chromVAR', X, na_rm)
+}
+
+row_sds_perm <- function(X, na_rm = FALSE) {
+    .Call('chromVAR_row_sds_perm', PACKAGE = 'chromVAR', X, na_rm)
+}
+

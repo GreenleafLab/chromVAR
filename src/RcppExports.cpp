@@ -54,3 +54,39 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// col_sds
+NumericVector col_sds(arma::mat& X, bool na_rm);
+RcppExport SEXP chromVAR_col_sds(SEXP XSEXP, SEXP na_rmSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< bool >::type na_rm(na_rmSEXP);
+    __result = Rcpp::wrap(col_sds(X, na_rm));
+    return __result;
+END_RCPP
+}
+// row_sds
+NumericVector row_sds(arma::mat& X, bool na_rm);
+RcppExport SEXP chromVAR_row_sds(SEXP XSEXP, SEXP na_rmSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< bool >::type na_rm(na_rmSEXP);
+    __result = Rcpp::wrap(row_sds(X, na_rm));
+    return __result;
+END_RCPP
+}
+// row_sds_perm
+NumericVector row_sds_perm(arma::mat& X, bool na_rm);
+RcppExport SEXP chromVAR_row_sds_perm(SEXP XSEXP, SEXP na_rmSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< bool >::type na_rm(na_rmSEXP);
+    __result = Rcpp::wrap(row_sds_perm(X, na_rm));
+    return __result;
+END_RCPP
+}

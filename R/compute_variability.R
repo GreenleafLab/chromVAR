@@ -28,7 +28,7 @@ compute_variability <- function(deviations,
                                 na.rm = TRUE){
   
 
-  sd_deviations <- apply(deviations, 1, sd, na.rm = na.rm)
+  sd_deviations <- row_sds(deviations, na.rm)
   
   p_sd <- pchisq((ncol(deviations)-1) * (sd_deviations**2), 
                  df = (ncol(deviations)-1), 
@@ -43,21 +43,9 @@ compute_variability <- function(deviations,
     stopifnot(all_true(bootstrap_quantiles < 1)) 
     stopifnot(bootstrap_quantiles[2] > bootstrap_quantiles[1])
     
-    bootstrap_indexes <- sample(ncol(deviations), 
-                                ncol(deviations)*bootstrap_samples,
-                                replace=TRUE)
-    
-    sd_error <- apply(deviations, 1, function(x){
-      quantile_helper(sapply(1:bootstrap_samples, 
-                      function(y) 
-                        sd(x[bootstrap_indexes[(1 + (y-1)*ncol(deviations)):
-                                                 (y*ncol(deviations))]], na.rm = na.rm)),
-               bootstrap_quantiles, na.rm = na.rm)
-    })
-    
-    
-    
-    
+    boot_sd <- replicate(bootstrap_samples, row_sds_perm(deviations, na.rm))
+    sd_error <- apply(boot_sd, 1, quantile_helper, quantiles = bootstrap_quantiles, na.rm = na.rm)
+   
     out <- data.frame(variability = sd_deviations, 
                       bootstrap_lower_bound = sd_error[1,], 
                       bootstrap_upper_bound = sd_error[2,],
