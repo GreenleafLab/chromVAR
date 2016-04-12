@@ -7,8 +7,7 @@ using namespace Rcpp;
 NumericVector col_sds( arma::mat& X, bool na_rm = false) {
   arma::vec res(X.n_cols);
   if (na_rm){
-    arma::uword nCols = X.n_cols;
-    for( int j=0; j < nCols; j++ ) {
+    for( int j=0; j < X.n_cols; j++ ) {
       arma::vec tmp = X.col(j);
       arma::uvec keep = arma::find_finite(tmp);
       res(j) = arma::stddev(tmp(keep));
@@ -23,8 +22,7 @@ NumericVector col_sds( arma::mat& X, bool na_rm = false) {
 NumericVector row_sds( arma::mat& X, bool na_rm = false) {
   arma::vec res(X.n_rows);
   if (na_rm){
-    arma::uword nCols = X.n_cols;
-    for( int j=0; j < nCols; j++ ) {
+    for( int j=0; j < X.n_rows; j++ ) {
       arma::rowvec tmp = X.row(j);
       arma::uvec keep = arma::find_finite(tmp);
       res(j) = arma::stddev(tmp(keep));
