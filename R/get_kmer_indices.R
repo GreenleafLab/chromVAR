@@ -12,9 +12,8 @@
 get_kmer_indices <- function(peaks,
                              genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
                              k = 6){
-  
   if (k > 8){
-    stop("k must be less than 8")
+    stop("k must be less than or equal to 8")
   }
   if (k < 5){
     stop("k must be greater than or equal to 5")
@@ -43,21 +42,24 @@ match_kmers <- function(kmers, seqs, var = FALSE){
   } 
   indices <- merge_lists(indices, indices_rc, by = "order")
   indices <- lapply(indices, unique)
+    
+  out <- sparseMatrix(i = unlist(lapply(seq_along(indices),
+                                        function(x) rep(x, length(indices[[x]]))),use.names = FALSE),
+                      j = unlist(indices, use.names = FALSE),
+                      x = 1,
+                      dims = c(length(seqs), length(kmers)),
+                      dimnames = list(NULL, as.character(kmers)))
   
-  tmp <- data.frame(peak_ix = unlist(lapply(seq_along(indices),
-                                            function(x)rep(x, length(indices[[x]])))),
-                    kmer_ix = factor(unlist(indices),
-                                     levels = seq_along(kmers),
-                                     ordered=T))
-  out <- split(tmp$peak_ix,tmp$kmer_ix)
-  names(out) <- as.character(kmers)
   return(out)
 }
 
-get_gapped_kmer_indices <- function(peaks, k, m){
+
+
+get_gapped_kmer_indices <- function(peaks, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, k = 6, m = 1){
   
   l = k + m
-  lmer_indices = get_kmer_indices(peaks, k = l)
+
+  lmer_indices <- get_kmer_indices(peaks, genome, k = l)
   
   all_kmer = Biostrings::DNAStringSet(Biostrings::mkAllStrings(c("A","C","G","T"),
                                                                width = k))
@@ -72,7 +74,7 @@ get_gapped_kmer_indices <- function(peaks, k, m){
   
   gapped_kmer = remove_rc(gapped_kmer)
   
-  pd = Biostrings::PDict(Biostrings::DNAStringSet(names(lmer_indices)))
+  pd = Biostrings::PDict(Biostrings::DNAStringSet(colnames(lmer_indices)))
   mapping  = Biostrings::vwhichPDict(pd,gapped_kmer,fixed = "pattern")
   mapping.rc  = Biostrings::vwhichPDict(pd,
                                         Biostrings::reverseComplement(gapped_kmer),
@@ -80,12 +82,15 @@ get_gapped_kmer_indices <- function(peaks, k, m){
   
   mapping = merge_lists(mapping, mapping.rc)
   
-  out <- lapply(seq_along(mapping),
-                function(x) unique(unlist(lmer_indices[mapping[[x]]],
-                                          use.names=FALSE)))
-  
-  names(out) <- as.character(gapped_kmer)
-  
+ map_mat <- sparseMatrix(j = unlist(lapply(seq_along(mapping),
+                                        function(x) rep(x, length(mapping[[x]]))),use.names = FALSE),
+                      i = unlist(mapping, use.names = FALSE),
+                      x = 1,
+                      dims =  c(ncol(lmer_indices), length(mapping)))
+ out <- lmer_indices %*% map_mat
+ colnames(out) = as.character(gapped_kmer)
+ out@x = rep(1, length(out@x)) 
+ 
   return(out)
 }
 
