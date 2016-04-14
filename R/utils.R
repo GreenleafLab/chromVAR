@@ -316,6 +316,18 @@ convert_to_ix_list <- function(ix){
   return(out)  
 }
 
+# Jaccard ----------------------------------------------------------------------
+
+get_jaccard <- function(x){
+  u <- crossprod(x)
+  t <- colSums(x)
+  i <- outer(t,t,FUN = "+")
+  return(as.matrix(u/(i - u)))
+}
+
+
+
+
 
 
 
