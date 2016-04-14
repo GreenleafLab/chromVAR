@@ -173,7 +173,7 @@ get_variability_synergy <- function(counts_mat,
   outmat = matrix(nrow=l,ncol=l)
   var_order = order(variabilities, decreasing = TRUE)
   for (i in 1:(l-1)){
-    outmat[i,i:l] <- get_variability_boost_helper(var_order[i],
+    outmat[i,i:l] <- get_variability_boost_helper(1,
                                                       counts_mat,
                                                       background_peaks, 
                                                       peak_indices[var_order[i:l]],
