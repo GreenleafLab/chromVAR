@@ -15,7 +15,7 @@
 #' indicate column index and name using named vector for extra_cols.  
 #' @seealso \code{\link{get_counts}}, \code{\link{get_inputs}}, \code{\link{filter_peaks}}
 #'  @export
-get_peaks <- function(filename, extra_cols = c(), sort = TRUE){
+get_peaks <- function(filename, extra_cols = c(), sort_peaks = TRUE){
   if (is.installed('readr')){
     bed <- as.data.frame(readr::read_tsv(file = filename, col_names = FALSE)[, c(1:3, extra_cols)])
   } else{
@@ -34,8 +34,9 @@ get_peaks <- function(filename, extra_cols = c(), sort = TRUE){
             Use resize(peaks, width = x, fix = "center") to make peaks equal in size, 
             where x is the desired size of the peaks)')
   }
+  bed <- sortSeqlevels(bed)
   sorted_bed = sort(bed)
-  if (sort){
+  if (sort_peaks){
     if (!isTRUE(all.equal(sorted_bed, bed))){
       message("Peaks sorted")
     }
@@ -63,6 +64,7 @@ read_macs2_narrowpeaks <- function(filename, width = 500, non_overlapping = TRUE
                                   end.field = "summit",
                                   keep.extra.columns = TRUE)
   bed <- resize(bed, width = width, fix = "center")
+  bed <- sortSeqlevels(bed)
   bed <- sort(bed)
   if (non_overlapping){
     keep_peaks = 1:length(bed)
