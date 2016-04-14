@@ -74,7 +74,7 @@ compute_deviations <- function(counts_mat,
   if (is.null(peak_indices)){
     peak_indices <- lapply(1:counts_info$npeak, function(x) x)
   } else if (inherits(peak_indices, "Matrix") || inherits(peak_indices, "matrix")){
-    peak_indices <- lapply(1:ncol(peak_indices), function(x) which(peak_indices[,x] != 0))
+    peak_indices <- convert_to_ix_list(peak_indices)
   } else if (!is.list(peak_indices) && is.vector(peak_indices)){
     peak_indices = list(peak_indices)
   }

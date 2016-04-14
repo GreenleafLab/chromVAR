@@ -301,6 +301,21 @@ counts_summary <- function(counts_mat){
   return(out)
 }
 
+# Convert matrix of indices to list of lists -----------------------------------
+
+convert_to_ix_list <- function(ix){
+  stopifnot(inherits(ix,"Matrix") || inherits(ix,"matrix"))
+  if (inherits(ix,"sparseMatrix")){
+    tmp <- summary(ix)
+    tmp$j <- factor(tmp$j, levels = 1:ncol(ix), ordered = TRUE)
+    out <- split(tmp$i, tmp$j)    
+  } else{
+    out <- lapply(1:ncol(ix), function(x) which(ix[,x] != 0))
+  }
+  names(out) = colnames(ix)
+  return(out)  
+}
+
 
 
 
