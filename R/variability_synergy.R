@@ -103,9 +103,6 @@ get_variability_boost <- function(index,
 }
 
 
-
-
-
 get_variability_synergy <- function(counts_mat, 
                                     background_peaks, 
                                     peak_indices, 
@@ -159,15 +156,18 @@ get_variability_synergy <- function(counts_mat,
   
   if (is.null(variabilities)){
     variabilities = do.call(c,BiocParallel::bplapply(peak_indices,
-                                                   compute_variability_single,
-                                                   counts_mat  = counts_mat,
-                                                   background_peaks = background_peaks,
-                                                   expectation = expectation,
-                                                   counts_info = counts_info,
-                                                   norm = norm))
-  } else{
-    stopifnot(length(variabilities) == length(peak_indices))
+                                                     compute_variability_single,
+                                                     counts_mat  = counts_mat,
+                                                     background_peaks = background_peaks,
+                                                     expectation = expectation,
+                                                     counts_info = counts_info,
+                                                     norm = norm))
+  } else if (is.data.frame(variabilities)){
+    variabilities = variabilities$variability
   }
+  
+  stopifnot(length(variabilities) == length(peak_indices))
+  
   
   l = length(peak_indices)
   outmat = matrix(nrow=l,ncol=l)
