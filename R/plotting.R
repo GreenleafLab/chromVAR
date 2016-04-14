@@ -143,7 +143,7 @@ pretty_scale_format <- function(l){
 }
 
 cor_dist <- function(x){
-  as.dist(1 - cor(t(x)))
+  as.dist(1 - cor(t(x), use = "pairwise.complete.obs"))
 }
 
 
