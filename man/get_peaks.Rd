@@ -4,7 +4,7 @@
 \alias{get_peaks}
 \title{get_peaks}
 \usage{
-get_peaks(filename, extra_cols = c(), sort = TRUE)
+get_peaks(filename, extra_cols = c(), sort_peaks = TRUE)
 }
 \arguments{
 \item{filename}{filename of bed file}
