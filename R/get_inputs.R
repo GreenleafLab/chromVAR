@@ -35,7 +35,7 @@ get_peaks <- function(filename, extra_cols = c(), sort_peaks = TRUE){
             where x is the desired size of the peaks)')
   }
   bed <- sortSeqlevels(bed)
-  sorted_bed = sort(bed)
+  sorted_bed = sort(bed, ignore.strand = TRUE)
   if (sort_peaks){
     if (!isTRUE(all.equal(sorted_bed, bed))){
       message("Peaks sorted")
