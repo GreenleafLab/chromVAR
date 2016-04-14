@@ -107,7 +107,7 @@ compute_variability_single <- function(peak_set,
   suppressPackageStartupMessages(library(Matrix, quietly = TRUE, warn.conflicts = FALSE))
   
   if (length(peak_set) == 0){
-    return(list(z = rep(NA, counts_info$nsample), fc = rep(NA,counts_info$nsample)))
+    return(NA)
   }
   
   ### counts_mat should already be normed!
