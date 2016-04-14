@@ -10,7 +10,11 @@ NumericVector col_sds( arma::mat& X, bool na_rm = false) {
     for( int j=0; j < X.n_cols; j++ ) {
       arma::vec tmp = X.col(j);
       arma::uvec keep = arma::find_finite(tmp);
-      res(j) = arma::stddev(tmp(keep));
+      if (keep.size() > 1){
+        res(j) = arma::stddev(tmp(keep));        
+      } else{
+        res(j) = arma::datum::nan;
+      }
     }
   } else{
     res = arma::stddev(X,0,0).t();
@@ -25,7 +29,11 @@ NumericVector row_sds( arma::mat& X, bool na_rm = false) {
     for( int j=0; j < X.n_rows; j++ ) {
       arma::rowvec tmp = X.row(j);
       arma::uvec keep = arma::find_finite(tmp);
-      res(j) = arma::stddev(tmp(keep));
+      if (keep.size() > 1){
+        res(j) = arma::stddev(tmp(keep));
+      } else{
+        res(j) = arma::datum::nan;
+      }
     }
   } else{
     res = arma::stddev(X,0,1);
