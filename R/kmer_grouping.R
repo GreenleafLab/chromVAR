@@ -1,178 +1,206 @@
-# Utility functions ------------------------------------------------------------
 
-get_reverse_complement <- function(x){
-  as.character(Biostrings::reverseComplement(Biostrings::DNAStringSet(x)))
+# kmer comparison and grouping functions ---------------------------------------
+
+get_single_mm_var <- function(kmer, kmer_variability){
+  
+  k <- nchar(kmer)
+  nucs <- c("A","C","G","T")
+  kmer_nucs = strsplit(kmer,"")[[1]]
+  kvar <- kmer_variability[kmer,"variability"]
+  
+  out <- matrix(nrow = 4,ncol = k)
+  out2 <- matrix(nrow = 4,ncol = k)
+  rownames(out) <- nucs
+  rownames(out2) <- nucs
+  for (i in 1:k){
+    for (j in nucs[nucs != kmer_nucs[i]]){
+      kmod = kmer_nucs
+      kmod[i] = j
+      kmod = paste(kmod, sep="",collapse="")
+      if (kmod %ni% row.names(kmer_variability)){
+        kmod = get_reverse_complement(kmod)
+      }
+      out[j,i] = kmer_variability[kmod,"variability"]
+      out2[j,i] = kmod
+    }
+  }
+  return(list(var = out, kmers = out2))
 }
 
-ambiguity_mapping <- lapply(Biostrings::IUPAC_CODE_MAP, function(x){
-  letters = strsplit(x,"")[[1]]
-  out = rep(0, length(letters))
-  out[which(letters == "A")] = 1
-  out[which(letters == "C")] = 2
-  out[which(letters == "G")] = 3
-  out[which(letters == "T")] = 4
-  return(out)  
-})
-
-
-seq_to_pwm <- function(in_seq, mismatch = 0){
-  mat <- matrix(mismatch, ncol = nchar(in_seq), nrow = 4)
-  rownames(mat) <- c("A","C","G","T")
-  in_seq <- strsplit(in_seq,"")[[1]]
-  for (x in seq_along(in_seq)){
-    mat[ambiguity_mapping[[in_seq[x]]],x] = 1
+get_single_mm_cor <- function(kmer, kmer_deviations){
+  
+  k <- nchar(kmer)
+  nucs <- c("A","C","G","T")
+  kmer_nucs = strsplit(kmer,"")[[1]]
+  
+  out <- matrix(nrow = 4,ncol = k)
+  out2 <- matrix(nrow = 4,ncol = k)
+  rownames(out) <- nucs
+  rownames(out2) <- nucs
+  for (i in 1:k){
+    for (j in nucs[nucs != kmer_nucs[i]]){
+      kmod = kmer_nucs
+      kmod[i] = j
+      kmod = paste(kmod, sep="",collapse="")
+      if (kmod %ni% row.names(kmer_deviations$z)){
+        kmod = get_reverse_complement(kmod)
+      }
+      out[j,i] = cor(as.vector(kmer_deviations$z[kmod,]),as.vector(kmer_deviations$z[kmer,]), use = "pairwise.complete.obs")
+      out2[j,i] = kmod
+    }
   }
-  return(mat) 
+  return(list(cor = out, kmers = out2))
 }
 
 
+plot_mm_var_effect <- function(mm_var, k_var){
+  
+  mm_var <- (mm_var**2 - 1)/(k_var**2 - 1)
+  mm_var[mm_var<0]=0
+  
+  mm_df1 <- data.frame(val = as.vector(mm_var), pos = rep(1:ncol(mm_var),each = 4),
+                       Nucleotide = rep(c("A","C","G","T"),ncol(mm_var)))
+  mm_df1 <- mm_df1[!is.na(mm_df1$val),]
+  
+  ggplot(mm_df1, aes(x = pos, y = val, col = Nucleotide)) + 
+    geom_point(size = 3, position = position_jitter(height = 0, width = 0.1))  + 
+    geom_hline(yintercept = 1, lty = 2, col = "gray") + ylab("% excess variance") +
+    xlab("Position") + scale_x_continuous(breaks = c(1:ncol(mm_mat)))+
+    chromVAR_theme()
+  
+}
 
-# kmer relatedness and alignment functions -------------------------------------
 
+plot_mm_cor_effect <- function(mm_cor){
+  
+  mm_df2 <- data.frame(val = as.vector(mm_cor), pos = rep(1:ncol(mm_cor),each = 4),
+                       Nucleotide = rep(c("A","C","G","T"),ncol(mm_cor)))
+  mm_df2 <- mm_df2[!is.na(mm_df2$val),]
+  
+  ggplot(mm_df2, aes(x = pos, y = val, col = Nucleotide)) + 
+    geom_point(size = 3, position = position_jitter(height = 0, width = 0.1))  + 
+    geom_hline(yintercept = c(0,1,-1), lty = 2, col = "gray") + ylab("Correlation in deviations") +
+    xlab("Position") + scale_x_continuous(breaks = c(1:ncol(mm_mat)))+
+    chromVAR_theme() 
+  
+}
 
-align_pwms <- function(pwm1,pwm2, minimum = FALSE, both_strands = TRUE){
-  w1 = ncol(pwm1)
-  w2 = ncol(pwm2)
-  cc = sapply(1:(w1+w2-1), function(x) sum(pwm1[,max(w1-x+1,1):min(w1,w1+w2-x)]*pwm2[,max(1,x-w1+1):min(x,w2)]))
-  if (both_strands){
-    pwm1_rev = pwm1[c(4,3,2,1),w1:1]
-    cc_rev = sapply(1:(w1+w2-1), function(x) sum(pwm1_rev[,max(w1-x+1,1):min(w1,w1+w2-x)]*pwm2[,max(1,x-w1+1):min(x,w2)]))
-  }
-  out = data.frame()
-  if (minimum){
-    if (max(cc) >= minimum){
-      wm = which(cc >= minimum)
-      pos = wm - w1
-      out = rbind(out, data.frame(score = cc[wm], pos = pos, strand = 1))
-    }
-    if (both_strands && max(cc_rev >= minimum)){
-      wm = which(cc_rev >= minimum)
-      pos = wm - w1
-      out = rbind(out, data.frame(score = cc_rev[wm], pos = pos, strand = -1))
-    }
+get_overlap_kmers <- function(kmer, max_extend, dir = "both"){
+  out = c()
+  k <- nchar(kmer)
+  nucs <- c("A","C","G","T") 
+  if (max_extend == 1){
+    if (dir == "both"){
+      out1 <- sapply(nucs, function(x) paste(x,substr(kmer,1,k-1),sep="",collapse=""), USE.NAMES = FALSE)
+      out2 <- sapply(nucs, function(x) paste(substr(kmer,2,k),x,sep="",collapse=""), USE.NAMES = FALSE)    
+      return(c(out1,out2))
+    } else if (dir == "left"){
+      out1 <- sapply(nucs, function(x) paste(x,substr(kmer,1,k-1),sep="",collapse=""), USE.NAMES = FALSE)
+      return(out1)
+    } else if (dir == "right"){
+      out2 <- sapply(nucs, function(x) paste(substr(kmer,2,k),x,sep="",collapse=""), USE.NAMES = FALSE)    
+      return(out2)
+    }   
   } else{
-    if (!both_strands || (max(cc) >= max(cc_rev))){
-      wm = which(cc == max(cc))
-      pos = wm - w1
-      out = rbind(out, data.frame(score = max(cc), pos = pos, strand = 1))
-    }
-    if (both_strands && (max(cc_rev) >= max(cc))){
-      wm = which(cc_rev == max(cc_rev))
-      pos = wm - w1
-      out = rbind(out,data.frame(score = max(cc_rev), pos = pos, strand = -1))
-    }
-  }  
-  return(out)
-}
-
-get_kmer_alignment <- function(kmers, reference, mismatch = -1, minimum = FALSE, 
-                               both_strands = TRUE){
-  out = data.frame()
-  for (kmer in kmers){
-    pwm1 = seq_to_pwm(kmer)
-    if (is.character(reference)){
-      pwm2 = seq_to_pwm(reference, mismatch = mismatch)      
-    } else {
-      pwm2 = reference
-    }
-    alignment <- align_pwms(pwm1, pwm2, minimum = minimum, 
-                            both_strands = both_strands)
-    if (nrow(alignment) > 0){
-      out = rbind(out,
-                  data.frame(kmer = ifelse(alignment$strand ==-1,
-                                           as.character(Biostrings::reverseComplement(Biostrings::DNAString(kmer))),
-                                           kmer),
-                             shift = alignment$pos,
-                             score = alignment$score,
-                             input = kmer, stringsAsFactors=FALSE))
+    if (dir == "both"){
+      out1 <- sapply(nucs, function(x) paste(x,substr(kmer,1,k-1),sep="",collapse=""), USE.NAMES = FALSE)
+      out2 <- sapply(nucs, function(x) paste(substr(kmer,2,k),x,sep="",collapse=""), USE.NAMES = FALSE)    
+      return(c(out1,out2, sapply(out1, get_overlap_kmers, max_extend = max_extend - 1, dir = "left"),
+               sapply(out2, get_overlap_kmers, max_extend = max_extend - 1, dir = "right")))
+    } else if (dir == "left"){
+      out1 <- sapply(nucs, function(x) paste(x,substr(kmer,1,k-1),sep="",collapse=""), USE.NAMES = FALSE)
+      return(c(out1,sapply(out1, get_overlap_kmers, max_extend = max_extend - 1, dir = "left")))
+    } else if (dir == "right"){
+      out2 <- sapply(nucs, function(x) paste(substr(kmer,2,k),x,sep="",collapse=""), USE.NAMES = FALSE)    
+      return(c(out2, 
+               sapply(out2, get_overlap_kmers, max_extend = max_extend - 1, dir = "right")))
     }
   }
-  return(unique(out))
 }
 
-get_similar_kmers <- function(kmer, kmers, cutoff = 4){
-  a = get_kmer_alignment(kmers,kmer, mismatch = 0, minimum = cutoff)
-  return(unique(a$input))
-}
-
-get_overlapping_kmers <- function(kmer, kmers, cutoff = 2){
-  a = get_kmer_alignment(kmers,kmer, mismatch = -Inf, minimum = cutoff)
-  return(unique(a$input))
-}
-
-
-# kmer grouping functions ------------------------------------------------------
-
-make_kmer_group <- function(seed, candidates, sets, counts_mat, minScore = nchar(seed)-2){
-  preliminary_alignment = get_kmer_alignment(kmers = c(seed ,candidates), reference = seed, mismatch = -100)
-  candidates = unique(preliminary_alignment$input[which(preliminary_alignment$score >= minScore)])
-  print(length(candidates))
-  var_boost = get_variability_boost(sets[[seed]], sets[candidates], counts_mat, nbg = 25, out = "z-score")
-  print(var_boost)
-  boost = which(pnorm(var_boost,lower.tail = FALSE) < 0.05)
-  print(length(boost))
-  if (length(boost)>0){
-    a = get_kmer_alignment(kmers = c(seed ,candidates[boost]), reference = seed, mismatch = -100)
-  }
-  else{
-    a = get_kmer_alignment(kmers = seed, reference = seed, mismatch = -100)
-  }
-  highscore = which(a$score >= minScore)
-  consensus = Biostrings::consensusString(Biostrings::DNAStringSet(a$kmer[highscore]),
-                                          shift = a$shift[highscore] - min(a$shift[highscore]), 
-                                          threshold = 0.1)
-  rc_kmers = unique(get_reverse_complement(a$kmer))
-  rc_kmers = rc_kmers[rc_kmers %ni% a$kmer]
-  a2 = get_kmer_alignment(kmers = c(a$kmer, rc_kmers), reference = consensus, mismatch = -100, both_strands = FALSE)
-  a2 = a2[which(a2$score >= minScore),]
-  a2$shift = a2$shift - a2$shift[which(a2$kmer == seed)]
-  seed_block = a2[which(a2$kmer == seed),]
-  forward_block = a2[intersect(which(a2$kmer != seed),which(a2$kmer %in% a$kmer)),]
-  reverse_block = a2[which(a2$kmer %in% rc_kmers),]
-  out = rbind(seed_block,
-              forward_block[order(forward_block$score),],
-              reverse_block[order(reverse_block$score),])
-  return(out)
-}
-
-
-group_kmers <- function(results, sets, counts_mat, max_groups = 10){
-  results <- subset_by_variability(results)
-  indep_results <- results
-  i = 1
+get_kmer_overlap_effect <- function(kmer, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation = NULL, norm = TRUE, max_extend = 2){
+  k <- nchar(kmer)
+  nucs <- c("A","C","G","T")
+  kmer_nucs = strsplit(kmer,"")[[1]]
   out = list()
-  while (i <= max_groups){
-    print(i)
-    top = names(subset_by_variability(indep_results, by = "top", cutoff =1))
-    candidates = get_correlated_results(top, results)   
-    new_grp = make_kmer_group(top, candidates, sets, counts_mat)   
-    out = c(out, list(new_grp))
-    candidates = candidates[which(candidates %in% names(indep_results))]
-    indep_var = get_independent_variability(to.remove = sets[[top]],
-                                            sets = sets[candidates],
-                                            counts_mat = counts_mat)
-    indep = which(get_pvalues(indep_var) < 0.01)
-    keep = unique(c(names(indep_var[indep]),names(indep_results)[which(names(indep_results) %ni% c(top,candidates))]))
-    if (length(keep) > 0 ){
-      indep_results = indep_results[keep]
-    } else{
-      break
-    }
-    i = i + 1
-  }
+  ncands = sum(sapply(1:max_extend, function(x) 4^x*2))
+  #get candidate kmers that are extension of up to max_extend bases
+  out$kmers = get_overlap_kmers(kmer, max_extend)
+  kmers2 = ifelse(out$kmers %in% colnames(peak_indices), out$kmers, get_reverse_complement((out$kmers)))
+  out$shift = do.call(c, sapply(1:max_extend, function(x) c(rep(-x,4^x),rep(x,4^x))))
+  #get variability boost for those kmers
+  out$var_boost = chromVAR:::get_variability_boost(1, 
+                                                   counts_mat, 
+                                                   background_peaks, 
+                                                   peak_indices[,c(kmer, kmers2)], 
+                                                   expectation,
+                                                   norm)[2:(length(kmers2)+1)]
+  #get variability of those kmers
+  out$var = kmer_variability[kmers2,"variability"]
+  #get deviation correlation for those kmers
+  out$cor = cor(t(kmer_deviations$z[c(kmer,kmers2),]), use ="pairwise.complete.obs")[1,2:(length(kmers2)+1)]
   return(out)
 }
 
 
-get_similar_motifs0 <- function(a, motif_list, top = 3){
-  consensus = Biostrings::consensusMatrix(Biostrings::DNAStringSet(a$kmer),
-                                          shift = a$shift - min(a$shift))[1:4,]
-  consensus_shift = align_pwms(consensus, seq_to_pwm(a$kmer[1]), both_strands = FALSE)$pos
+#'@export
+make_kmer_group <- function(kmer, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation = NULL, norm = TRUE, max_extend = 2,
+                            cor_threshold = 0.67, var_threshold = 0.67, boost_threshold = 3){
+  
+  mm_var = get_single_mm_var(kmer, kmer_variability)
+  mm_cor = get_single_mm_cor(kmer, kmer_deviations)
+  
+  out = data.frame(kmer = kmer, type = "seed", var = kmer_variability[kmer,"variability"], cor = 1, boost = NA, shift = 0, stringsAsFactors = FALSE)
+  mm_keep = intersect(which((mm_var$var**2 -1)/(out$var**2 -1) > var_threshold), which(mm_cor$cor > cor_threshold))
+  
+  if (length(mm_keep) >= 1){   
+    out = rbind(out, data.frame( kmer = mm_var$kmers[mm_keep], type = "mismatch", var = mm_var$cor[mm_keep], cor = mm_cor$cor[mm_keep], boost = NA, shift =0, stringsAsFactors = FALSE))
+  }
+  
+  overlap_effect = get_kmer_overlap_effect(kmer, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation, norm , max_extend = 2)
+  overlap_keep = intersect(which(overlap_effect$var_boost > boost_threshold),which(overlap_effect$cor > cor_threshold))
+  
+  if (length(overlap_keep) >= 1){
+    out = rbind(out, 
+                data.frame(kmer = overlap_effect$kmers[overlap_keep], 
+                           type = "overlap", 
+                           var = overlap_effect$var[overlap_keep], 
+                           cor = overlap_effect$cor[overlap_keep], 
+                           boost = overlap_effect$var_boost[overlap_keep],
+                           shift = overlap_effect$shift[overlap_keep], stringsAsFactors = FALSE))    
+  }
+  
+  
+  for (j in mm_var$kmers[mm_keep]){
+    overlap_effect = get_kmer_overlap_effect(j, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation, norm , max_extend = 2)
+    overlap_keep = intersect(which(overlap_effect$var_boost > boost_threshold),which(overlap_effect$cor > cor_threshold), which(overlap_effect %ni% out$kmer))
+    if (length(overlap_keep) >= 1){
+      out = rbind(out, 
+                  data.frame(kmer = overlap_effect$kmers[overlap_keep], 
+                             type = "mismatch_overlap", 
+                             var = overlap_effect$var[overlap_keep], 
+                             cor = overlap_effect$cor[overlap_keep], 
+                             boost = overlap_effect$var_boost[overlap_keep],
+                             shift = overlap_effect$shift[overlap_keep], stringsAsFactors = FALSE))
+    }
+  }
+  row.names(out) = NULL
+  
+  return(out)
+}
+
+
+
+get_similar_motifs0 <- function(kmer_group, motif_list, top = 3){
+  
+  consensus = Biostrings::consensusMatrix(Biostrings::DNAStringSet(kmer_group$kmer),
+                                          shift = kmer_group$shift - min(kmer_group$shift))[1:4,]
+  consensus_shift = align_pwms(consensus, seq_to_pwm(kmer_group$kmer[1]), both_strands = FALSE)$pos
   helpfun <- function(x){
     x = as.matrix(x)
-    x = x + 0.1
-    x = x / matrix(colSums(x), byrow = TRUE, nrow = nrow(x), ncol= ncol(x))
-    x = log(x/0.25)
+    #x = x + 0.1
+    #x = x / matrix(colSums(x), byrow = TRUE, nrow = nrow(x), ncol= ncol(x))
+    #x = log(x/0.25)
     align_pwms(x, consensus)[1,]
   }
   motif_matches <- lapply(motif_list, helpfun)
@@ -180,6 +208,7 @@ get_similar_motifs0 <- function(a, motif_list, top = 3){
   return(motif_list[order(-scores)[1:top]])
 }
 
+#'@export
 get_similar_motifs <- function(kmer_groups, motif_list, top = 3){
   if (is.data.frame(kmer_groups)){
     return(get_similar_motifs0(kmer_groups, motif_list, top))
@@ -190,107 +219,60 @@ get_similar_motifs <- function(kmer_groups, motif_list, top = 3){
   }
 }
 
-
-
-# kmer position functions ------------------------------------------------------
-
-get_kmer_positions <- function(kmer, peaks, seqs){
-  matches <- Biostrings::vmatchPattern(Biostrings::DNAString(kmer), seqs, fixed=FALSE)
-  rc_matches <- Biostrings::vmatchPattern(Biostrings::reverseComplement(Biostrings::DNAString(kmer)), seqs, fixed=FALSE)
+#'@export
+plot_kmer_group <- function(a, similar_motifs = NULL, plot.consensus = TRUE){
   
-  tmp1 <- elementLengths(matches)
-  tmp2 <-  unlist(sapply(1:length(peaks), function(x) rep(x,tmp1[x])), use.names=F)
-  f_pos <- resize(shift(peaks[tmp2],shift = start(unlist(matches)))+1,width = 1)
-  BiocGenerics::strand(f_pos) <- "+"
-  
-  tmp1 <- elementLengths(rc_matches)
-  tmp2 <-  unlist(sapply(1:length(peaks), function(x) rep(x,tmp1[x])), use.names=F)
-  r_pos <- resize(shift(peaks[tmp2], shift = start(unlist(rc_matches)) -1),width = 1)
-  BiocGenerics::strand(r_pos) <- "-"  
-  
-  return(BiocGenerics::sort(c(f_pos, r_pos)))
-}
-
-get_kmer_to_kmer_dist <- function(kmer1, kmer2, peaks, seqs, all_seqs, max_dist = 25){
-  
-  ranges1 <- get_kmer_positions(kmer1, peaks, seqs)
-  ranges2 <- get_kmer_positions(kmer2, peaks, seqs)
-  
-  ranges1_mod = ranges1
-  BiocGenerics::strand(ranges1_mod)="*"
-  close = as.data.frame(findOverlaps(ranges1_mod, ranges2, maxgap = max_dist, select="all", type="any"))
-  ss = which(getstrand(ranges1[close$queryHits]) == getstrand(ranges2[close$subjectHits]) )
-  ds = which(getstrand(ranges1[close$queryHits]) != getstrand(ranges2[close$subjectHits]) )
-  
-  dists_f = ifelse(getstrand(ranges1[close[ss,1]]) == "-", 
-                   BiocGenerics::start(ranges1[close[ss,1]]) - BiocGenerics::start(ranges2[close[ss,2]]),
-                   BiocGenerics::start(ranges2[close[ss,2]]) - BiocGenerics::start(ranges1[close[ss,1]]))
-  
-  dists_r = ifelse(getstrand(ranges1[close[ds,1]]) == "-", 
-                   BiocGenerics::start(ranges1[close[ds,1]]) - BiocGenerics::start(ranges2[close[ds,2]]),
-                   BiocGenerics::start(ranges2[close[ds,2]]) - BiocGenerics::start(ranges1[close[ds,1]]))
-  
-  
-  
-  expected = rep(sum(vcountPattern(kmer2, all_seqs))/ sum(width(all_seqs)-nchar(kmer2)+1) * length(ranges1), 2* max_dist +1)
-  expected_rc = expected
-  
-  out = list(forward = tabulate2(dists_f, max_val = max_dist, min_val = -max_dist), 
-             reverse_complement = tabulate2(dists_r, max_val = max_dist, min_val = -max_dist))
-  
-  for (i in -(nchar(kmer1)-1):(nchar(kmer1)-1)){
-    if (out$forward[as.character(i)] > 0 ){
-      if (i < 0){
-        tmp_mer = substr(kmer2, 1, nchar(kmer2) + i)
-        expected[max_dist + i + 1] = sum(vcountPattern(tmp_mer, all_seqs))/ sum(width(all_seqs)-nchar(tmp_mer)+1) * length(ranges1)
-      } else if (i > 0){
-        tmp_mer = substr(kmer2, nchar(kmer2) -i, nchar(kmer2))
-        expected[max_dist + i + 1] = sum(vcountPattern(tmp_mer, all_seqs))/ sum(width(all_seqs)-nchar(tmp_mer)+1) * length(ranges1)       
-      } else{
-        expected[max_dist + 1] = length(ranges1) 
-      }
+  p = ggplot()
+  for (i in 1:nrow(a)){
+    p = p + ggmotif(a$kmer[i], y.pos = (nrow(a)-i)*1.25, x.pos = a$shift[i])
+  }  
+  anno_df = data.frame(y = (nrow(a)-1)*1.25+0.5, label = "K-mers")
+  if (plot.consensus){  
+    consensus = Biostrings::consensusMatrix(Biostrings::DNAStringSet(a$kmer),
+                                            shift = a$shift - min(a$shift))[1:4,]
+    consensus_shift = align_pwms(consensus, seq_to_pwm(a$kmer[1]), both_strands = FALSE)$pos
+    tmp_y = min(sapply(ggplot_build(p)$data, function(obj) min(obj$y))) - 2
+    p = p + ggmotif(consensus / matrix(apply(consensus,2,sum),nrow =4,ncol = ncol(consensus),byrow = TRUE), 
+                    y.pos = tmp_y, 
+                    x.pos = consensus_shift)
+    anno_df = rbind(anno_df, data.frame(y = tmp_y + 0.5, label = "Consensus"))
+  }
+  if (!is.null(similar_motifs)){
+    if (!plot.consensus){
+      consensus = Biostrings::consensusMatrix(Biostrings::DNAStringSet(a$kmer),
+                                              shift = a$shift - min(a$shift))[1:4,]
+      consensus_shift = align_pwms(consensus, seq_to_pwm(a$kmer[1]), both_strands = FALSE)$pos
     }
-    if (out$reverse[as.character(i)] > 0 ){
-      rev_kmer2 = get_reverse_complement(kmer2)
-      if (i < 0){
-        tmp_mer = substr(rev_kmer2, 1, nchar(rev_kmer2) + i)
-        expected_rc[max_dist + i + 1] = sum(vcountPattern(tmp_mer, all_seqs))/ sum(width(all_seqs)-nchar(tmp_mer)+1) * length(ranges1)
-      } else if (i > 0){
-        tmp_mer = substr(rev_kmer2, nchar(rev_kmer2) - i, nchar(rev_kmer2))
-        expected_rc[max_dist + i + 1] = sum(vcountPattern(tmp_mer, all_seqs))/ sum(width(all_seqs)-nchar(tmp_mer)+1) * length(ranges1)       
-      } else{
-        expected_rc[max_dist + 1] = length(ranges1) 
-      }
-    }  
+    tmp_y = min(sapply(ggplot_build(p)$data, function(obj) min(obj$y))) - 2
+    for (i in 1:length(similar_motifs)){
+      m = as.matrix(similar_motifs[[i]])
+      m = m / matrix(colSums(m), byrow = FALSE, nrow = nrow(m), ncol=ncol(m))
+      m2 = m + 0.1
+      m2 = m2 / matrix(colSums(m2), byrow = TRUE, nrow = nrow(m2), ncol= ncol(m2))
+      m2 = log(m2/0.25)
+      tmp_a = align_pwms(m2, consensus, both_strands = TRUE)
+      tmp_shift = tmp_a$pos[1] + consensus_shift
+      if (tmp_a$strand[1] == -1) m = Biostrings::reverseComplement(m)
+      p = p + ggmotif(m, 
+                      y.pos = tmp_y - (i-1) * 1.25, 
+                      x.pos = tmp_shift)
+      anno_df = rbind(anno_df, data.frame(y = tmp_y - (i-1) * 1.25 + 0.5, label = name(similar_motifs[[i]])))
+    }
   }
   
-  out$forward = -1 * ppois(out$forward,expected, lower.tail = FALSE,log.p=TRUE)
-  out$reverse_complement = -1 * ppois(out$reverse_complement,expected_rc, lower.tail = FALSE,log.p=TRUE)
+  out = p + ggmotif_scale() + ggmotif:::ggmotif_theme() +
+    scale_x_continuous(breaks = 0:max(sapply(1:nrow(a), function(x) nchar(a$kmer[x]) + a$shift[x]))) +
+    scale_y_continuous(breaks = anno_df$y, labels = anno_df$label) +
+    xlab("position relative to start of seed kmer (bp)") +
+    theme(axis.line = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_text(face="bold",size=12),
+          axis.ticks = element_blank(),
+          axis.title = element_blank())
   
   return(out)
 }
 
 
-get_sequence_flanking_kmer <- function(kmer, 
-                                       peaks, 
-                                       genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, 
-                                       flank = 5){
-  
-  seqs = Biostrings::getSeq(genome, peaks)
-  
-  matches <- Biostrings::vmatchPattern(Biostrings::DNAString(kmer), seqs, fixed=FALSE)
-  rc_matches <- Biostrings::vmatchPattern(Biostrings::reverseComplement(Biostrings::DNAString(kmer)), seqs, fixed=FALSE)
-  
-  tmp1 <- elementLengths(matches)
-  tmp2 <-  unlist(sapply(1:length(peaks), function(x) rep(x,tmp1[x])), use.names=F)
-  f_seqs <- Biostrings::getSeq(genome,resize(shift(peaks[tmp2], 
-                                                   shift = start(unlist(matches)) - flank - 1), 
-                                             width = flank*2 + 1 + nchar(kmer)))
-  tmp1 <- elementLengths(rc_matches)
-  tmp2 <-  unlist(sapply(1:length(peaks), function(x) rep(x,tmp1[x])), use.names=F)
-  r_seqs <- Biostrings::reverseComplement(Biostrings::getSeq(genome,resize(shift(peaks[tmp2], 
-                                                                                 shift = start(unlist(rc_matches)) - flank - 2), 
-                                                                           width = flank*2 + 1 + nchar(kmer))))
-  return(c(f_seqs,r_seqs))
-}
+
 
