@@ -23,9 +23,10 @@ plot_variability <- function(variability, xlab = "Sorted TFs",
     
     out = ggplot2::ggplot(res_df, ggplot2::aes_string(x = "ranks", 
                                                       y = "variability")) + 
+      geom_point() +
       ggplot2::xlab(xlab) + ggplot2::ylab(ylab) + 
       ggplot2::scale_y_continuous(expand=c(0,0),
-                                  limits=c(0,max(res_df$variability)*1.05)) +
+                                  limits=c(0,max(res_df$variability, na.rm =TRUE)*1.05)) +
       chromVAR_theme() 
   } else{
     
@@ -36,7 +37,7 @@ plot_variability <- function(variability, xlab = "Sorted TFs",
     ggplot2::geom_point()+ ggplot2::geom_errorbar() +
     ggplot2::xlab(xlab) + ggplot2::ylab(ylab) + 
     ggplot2::scale_y_continuous(expand=c(0,0),
-                                limits=c(0,max(res_df$bootstrap_upper_bound)*1.05)) +
+                                limits=c(0,max(res_df$bootstrap_upper_bound, na.rm =TRUE)*1.05)) +
     chromVAR_theme()    
   }
   
