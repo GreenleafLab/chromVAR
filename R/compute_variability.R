@@ -44,8 +44,8 @@ compute_variability <- function(deviations,
       stopifnot(all_true(bootstrap_quantiles < 1)) 
       stopifnot(bootstrap_quantiles[2] > bootstrap_quantiles[1])
       
-      boot_sd <- replicate(bootstrap_samples, row_sds_perm(deviations, na.rm))
-      sd_error <- apply(boot_sd, 1, quantile_helper, quantiles = bootstrap_quantiles, na.rm = na.rm)
+      boot_sd <- do.call(rbind,BiocParallel::bplapply(1:bootstrap_samples, function(x) row_sds_perm(deviations, na.rm)))
+      sd_error <- apply(boot_sd, 2, quantile_helper, quantiles = bootstrap_quantiles, na.rm = na.rm)
       
       out <- data.frame(variability = sd_deviations, 
                         bootstrap_lower_bound = sd_error[1,], 
