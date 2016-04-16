@@ -34,7 +34,7 @@ get_peaks <- function(filename, extra_cols = c(), sort_peaks = TRUE){
             Use resize(peaks, width = x, fix = "center") to make peaks equal in size, 
             where x is the desired size of the peaks)')
   }
-  bed <- sortSeqlevels(bed)
+  bed <- GenomeInfoDb::sortSeqlevels(bed)
   sorted_bed = sort(bed, ignore.strand = TRUE)
   if (sort_peaks){
     if (!isTRUE(all.equal(sorted_bed, bed))){
@@ -64,7 +64,7 @@ read_macs2_narrowpeaks <- function(filename, width = 500, non_overlapping = TRUE
                                   end.field = "summit",
                                   keep.extra.columns = TRUE)
   bed <- resize(bed, width = width, fix = "center")
-  bed <- sortSeqlevels(bed)
+  bed <- GenomeInfoDb::sortSeqlevels(bed)
   bed <- sort(bed)
   if (non_overlapping){
     keep_peaks = 1:length(bed)
