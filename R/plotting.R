@@ -253,8 +253,8 @@ plot_deviations <- function(X,
 
 # Plotting kmer group ----------------------------------------------------------
 
-
-plot_kmer_group <- function(a, similar_motifs, plot.consensus = TRUE){
+#'@export
+plot_kmer_group <- function(a, similar_motifs = NULL, plot.consensus = TRUE){
   p = ggplot()
   for (i in 1:nrow(a)){
     p = p + ggmotif(a$kmer[i], y.pos = (nrow(a)-i)*1.25, x.pos = a$shift[i])
@@ -265,31 +265,31 @@ plot_kmer_group <- function(a, similar_motifs, plot.consensus = TRUE){
                                             shift = a$shift - min(a$shift))[1:4,]
     consensus_shift = align_pwms(consensus, seq_to_pwm(a$kmer[1]), both_strands = FALSE)$pos
     tmp_y = min(sapply(ggplot_build(p)$data, function(obj) min(obj$y))) - 2
-    p = p + ggmotif(consensus / max(consensus), 
+    p = p + ggmotif(consensus / matrix(apply(consensus,2,sum),nrow = 4, ncol=ncol(consensus),byrow=TRUE), 
                     y.pos = tmp_y, 
                     x.pos = consensus_shift)
     anno_df = rbind(anno_df, data.frame(y = tmp_y + 0.5, label = "Consensus"))
   }
-  if (!is.null(motif_list)){
+  if (!is.null(similar_motifs)){
     if (!plot.consensus){
       consensus = Biostrings::consensusMatrix(Biostrings::DNAStringSet(a$kmer),
                                               shift = a$shift - min(a$shift))[1:4,]
       consensus_shift = align_pwms(consensus, seq_to_pwm(a$kmer[1]), both_strands = FALSE)$pos
     }
     tmp_y = min(sapply(ggplot_build(p)$data, function(obj) min(obj$y))) - 2
+    if (inherits(similar_motifs,"PFMatrixList")){
+      similar_motifs = TFBSTools::PWMatrixList(lapply(similar_motifs, TFBSTools::toPWM))
+    }    
     for (i in 1:length(similar_motifs)){
       m = as.matrix(similar_motifs[[i]])
-      m = m / matrix(colSums(m), byrow = FALSE, nrow = nrow(m), ncol=ncol(m))
-      m2 = m + 0.1
-      m2 = m2 / matrix(colSums(m2), byrow = TRUE, nrow = nrow(m2), ncol= ncol(m2))
-      m2 = log(m2/0.25)
-      tmp_a = align_pwms(m2, consensus, both_strands = TRUE)
+      tmp_a = align_pwms(m, consensus, both_strands = TRUE)
       tmp_shift = tmp_a$pos[1] + consensus_shift
       if (tmp_a$strand[1] == -1) m = Biostrings::reverseComplement(m)
       p = p + ggmotif(m, 
-                      y.pos = tmp_y - (i-1) * 1.25, 
+                      y.pos = tmp_y - max(m), 
                       x.pos = tmp_shift)
       anno_df = rbind(anno_df, data.frame(y = tmp_y - (i-1) * 1.25 + 0.5, label = name(similar_motifs[[i]])))
+      tmp_y = tmp_y - max(apply(m, 2, function(x) sum(abs(x))))
     }
   }
   
