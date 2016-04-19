@@ -65,7 +65,7 @@ plot_mm_var_effect <- function(mm_var, k_var){
   ggplot(mm_df1, aes(x = pos, y = val, col = Nucleotide)) + 
     geom_point(size = 3, position = position_jitter(height = 0, width = 0.1))  + 
     geom_hline(yintercept = 1, lty = 2, col = "gray") + ylab("% excess variance") +
-    xlab("Position") + scale_x_continuous(breaks = c(1:ncol(mm_mat)))+
+    xlab("Position") + scale_x_continuous(breaks = c(1:ncol(mm_var)))+
     chromVAR_theme()
   
 }
@@ -80,7 +80,7 @@ plot_mm_cor_effect <- function(mm_cor){
   ggplot(mm_df2, aes(x = pos, y = val, col = Nucleotide)) + 
     geom_point(size = 3, position = position_jitter(height = 0, width = 0.1))  + 
     geom_hline(yintercept = c(0,1,-1), lty = 2, col = "gray") + ylab("Correlation in deviations") +
-    xlab("Position") + scale_x_continuous(breaks = c(1:ncol(mm_mat)))+
+    xlab("Position") + scale_x_continuous(breaks = c(1:ncol(mm_cor)))+
     chromVAR_theme() 
   
 }
