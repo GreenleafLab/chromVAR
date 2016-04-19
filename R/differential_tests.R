@@ -65,7 +65,7 @@ differential_variability <- function(..., parametric = TRUE){
 
 bf_var_test <- function(...){  
   inputs <- list(...)
-  medians <- sapply(inputs, median)
+  medians <- sapply(inputs, median, na.rm = TRUE)
   median_diff <- do.call(c, lapply(1:length(inputs), function(x) abs(inputs[[x]] - medians[x])))
   group <- factor(do.call(c, lapply(1:length(inputs), function(x) rep(x, length(inputs[[x]])))))
   return(anova(lm(median_diff ~ group))[1,5])      
@@ -73,7 +73,7 @@ bf_var_test <- function(...){
 
 bf_kw_var_test <- function(...){  
   inputs <- list(...)
-  medians <- sapply(inputs, median)
+  medians <- sapply(inputs, median, na.rm = TRUE)
   median_diff <- do.call(c, lapply(1:length(inputs), function(x) abs(inputs[[x]] - medians[x])))
   group <- factor(do.call(c, lapply(1:length(inputs), function(x) rep(x, length(inputs[[x]])))))
   return(res <- kruskal.test(median_diff ~ group)$p.value)   
