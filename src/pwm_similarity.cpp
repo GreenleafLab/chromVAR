@@ -101,3 +101,10 @@ List compute_pwm_dist(List pwms){
   } 
   return List::create(Rcpp::Named("dist") = out1, Rcpp::Named("offset") = out2, Rcpp::Named("strand") = out3);
 }
+
+
+
+
+
+
+

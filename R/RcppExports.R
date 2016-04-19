@@ -5,6 +5,10 @@ get_normalized_counts <- function(counts, expectation, fragments_per_sample) {
     .Call('chromVAR_get_normalized_counts', PACKAGE = 'chromVAR', counts, expectation, fragments_per_sample)
 }
 
+downsample_dense <- function(X, p) {
+    .Call('chromVAR_downsample_dense', PACKAGE = 'chromVAR', X, p)
+}
+
 pwm_euclidean <- function(mat1, mat2) {
     .Call('chromVAR_pwm_euclidean', PACKAGE = 'chromVAR', mat1, mat2)
 }

@@ -19,6 +19,18 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// downsample_dense
+NumericMatrix downsample_dense(NumericMatrix X, double p);
+RcppExport SEXP chromVAR_downsample_dense(SEXP XSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< double >::type p(pSEXP);
+    __result = Rcpp::wrap(downsample_dense(X, p));
+    return __result;
+END_RCPP
+}
 // pwm_euclidean
 double pwm_euclidean(arma::mat mat1, arma::mat mat2);
 RcppExport SEXP chromVAR_pwm_euclidean(SEXP mat1SEXP, SEXP mat2SEXP) {
