@@ -37,6 +37,7 @@ get_variability_boost_helper <- function(index,
   return(var_boost)
 }
 
+#'@export
 get_variability_boost <- function(index, 
                                   counts_mat, 
                                   background_peaks, 
@@ -102,7 +103,7 @@ get_variability_boost <- function(index,
   return(var_boost)
 }
 
-
+#'@export
 get_variability_synergy <- function(counts_mat, 
                                     background_peaks, 
                                     peak_indices, 
