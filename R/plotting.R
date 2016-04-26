@@ -58,50 +58,20 @@ plot_variability <- function(variability, xlab = "Sorted TFs",
 ## helper functions (not exported) ----------------------------------------------
 
 chromVAR_theme <-function(base_size = 12, base_family="Helvetica"){
-  theme(line = element_line(colour = "black", size = 0.5, linetype = 1, 
-                            lineend = "butt"), 
-        rect = element_rect(fill = "white", colour = "black", size = 0.5, linetype = 1), 
-        text = element_text(family = base_family, face = "plain", colour = "black", size = base_size, hjust = 0.5, 
-                            vjust = 0.5, angle = 0, lineheight = 0.9), 
-        strip.text = element_text(size = rel(0.8)), 
-        axis.line = element_line(colour = "black"), 
-        axis.text = element_text(size = rel(0.8), colour = "black"),
-        axis.text.x = element_text(vjust = 1), 
-        axis.text.y = element_text(hjust = 1), 
-        axis.ticks = element_line(colour = "black"), 
-        axis.title.x = element_text(), 
-        axis.title.y = element_text(angle = 90), 
-        axis.ticks.length = grid::unit(0.15, "cm"), 
-        axis.ticks.margin = grid::unit(0.1, "cm"), 
-        legend.background = element_rect(colour = NA), 
-        legend.margin = grid::unit(0.2, "cm"), 
-        legend.key = element_blank(), 
-        legend.key.size = grid::unit(1.2, "lines"), 
-        legend.key.height = NULL, 
-        legend.key.width = NULL, 
-        legend.text = element_text(size = rel(0.8)), 
-        legend.text.align = NULL, 
-        legend.title = element_text(size = rel(0.8), face = "bold", hjust = 0), 
-        legend.title.align = NULL, 
-        legend.position = "right", 
-        legend.direction = NULL, 
-        legend.justification = "center", 
-        legend.box = NULL, 
-        panel.background = element_blank(), 
-        panel.border = element_blank(), 
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(), 
-        panel.margin = grid::unit(0.25, "lines"), 
-        panel.margin.x = NULL, 
-        panel.margin.y = NULL, 
-        strip.background = element_blank(), 
-        strip.text.x = element_text(), 
-        strip.text.y = element_text(angle = -90), 
-        plot.background = element_blank(), 
-        plot.title = element_text(size = rel(1.2)), 
-        plot.margin = grid::unit(c(0.5, 0.5, 0.25, 0.25), "lines"), complete = TRUE)
+  theme_bw(base_size = base_size, base_family = base_family)  %+replace% 
+    theme(panel.border = element_blank(), 
+          axis.line.x = element_line(colour = "black", size = 0.5, linetype = 1, 
+                                   lineend = "butt"), 
+          axis.line.y = element_line(colour = "black", size = 0.5, linetype = 1, 
+                                     lineend = "butt"), 
+          panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          panel.border = element_blank(), 
+          legend.background = element_rect(colour = NA), 
+          strip.background = element_blank(), 
+          plot.background = element_blank())
 }
-
 
 
 pretty_scientific <- function(l) {
@@ -172,13 +142,15 @@ plot_deviations <- function(X,
                             cluster_col_dist = cor_dist,
                             sample_annotation = NULL,
                             set_names = NULL){
-  
+  if (!is.factor(sample_annotation)){
+    sample_annotation = as.factor(sample_annotation)
+  }
   if (cluster_row){
     rowclust = hclust(cluster_row_dist(X))
     X = X[rowclust$order,]
     if (!is.null(set_names)){
       set_names = set_names[rowclust$order]
-    }
+    } 
   }
   if (cluster_col){
     colclust = hclust(cluster_col_dist(t(X)))
@@ -223,7 +195,107 @@ plot_deviations <- function(X,
   p = p + scale_fill_gradient2(name = "Deviation\nScore",limits = limits,low = colors[1], mid = colors[2], high = colors[3], 
                                breaks = guidebreaks, label = pretty_scale_format, expand=c(0,0), midpoint = 0)
   if (!is.null(set_names)){
-    p = p + scale_y_discrete(breaks = levels(mdf$y), labels = set_names)  
+    p = p + scale_y_discrete(labels = as.character(set_names))  
+  }
+  if (!is.na(xlabel)){
+    p = p + xlab(xlabel)
+  } else{
+    p = p + theme(axis.title.x = element_blank())
+  }
+  if (!is.na(ylabel)){
+    p = p + ylab(ylabel)
+  } else{
+    p = p + theme(axis.title.y = element_blank())
+  }  
+  if (!is.na(name)){
+    p = p + ggtitle(name)
+  }
+  if (!is.null(sample_annotation)){  
+    if ( length(levels(sample_annotation)) <= 8){
+      cols = RColorBrewer::brewer.pal(n  = length(levels(sample_annotation)), "Dark2")   
+    } else{
+      cols = hue_pal()(length(levels(sample_annotation)))
+    }      
+    anno_col = cols[as.integer(sample_annotation)]
+    tmp_df = data.frame(x = 1:ncol(X),  y = -2.75,  z = sample_annotation)
+    p = p +  annotate("rect",xmin = 1:ncol(X) -0.5, xmax = 1:ncol(X) + 0.5, ymax = -1.5, ymin = min(-2 - nrow(X) *0.025,-3), col = anno_col,
+                      fill = anno_col) + geom_point(data = tmp_df, 
+                        mapping= aes(x = x, y =y, colour = z, fill = NULL), size = 0)+ 
+      theme(legend.box = "horizontal", legend.background=element_blank(), axis.text.x = element_blank())
+    if ( length(levels(sample_annotation)) <= 8){
+      p = p + scale_color_brewer(name = "Sample\nAnnotation", palette = "Dark2") 
+
+    } else{
+      p = p + scale_color_discrete(name = "Sample\nAnnotation")
+    }
+  }
+  return(p)
+}
+
+plot_deviations2 <- function(X, 
+                            xlabel = NA, 
+                            ylabel = NA,  
+                            name = NA, 
+                            cluster_row = TRUE, 
+                            cluster_col = TRUE, 
+                            cluster_row_dist = cor_dist, 
+                            cluster_col_dist = cor_dist,
+                            sample_annotation = NULL,
+                            set_names = NULL){
+  
+  if (cluster_row){
+    rowclust = hclust(cluster_row_dist(X))
+    X = X[rowclust$order,]
+    if (!is.null(set_names)){
+      set_names = set_names[rowclust$order]
+    }
+  }
+  if (cluster_col){
+    colpc = prcomp(X)
+    colpci = summary(colpc)$importance[2,]
+    colclust = hclust(cluster_col_dist(colpc$rotation[,which(colpci > 0.01)]))
+    X = X[,colclust$order]
+    if (!is.null(sample_annotation)){
+      sample_annotation = sample_annotation[colclust$order]
+    }
+  }
+  
+  df = cbind(data.frame("y" = factor(rownames(X), levels = rownames(X), ordered=T)),X)
+  mdf = reshape2::melt(df, id = "y")
+  p = ggplot(mdf, aes(x=variable, y=y)) + 
+    geom_raster(aes(fill=value)) + 
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.background = element_blank(),
+      axis.line = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.text.y = element_text(size = 6),
+      axis.text.x = element_text(angle=90, vjust = 0.5, hjust = 1, size = 6),
+      plot.margin = grid::unit(c(0.1,0.1,0.1,0.1),"cm")
+    )
+  if (cluster_row){
+    dendro_row = ggdendro::dendro_data(rowclust)
+    dendro_segments_row = dendro_row$segments
+    dendro_segments_row[,c("y","yend")] = (dendro_segments_row[,c("y","yend")] * sqrt(nrow(X)*ncol(X)) / max(dendro_segments_row[,c("y","yend")]) * 0.4) + ncol(X) + 1
+    p = p + geom_segment(data = dendro_segments_row,  mapping = aes(x=y,xend=yend, y = x, yend = xend, col=NULL))
+  }
+  if (cluster_col){
+    dendro_col = ggdendro::dendro_data(colclust)
+    dendro_segments_col = dendro_col$segments
+    dendro_segments_col[,c("y","yend")] = (dendro_segments_col[,c("y","yend")]* sqrt(nrow(X)*ncol(X)) / max(dendro_segments_col[,c("y","yend")])  * 0.4) + nrow(X) + 1
+    p = p + geom_segment(data = dendro_segments_col,  mapping = aes(x=x,xend=xend, y = y, yend = yend, col=NULL))
+  }
+  
+  colors = c(scales::muted("blue"),"white",scales::muted("red"))
+  limits = c(min(mdf$value,na.rm=T), max(mdf$value,na.rm=T))
+  guidebreaks = c(limits[1],0,limits[2])
+  
+  p = p + scale_fill_gradient2(name = "Deviation\nScore",limits = limits,low = colors[1], mid = colors[2], high = colors[3], 
+                               breaks = guidebreaks, label = pretty_scale_format, expand=c(0,0), midpoint = 0)
+  if (!is.null(set_names)){
+    p = p + scale_y_discrete( labels = as.character(set_names))  
   }
   if (!is.na(xlabel)){
     p = p + xlab(xlabel)
@@ -244,12 +316,14 @@ plot_deviations <- function(X,
     tmp_df = data.frame(x = 1:ncol(X),  y = -2.75,  z = anno)
     p = p +  annotate("rect",xmin = 1:ncol(X) -0.5, xmax = 1:ncol(X) + 0.5, ymax = -1.5, ymin = min(-2 - nrow(X) *0.025,-3), col = anno_col,
                       fill = anno_col) + geom_point(data = tmp_df, 
-                        mapping= aes(x = x, y =y, colour = z, fill = NULL), size = 0) + 
+                                                    mapping= aes(x = x, y =y, colour = z, fill = NULL), size = 0) + 
       scale_color_brewer(name = "Sample\nAnnotation", palette = "Dark2") + theme(legend.box = "horizontal", legend.background=element_blank(), axis.text.x = element_blank())
   }
   return(p)
-
+  
 }
+
+
 
 # Plotting kmer group ----------------------------------------------------------
 
@@ -259,7 +333,7 @@ plot_kmer_group <- function(a, similar_motifs = NULL, plot.consensus = TRUE){
   for (i in 1:nrow(a)){
     p = p + ggmotif(a$kmer[i], y.pos = (nrow(a)-i)*1.25, x.pos = a$shift[i])
   }  
-  anno_df = data.frame(y = (nrow(a)-1)*1.25+0.5, label = "K-mers")
+  anno_df = data.frame(y = (nrow(a)-1)*1.25+0.5, label = "kmers")
   if (plot.consensus){  
     consensus = Biostrings::consensusMatrix(Biostrings::DNAStringSet(a$kmer),
                                             shift = a$shift - min(a$shift))[1:4,]
@@ -281,15 +355,23 @@ plot_kmer_group <- function(a, similar_motifs = NULL, plot.consensus = TRUE){
       similar_motifs = TFBSTools::PWMatrixList(lapply(similar_motifs, TFBSTools::toPWM))
     }    
     for (i in 1:length(similar_motifs)){
-      m = as.matrix(similar_motifs[[i]])
+      if (inherits(similar_motifs[[i]],"PWMatrix")){
+        m = exp(as.matrix(similar_motifs[[i]]))*matrix(bg(similar_motifs[[i]]), 
+                                                       nrow = 4, ncol =length(similar_motifs[[i]]), byrow = FALSE)
+        if (length(similar_motifs[[i]]@pseudocounts) != 0){
+          m = m - similar_motifs[[i]]@pseudocounts
+        }
+      } else if (inherits(similar_motifs[[i]],"PFMatrix")){
+        m = as.matrix(similar_motifs[[i]])
+      }
+      m = m / matrix(apply(m,2,sum), nrow = 4, ncol = ncol(m), byrow = TRUE)
       tmp_a = align_pwms(m, consensus, both_strands = TRUE)
       tmp_shift = tmp_a$pos[1] + consensus_shift
       if (tmp_a$strand[1] == -1) m = Biostrings::reverseComplement(m)
       p = p + ggmotif(m, 
-                      y.pos = tmp_y - max(m), 
+                      y.pos = tmp_y - (i-1) * 1.25, 
                       x.pos = tmp_shift)
       anno_df = rbind(anno_df, data.frame(y = tmp_y - (i-1) * 1.25 + 0.5, label = name(similar_motifs[[i]])))
-      tmp_y = tmp_y - max(apply(m, 2, function(x) sum(abs(x))))
     }
   }
   
