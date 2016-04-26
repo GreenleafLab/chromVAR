@@ -9,7 +9,8 @@ get_gc <- function(peaks,
   seqs = Biostrings::getSeq(genome, peaks)
   nucfreqs <- Biostrings::letterFrequency(seqs, c("A","C","G","T"))
   gc <- apply(nucfreqs, 1, function(x) sum(x[2:3])/sum(x))
-  return(gc)
+  mcols(peaks)$gc <- gc 
+  return(peaks)
 }
 
 #' get_background_peaks
@@ -17,7 +18,7 @@ get_gc <- function(peaks,
 #' Function to get a set of background peaks for each peak based on GC content and # of counts
 #' across all samples
 #' @param counts_mat counts matrix
-#' @param bias vector with bias values for peaks, typically GC content
+#' @param bias either vector with bias values for peaks, or GenomicRanges object with column named "gc"
 #' @param niterations number of background peaks to sample
 #' @param window window size around peak in which to sample a background peak
 #' @param with_replacement sample peaks with replacement? Default is TRUE
@@ -28,6 +29,10 @@ get_gc <- function(peaks,
 #' neighbors, niterations peaks are sampled from that background.
 #' @export
 get_background_peaks <- function(counts_mat, bias, niterations = 50, window = 500, with_replacement = TRUE, count = TRUE){
+  
+  if (inherits(bias, "GenomicRanges")){
+    bias = mcols(bias)$gc
+  }
   
   countsum <- counts_summary(counts_mat)
   if (min(countsum$fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
