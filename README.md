@@ -39,6 +39,23 @@ counts <- get_counts(bamfiles, peaks, paired =  TRUE, by_rg = TRUE, format = "ba
 
 The function `get_inputs` returns a list with two elements.  The first is a GenomicRanges object with the peaks.  The second is a Matrix of fragment counts per sample/cell for each peak.  The Matrix package is used so that if the matrix is sparse, the matrix will be stored as a sparse Matrix.  If you want to manipulate the counts data in any way in addition to use by chromVAR packages, it is a good idea to load the Matrix package (`library(Matrix)`).
 
+##Getting GC content of peaks
+
+The GC content will be used for derermining background peaks.  The function get_gc returns a GenomicRanges object identical to the input plus an extra annotation column named "gc".
+
+```{r}
+peaks <- get_gc(peaks)
+```
+
+Note that the function `get_gc` also takes in an argument for a BSgenome object.  The default is BSgenome.Hsapiens.UCSC.hg19, so if using a different genome build be sure to provide the correct genome. For example, if using sacCer3 you could do:
+```{r}
+library(BSgenome.Scerevisiae.UCSC.sacCer3)
+peaks <- get_gc(peaks, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
+```
+
+Check out `available.genomes` from the BSgenome package for what genomes are available. For making your own BSgenome object, check out `BSgenomeForge`.  
+
+
 ##Filtering inputs
 
 If working with single cell data, it is advisable to filter out samples with insufficient reads or a low proportion of reads in peaks as these may represent empty wells or dead cells. 
@@ -60,6 +77,13 @@ Two parameters are used for filtering -- min_in_peaks and min_depth.  If not pro
 Unless `plot = FALSE` given as argument to function `filter_samples`, the following type of plot will be generated:
 ![proportion_in_peaks_vs_depth_plot](example_plot1.png)
 
+Additional filtering can be done to remove cells/samples that appear very biased with regards to GC content and/or enrichment in accessibility.
+
+```{r}
+low_bias_samples = bias_filtering(counts, peaks)
+counts = counts[, low_bias_samples]
+```
+
 For both bulk and single cell data, peaks should be filtered based on having at least a certain number of fragments. At minimum, each peak should have at least one fragment across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data). Otherwise, downstream functions won't work. The function `filter_peaks` will also reduce the peak set to non-overlapping peaks (keeping the peak with higher counts for peaks that overlap) if non_overlapping argument is set to TRUE (which is default). 
 
 ```{r}
@@ -70,19 +94,14 @@ peaks = peaks[peaks_to_keep] #to keep peaks consistent with counts
 ```
 
 ##Finding background peaks
-First, compute the gc content from the peaks.  Then use that output as well as the counts to determine background peaks.  
+
+Background peaks are peaks that are similar to a peak in GC content and average accessibility.
+
 ```{r}
-bias <- get_gc(peaks)
-bg <- get_background_peaks(counts_mat = counts, bias = bias)
+bg <- get_background_peaks(counts_mat = counts, bias = peaks)
 ```
 
-Note that the function `get_gc` also takes in an argument for a BSgenome object.  The default is BSgenome.Hsapiens.UCSC.hg19, so if using a different genome build be sure to provide the correct genome. For example, if using sacCer3 you could do:
-```{r}
-library(BSgenome.Scerevisiae.UCSC.sacCer3)
-bias <- get_gc(peaks, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
-```
-
-Check out `available.genomes` from the BSgenome package for what genomes are available. For making your own BSgenome object, check out `BSgenomeForge`.  
+The result from get_background_peaks is a matrix of indices, where each column represents the index of the peak that is a background peak.
 
 ##Get motifs and what peaks contain motifs
 The function `get_motifs` fetches motifs from the JASPAR database.  

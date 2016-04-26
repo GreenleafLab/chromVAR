@@ -10,7 +10,7 @@ get_background_peaks(counts_mat, bias, niterations = 50, window = 500,
 \arguments{
 \item{counts_mat}{counts matrix}
 
-\item{bias}{vector with bias values for peaks, typically GC content}
+\item{bias}{either vector with bias values for peaks, or GenomicRanges object with column named "gc"}
 
 \item{niterations}{number of background peaks to sample}
 
