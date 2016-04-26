@@ -55,18 +55,18 @@ get_single_mm_cor <- function(kmer, kmer_deviations){
 
 plot_mm_var_effect <- function(mm_var, k_var){
   
-  mm_var <- (mm_var**2 - 1)/(k_var**2 - 1)
-  mm_var[mm_var<0]=0
-  
   mm_df1 <- data.frame(val = as.vector(mm_var), pos = rep(1:ncol(mm_var),each = 4),
                        Nucleotide = rep(c("A","C","G","T"),ncol(mm_var)))
   mm_df1 <- mm_df1[!is.na(mm_df1$val),]
   
   ggplot(mm_df1, aes(x = pos, y = val, col = Nucleotide)) + 
-    geom_point(size = 3, position = position_jitter(height = 0, width = 0.1))  + 
-    geom_hline(yintercept = 1, lty = 2, col = "gray") + ylab("% excess variance") +
+    geom_point(position = position_jitter(height = 0, width = 0.1))  + 
+    geom_hline(yintercept = k_var, lty = 2, col = "red") + ylab("Variability") +
+    geom_hline(yintercept = 1, lty = 2, col = "gray") + scale_y_continuous(expand = c(0,0), limits = c(0, max(k_var,max(mm_var,na.rm = TRUE))*1.2)) +
     xlab("Position") + scale_x_continuous(breaks = c(1:ncol(mm_var)))+
-    chromVAR_theme()
+    chromVAR_theme()  + scale_color_manual(name="Nucleotide",
+                                        breaks = c("A","C","G","T"),
+                                        values = RColorBrewer::brewer.pal(4,"Dark2"))
   
 }
 
@@ -78,10 +78,12 @@ plot_mm_cor_effect <- function(mm_cor){
   mm_df2 <- mm_df2[!is.na(mm_df2$val),]
   
   ggplot(mm_df2, aes(x = pos, y = val, col = Nucleotide)) + 
-    geom_point(size = 3, position = position_jitter(height = 0, width = 0.1))  + 
+    geom_point( position = position_jitter(height = 0, width = 0.1))  + 
     geom_hline(yintercept = c(0,1,-1), lty = 2, col = "gray") + ylab("Correlation in deviations") +
     xlab("Position") + scale_x_continuous(breaks = c(1:ncol(mm_cor)))+
-    chromVAR_theme() 
+    chromVAR_theme() + scale_color_manual(name="Nucleotide",
+                                         breaks = c("A","C","G","T"),
+                                         values = RColorBrewer::brewer.pal(4,"Dark2"))
   
 }
 
@@ -154,7 +156,7 @@ make_kmer_group <- function(kmer, kmer_variability, kmer_deviations, counts_mat,
   mm_keep = intersect(which((mm_var$var**2 -1)/(out$var**2 -1) > var_threshold), which(mm_cor$cor > cor_threshold))
   
   if (length(mm_keep) >= 1){   
-    out = rbind(out, data.frame( kmer = mm_var$kmers[mm_keep], type = "mismatch", var = mm_var$cor[mm_keep], cor = mm_cor$cor[mm_keep], boost = NA, shift =0, stringsAsFactors = FALSE))
+    out = rbind(out, data.frame( kmer = mm_var$kmers[mm_keep], type = "mismatch", var = mm_var$var[mm_keep], cor = mm_cor$cor[mm_keep], boost = NA, shift =0, stringsAsFactors = FALSE))
   }
   
   overlap_effect = get_kmer_overlap_effect(kmer, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation, norm , max_extend = 2)
@@ -173,7 +175,7 @@ make_kmer_group <- function(kmer, kmer_variability, kmer_deviations, counts_mat,
   
   for (j in mm_var$kmers[mm_keep]){
     overlap_effect = get_kmer_overlap_effect(j, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation, norm , max_extend = 2)
-    overlap_keep = intersect(which(overlap_effect$var_boost > boost_threshold),which(overlap_effect$cor > cor_threshold), which(overlap_effect %ni% out$kmer))
+    overlap_keep = intersect(intersect(which(overlap_effect$var_boost > boost_threshold),which(overlap_effect$cor > cor_threshold)), which(overlap_effect %ni% out$kmer))
     if (length(overlap_keep) >= 1){
       out = rbind(out, 
                   data.frame(kmer = overlap_effect$kmers[overlap_keep], 
@@ -197,6 +199,9 @@ get_similar_motifs0 <- function(kmer_group, motif_list, top = 3){
                                           shift = kmer_group$shift - min(kmer_group$shift))[1:4,]
   consensus_shift = align_pwms(consensus, seq_to_pwm(kmer_group$kmer[1]), both_strands = FALSE)$pos
   helpfun <- function(x){
+    if (!inherits(x,"PWMatrix")){
+      x = TFBSTools::toPWM(x)
+    } 
     x = as.matrix(x)
     #x = x + 0.1
     #x = x / matrix(colSums(x), byrow = TRUE, nrow = nrow(x), ncol= ncol(x))
