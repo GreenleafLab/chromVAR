@@ -209,8 +209,8 @@ compute_deviations_single <- function(peak_set,
                sampled = sampled,
                expected = expected,
                sampled_expected = sampled_expected,
-               observed_deviation = observed_deviation,
-               sampled_deviation = sampled_deviation)
+               observed_deviation = observed_deviation / tf_count,
+               sampled_deviation = sampled_deviation / tf_count)
   } else{
     out = list(z = z, fc = logfc)
   }
