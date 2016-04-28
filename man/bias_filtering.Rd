@@ -4,7 +4,8 @@
 \alias{bias_filtering}
 \title{bias_filtering}
 \usage{
-bias_filtering(counts, bias, norm = TRUE, what = c("both", "count", "bias"))
+bias_filtering(counts, bias, norm = TRUE, what = c("both", "count", "bias"),
+  k = 1.5)
 }
 \arguments{
 \item{counts}{counts}
@@ -14,11 +15,19 @@ bias_filtering(counts, bias, norm = TRUE, what = c("both", "count", "bias"))
 \item{norm}{count normalization}
 
 \item{what}{filter based on gc bias, enrichment bias, or both? default is both}
+
+\item{k}{parameter controlling stringency of filtering. see details}
 }
 \value{
 vector of indices of peaks that pass bias filter
 }
 \description{
 function to identify samples that show strong biases
+}
+\details{
+Samples are scored based on the accessibility deviations for sets of peaks with a characteristic
+average count or gc content.  The sum of the absolute values of those deviations
+is computed for each sample and considered the bias score.  Samples with a bias score
+greater than Q3 + k * (Q3 - Q1) are rejected.
 }
 

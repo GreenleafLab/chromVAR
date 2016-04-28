@@ -106,9 +106,9 @@ bias_skew <- function(counts_mat,
   return(out)
 }
 
-upper_bias_limit_helper <- function(x){
+upper_bias_limit_helper <- function(x, k){
   q <- quantile(x, c(0.25, 0.75), na.rm = TRUE)
-  return(q[2] + 1.5 * (q[3] - q[2]))
+  return(q[2] + k * (q[2] - q[1]))
 }
 
 #' bias_filtering
@@ -118,9 +118,14 @@ upper_bias_limit_helper <- function(x){
 #' @param bias either vector with bias values for peaks, or GenomicRanges object with column named "gc"
 #' @param norm count normalization
 #' @param what filter based on gc bias, enrichment bias, or both? default is both
+#' @param k parameter controlling stringency of filtering. see details
+#' @details Samples are scored based on the accessibility deviations for sets of peaks with a characteristic 
+#' average count or gc content.  The sum of the absolute values of those deviations
+#' is computed for each sample and considered the bias score.  Samples with a bias score
+#' greater than Q3 + k * (Q3 - Q1) are rejected.   
 #' @return vector of indices of peaks that pass bias filter
 #' @export
-bias_filtering <- function(counts, bias, norm = TRUE, what = c("both","count","bias")){
+bias_filtering <- function(counts, bias, norm = TRUE, what = c("both","count","bias"), k = 1.5){
   
   what = match.arg(what)
   
@@ -129,12 +134,12 @@ bias_filtering <- function(counts, bias, norm = TRUE, what = c("both","count","b
   }
   
   if (what %in% c("both","bias")){
-    gc_skew <- colSums(abs(bias_skew(counts, bias, norm = norm)))
-    gc_pass <- which(gc_skew < upper_bias_limit_helper(gc_skew))              
+    gc_skew <- colSums(abs(bias_skew(counts, bias, norm = norm)),na.rm = TRUE)
+    gc_pass <- which(gc_skew < upper_bias_limit_helper(gc_skew, k))              
   }
   if (what %in% c("both","count")){
-    count_skew <- colSums(abs(bias_skew(counts, rowSums(counts), norm = norm)))
-    count_pass <- which(count_skew < upper_bias_limit_helper(count_skew))
+    count_skew <- colSums(abs(bias_skew(counts, rowSums(counts), norm = norm)),na.rm = TRUE)
+    count_pass <- which(count_skew < upper_bias_limit_helper(count_skew, k))
   }
   
   if (what == "bias"){
