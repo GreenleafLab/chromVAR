@@ -195,4 +195,19 @@ get_top_sets <- function(counts_mat,
   }
   return(out)
 }
+
+
+get_unique_pwms <- function(pwms, variability, similarity_cutoff = 1){
+  ds = chromVAR:::compute_pwm_dist(pwms = lapply(pwms, as.matrix))
+  out = c()
+  candidates = order(variability$variability, decreasing = TRUE)
+  while (length(candidates) > 0){
+    out = c(out, candidates[1])
+    candidates = candidates[which(ds$dist[candidates[1],candidates] > 1)]
+  }
+  return(out)
+}
+
+
+
     
