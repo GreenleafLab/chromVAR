@@ -5,7 +5,7 @@
 \title{compute_deviations}
 \usage{
 compute_deviations(counts_mat, background_peaks, peak_indices = NULL,
-  expectation = NULL, norm = TRUE)
+  expectation = NULL)
 }
 \arguments{
 \item{counts_mat}{matrix with counts}

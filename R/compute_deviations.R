@@ -1,14 +1,29 @@
 
+#' compute_expectations
+#' 
+#' @param counts_mat matrix of counts
+#' @param norm weight all samples equally?
+#' @param annotation an annotation vector, optional
+#' @details By default, this function will compute the expected fraction of reads
+#' per peak as the the total fragments per peak across all samples divided by total
+#' reads in peaks in all samples. Optionally, norm can be set to TRUE and then the 
+#' expectation will be the average fraction of reads in a peak across the cells.  
+#' This is not recommended for single cell applications as cells with very few reads
+#' will have a large impact.  Another option is to give a vector of annotations, in which 
+#' case the expectation will be the average fraction of reads per peak within each annotation.
+#' If annotation vector is provided and norm is set to TRUE then within each annotation
+#' the fraction of reads per peak is the average fraction of reads per peak in each 
+#' sample.  Otherwise, the within annotation fraction of reads per peak is based on the
+#'reads per peak within the sample divided by the total reads within each sample.
+#' @return vector with expected fraction of reads per peak
+#' @export
 compute_expectations <- function(counts_mat,
-                                 by = c("all","annotation"),
                                  norm = FALSE,
                                  annotation = NULL){
 
-  by = match.arg(by)
-
   counts_info = counts_summary(counts_mat)
 
-  if (by == "all"){
+  if (is.null(annotation)){
     if (norm){
       expectation = rowSums(counts_mat /
                               matrix(counts_info$fragments_per_sample,
@@ -18,7 +33,7 @@ compute_expectations <- function(counts_mat,
     } else{
       expectation = counts_info$fragments_per_peak / counts_info$total_fragments
     }
-  } else if (by == "annotation"){
+  } else {
     anno = as.factor(annotation)
     n_anno = length(levels(anno))
     mat = matrix(nrow = counts_info$npeak, ncol = n_anno)
@@ -53,14 +68,13 @@ compute_expectations <- function(counts_mat,
 #' @param expectation expectations computed using \code{\link{compute_expectations}}
 #' @details multiprocessing using \code{\link[BiocParallel]{bplapply}}
 #' @return  list with two elements: 1) z: matrix with deviation z-scores,
-#' 2) fc: matrix with deviation log2 fold-changes
+#' 2) dev: matrix with normalized deviations
 #' @seealso  \code{\link{compute_variability}}, \code{\link{plot_variability}}
 #' @export
 compute_deviations <- function(counts_mat,
                                background_peaks,
                                peak_indices = NULL,
-                               expectation = NULL,
-                               norm = TRUE){
+                               expectation = NULL){
 
   if (inherits(counts_mat,"matrix")){
     counts_mat = Matrix(counts_mat)
@@ -101,27 +115,24 @@ compute_deviations <- function(counts_mat,
 
   sample_names <- colnames(counts_mat)
 
-  if (norm){
+
     if (inherits(counts_mat,"dgCMatrix")){
-      counts_mat <- get_normalized_counts(counts_mat,expectation, counts_info$fragments_per_sample)
+      counts_mat_norm <- get_normalized_counts(counts_mat,expectation, counts_info$fragments_per_sample)
     } else{
-      counts_mat <- counts_mat / outer(sqrt(expectation),sqrt(counts_info$fragments_per_sample))
+      counts_mat_norm <- counts_mat / outer(sqrt(expectation),sqrt(counts_info$fragments_per_sample))
     }
-  }
 
   results <- BiocParallel::bplapply(peak_indices,
                                       compute_deviations_single,
-                                      counts_mat  = counts_mat,
-                                      background_peaks = background_peaks,
-                                      expectation = expectation,
-                                      counts_info = counts_info,
-                                      norm = norm)
+                                    counts_mat_norm = counts_mat_norm,
+                                      background_peaks = background_peaks)
 
   out <- list()
   out$z <- t(vapply(results, function(x) x[["z"]], rep(0,counts_info$nsample)))
-  out$fc <- t(vapply(results, function(x) x[["fc"]], rep(0,counts_info$nsample)))
+  out$dev <- t(vapply(results, function(x) x[["dev"]], rep(0,counts_info$nsample)))
+
   colnames(out$z) = sample_names
-  colnames(out$fc) = sample_names
+  colnames(out$dev) = sample_names
 
   return(out)
 }
@@ -130,93 +141,71 @@ compute_deviations <- function(counts_mat,
 
 
 compute_deviations_single <- function(peak_set,
-                                           counts_mat,
-                                           background_peaks,
-                                           expectation,
-                                           counts_info,
-                                           intermediate_results = FALSE,
-                                           norm = TRUE){
+                                      counts_mat_norm,
+                                      background_peaks,
+                                      intermediate_results = FALSE){
   
   #require Matrix (for some multiprocessing options)
   suppressPackageStartupMessages(library(Matrix, quietly = TRUE, warn.conflicts = FALSE))
   
   if (length(peak_set) == 0){
-    return(list(z = rep(NA, counts_info$nsample), fc = rep(NA,counts_info$nsample)))
+    return(list(z = rep(NA, ncol(counts_mat_norm)), dev = rep(NA,ncol(counts_mat_norm))))
   }
 
   ### counts_mat should already be normed!
   tf_count <- length(peak_set)
-  ### Determine if any sets have too low expected counts
-  expected_totals <- sum(expectation[peak_set]) * counts_info$fragments_per_sample
-  fail_filter <- which(expected_totals < 5)
 
   if (tf_count == 1){
-    print('bah')
-    observed <- as.vector(counts_mat[peak_set,])
-    expected <- expectation[peak_set] * counts_info$fragments_per_sample
-    if (norm){
-        expected <- expected / sqrt(expected)
-    }
+    observed <- as.vector(counts_mat_norm[peak_set,])
+    expected <- rep(1, length(observed))
     observed_deviation <- observed - expected
-    sampled <- counts_mat[background_peaks[peak_set,],]
-    if (norm){
-      sampled_expected <-  outer(expectation[background_peaks[peak_set,]] / sqrt(expectation[background_peaks[peak_set,]]),
-                                 counts_info$fragments_per_sample / sqrt(counts_info$fragments_per_sample))
-    } else{
-      sampled_expected <-  outer(expectation[background_peaks[peak_set,]], counts_info$fragments_per_sample)
-    }
-    sampled_deviation = sampled - sampled_expected
-   } else{
+    sampled <- counts_mat_norm[background_peaks[peak_set,],]
+    sampled_expected <- matrix(1, nrow = nrow(sampled), ncol = ncol(sampled))
+    sampled_deviation <- sampled - sampled_expected
+  } else{
     tf_vec <- sparseMatrix(j = peak_set, i = rep(1,tf_count), x = 1,
-                           dims = c(1, counts_info$npeak))
-
-    observed <- as.vector(tf_vec %*% counts_mat)
-    if (norm){
-      expected <- as.vector(tf_vec %*% (expectation/sqrt(expectation)) %*% (counts_info$fragments_per_sample/sqrt(counts_info$fragments_per_sample)))
-    } else{
-      expected <- as.vector(tf_vec %*% expectation %*% counts_info$fragments_per_sample)
-    }
-    observed_deviation = observed - expected
-
+                           dims = c(1, nrow(counts_mat_norm)))
+    
+    observed <- as.vector(tf_vec %*% counts_mat_norm)
+    expected <- rep(tf_count, length(observed))
+    observed_deviation = (observed - expected) / tf_count
+    
     niterations = ncol(background_peaks)
     sample_mat = sparseMatrix(j = as.vector(background_peaks[peak_set,1:niterations]),
                               i = rep(1:niterations, each = tf_count),
                               x=1,
-                              dims = c(niterations, counts_info$npeak))
-
-    sampled = as.matrix(sample_mat %*% counts_mat);
-    if (norm){
-      sampled_expected = as.matrix(sample_mat %*% (expectation/sqrt(expectation)) %*% (counts_info$fragments_per_sample/sqrt(counts_info$fragments_per_sample)))
-    } else{
-      sampled_expected = as.matrix(sample_mat %*% expectation %*% counts_info$fragments_per_sample)
-    }
-    sampled_deviation = sampled - sampled_expected
-
+                              dims = c(niterations, nrow(counts_mat_norm)))
+    
+    sampled = as.matrix(sample_mat %*% counts_mat_norm)
+    sampled_expected = matrix(tf_count, nrow = nrow(sampled), ncol = ncol(sampled)) 
+    sampled_deviation = (sampled - sampled_expected) / tf_count    
   }
+  
 
+    
   mean_sampled_deviation <- colMeans(sampled_deviation)
   sd_sampled_deviation <- apply(sampled_deviation, 2, sd)
 
-  z <- (observed_deviation - mean_sampled_deviation) / sd_sampled_deviation
-  if (length(fail_filter) > 0) z[fail_filter] = NA
-
-  logfc = log2(observed/expected) - log2(colMeans(sampled/sampled_expected));
+  normdev <- (observed_deviation - mean_sampled_deviation) 
+  z <-  normdev / sd_sampled_deviation
+  
 
   if (intermediate_results){
     out = list(z = z,
-               fc = logfc,
+               dev = normdev,
                observed = observed,
                sampled = sampled,
                expected = expected,
                sampled_expected = sampled_expected,
-               observed_deviation = observed_deviation / tf_count,
-               sampled_deviation = sampled_deviation / tf_count)
+               observed_deviation = observed_deviation ,
+               sampled_deviation = sampled_deviation,
+               )
   } else{
-    out = list(z = z, fc = logfc)
+    out = list(z = z, 
+               dev = normdev)
   }
   return(out)
 }
-
 
 
 
