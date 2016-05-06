@@ -2,6 +2,7 @@
 
 export(bias_filtering)
 export(compute_deviations)
+export(compute_expectations)
 export(compute_variability)
 export(filter_peaks)
 export(filter_samples)
