@@ -4,7 +4,7 @@
 \alias{bias_filtering}
 \title{bias_filtering}
 \usage{
-bias_filtering(counts, bias, norm = TRUE, what = c("both", "count", "bias"),
+bias_filtering(counts, bias, norm = TRUE, what = c("bias", "count", "both"),
   k = 1.5)
 }
 \arguments{
@@ -14,7 +14,7 @@ bias_filtering(counts, bias, norm = TRUE, what = c("both", "count", "bias"),
 
 \item{norm}{count normalization}
 
-\item{what}{filter based on gc bias, enrichment bias, or both? default is both}
+\item{what}{filter based on gc bias, enrichment bias, or both? default is gc}
 
 \item{k}{parameter controlling stringency of filtering. see details}
 }
