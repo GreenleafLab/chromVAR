@@ -117,7 +117,7 @@ upper_bias_limit_helper <- function(x, k){
 #' @param counts counts
 #' @param bias either vector with bias values for peaks, or GenomicRanges object with column named "gc"
 #' @param norm count normalization
-#' @param what filter based on gc bias, enrichment bias, or both? default is both
+#' @param what filter based on gc bias, enrichment bias, or both? default is gc
 #' @param k parameter controlling stringency of filtering. see details
 #' @details Samples are scored based on the accessibility deviations for sets of peaks with a characteristic 
 #' average count or gc content.  The sum of the absolute values of those deviations
@@ -125,7 +125,7 @@ upper_bias_limit_helper <- function(x, k){
 #' greater than Q3 + k * (Q3 - Q1) are rejected.   
 #' @return vector of indices of peaks that pass bias filter
 #' @export
-bias_filtering <- function(counts, bias, norm = TRUE, what = c("both","count","bias"), k = 1.5){
+bias_filtering <- function(counts, bias, norm = TRUE, what = c("bias","count","both"), k = 1.5){
   
   what = match.arg(what)
   
