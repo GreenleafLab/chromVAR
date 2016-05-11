@@ -119,7 +119,7 @@ compute_deviations <- function(counts_mat,
     if (inherits(counts_mat,"dgCMatrix")){
       counts_mat_norm <- get_normalized_counts(counts_mat,expectation, counts_info$fragments_per_sample)
     } else{
-      counts_mat_norm <- counts_mat / outer(sqrt(expectation),sqrt(counts_info$fragments_per_sample))
+      counts_mat_norm <- counts_mat / outer(expectation,counts_info$fragments_per_sample)
     }
 
   results <- BiocParallel::bplapply(peak_indices,
