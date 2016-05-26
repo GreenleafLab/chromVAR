@@ -282,10 +282,13 @@ make_bias_bins <- function(counts_mat, bias, nbins = 25){
   return(tmp)
 }
 
-make_permuted_sets <- function(counts_mat, bias, motif_indices, window = 10, count=TRUE){
+make_permuted_sets <- function(counts_mat, bias, peak_indices, window = 10, count=TRUE){
+  if (inherits(peak_indices, "Matrix") || inherits(peak_indices, "matrix")){
+    peak_indices <- convert_to_ix_list(peak_indices)
+  }
   bg <- get_background_peaks(counts_mat, bias, niterations = 1, window = window, count = count)
-  sets <- lapply(seq_along(motif_indices), function(x) bg[motif_indices[[x]],1])
-  names(sets) <- sapply(names(motif_indices), function(x) paste("permuted.",x,collapse="",sep=""))
+  sets <- lapply(seq_along(peak_indices), function(x) bg[peak_indices[[x]],1])
+  names(sets) <- sapply(names(peak_indices), function(x) paste("permuted.",x,collapse="",sep=""))
   return(sets)
 }
 

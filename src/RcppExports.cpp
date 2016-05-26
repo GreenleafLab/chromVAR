@@ -6,19 +6,6 @@
 
 using namespace Rcpp;
 
-// get_normalized_counts
-arma::sp_mat get_normalized_counts(arma::sp_mat counts, const arma::vec expectation, const arma::rowvec fragments_per_sample);
-RcppExport SEXP chromVAR_get_normalized_counts(SEXP countsSEXP, SEXP expectationSEXP, SEXP fragments_per_sampleSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::sp_mat >::type counts(countsSEXP);
-    Rcpp::traits::input_parameter< const arma::vec >::type expectation(expectationSEXP);
-    Rcpp::traits::input_parameter< const arma::rowvec >::type fragments_per_sample(fragments_per_sampleSEXP);
-    __result = Rcpp::wrap(get_normalized_counts(counts, expectation, fragments_per_sample));
-    return __result;
-END_RCPP
-}
 // downsample_dense
 NumericMatrix downsample_dense(NumericMatrix X, double p);
 RcppExport SEXP chromVAR_downsample_dense(SEXP XSEXP, SEXP pSEXP) {

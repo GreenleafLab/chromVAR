@@ -18,7 +18,7 @@ compute_deviations(counts_mat, background_peaks, peak_indices = NULL,
 }
 \value{
 list with two elements: 1) z: matrix with deviation z-scores,
-2) fc: matrix with deviation log2 fold-changes
+2) dev: matrix with normalized deviations
 }
 \description{
 Computes deviations across sets of annotations
