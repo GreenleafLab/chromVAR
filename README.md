@@ -126,13 +126,13 @@ No auth token needed, as it is a public repo.
 ```{r}
 require(MOODSR)
 
-motif_ix <- match_pwms(motifs = motifs, peaks = peaks, out = "match")
+motif_ix <- match_pwms(motifs,  peaks, out = "match")
 ```
 
 For the function `match_pwm` a genome sequence is again required.  So for sacCer3 for example:
 
 ```{r}
-motif_ix <- match_pwms(motifs = motifs, peaks = peaks, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
+motif_ix <- match_pwms(motifs, peaks, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
 ```
 
 Another option is the p.cutoff for determing how stringent motif calling should be. The default value is 0.00005, which tends to give reasonable numbers of motif matches.  
