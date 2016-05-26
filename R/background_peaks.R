@@ -28,7 +28,7 @@ get_gc <- function(peaks,
 #' GC content and # of fragments across samples using the Mahalanobis distance.  From those nearest
 #' neighbors, niterations peaks are sampled from that background.
 #' @export
-get_background_peaks <- function(counts_mat, bias, niterations = 50, window = 500, with_replacement = TRUE, count = TRUE){
+get_background_peaks <- function(counts_mat, bias, niterations = 50, window = 500, with_replacement = TRUE){
   
   if (inherits(bias, "GenomicRanges")){
     bias = mcols(bias)$gc
@@ -39,11 +39,9 @@ get_background_peaks <- function(counts_mat, bias, niterations = 50, window = 50
   if (!with_replacement && niterations > window){
     stop("If with_replacement is FALSE, then niterations must be less than window")
   }
-  if (count){
-    norm_mat <- cbind(log10(countsum$fragments_per_peak), bias)
-  } else{
-    norm_mat <- cbind(countsum$fragments_per_peak, bias)
-  }
+
+  norm_mat <- cbind(countsum$fragments_per_peak, bias)
+  
   chol_cov_mat <- chol(cov(norm_mat))
   tmp_vals <- t(forwardsolve(t(chol_cov_mat),t(norm_mat)))
   
