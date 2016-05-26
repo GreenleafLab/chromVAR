@@ -1,7 +1,7 @@
 Package: chromVAR
 Type: Package
 Title: Chromatin Variation Across Regions
-Version: 0.1.1
+Version: 0.1.5
 Date: 2015-08-28
 Authors@R: c(
     person("Alicia", "Schep", email = "aschep@stanford.edu", role = c("aut","cre")),
