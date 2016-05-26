@@ -4,15 +4,12 @@
 \alias{bias_filtering}
 \title{bias_filtering}
 \usage{
-bias_filtering(counts, bias, norm = TRUE, what = c("bias", "count", "both"),
-  k = 1.5)
+bias_filtering(counts, bias, what = c("bias", "count", "both"), k = 1.5)
 }
 \arguments{
 \item{counts}{counts}
 
 \item{bias}{either vector with bias values for peaks, or GenomicRanges object with column named "gc"}
-
-\item{norm}{count normalization}
 
 \item{what}{filter based on gc bias, enrichment bias, or both? default is gc}
 

@@ -5,7 +5,7 @@
 \title{get_background_peaks}
 \usage{
 get_background_peaks(counts_mat, bias, niterations = 50, window = 500,
-  with_replacement = TRUE, count = TRUE)
+  with_replacement = TRUE)
 }
 \arguments{
 \item{counts_mat}{counts matrix}

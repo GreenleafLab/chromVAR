@@ -50,8 +50,7 @@ filter_samples <- function(counts_mat, depths, min_in_peaks = NULL, min_depth = 
 bias_skew <- function(counts_mat,
                       bias,
                       nbins = 10,
-                      expectation = NULL,
-                      norm = TRUE){
+                      expectation = NULL){
   
   if (inherits(counts_mat,"matrix")){
     counts_mat <- Matrix(counts_mat)
@@ -80,13 +79,6 @@ bias_skew <- function(counts_mat,
   
   sample_names <- colnames(counts_mat)
   
-  if (norm){
-    if (inherits(counts_mat,"dgCMatrix")){
-      counts_mat <- get_normalized_counts(counts_mat,expectation, counts_info$fragments_per_sample)
-    } else{
-      counts_mat <- counts_mat / outer(sqrt(expectation),sqrt(counts_info$fragments_per_sample))
-    }
-  }
   
   bias_mat <- sparseMatrix(j = unlist(bias_bins), 
                            i = unlist(lapply(1:nbins,function(x) rep(x, length(bias_bins[[x]])))),
@@ -95,14 +87,10 @@ bias_skew <- function(counts_mat,
   
   observed <- as.matrix(bias_mat %*% counts_mat)
   
-  if (norm){
-    expected <- as.matrix(bias_mat %*% (expectation/sqrt(expectation)) %*% (counts_info$fragments_per_sample/sqrt(counts_info$fragments_per_sample)))
-  } else{
-    expected <- as.vector(bias_mat %*% expectation %*% counts_info$fragments_per_sample)
-  }
+  expected <- as.vector(bias_mat %*% expectation %*% counts_info$fragments_per_sample)
   
-  out <- observed - expected
-  out <- out / matrix(sapply(bias_bins, length),nrow = nrow(out), ncol = ncol(out), byrow = FALSE)
+  
+  out <- (observed - expected) / expected
   return(out)
 }
 
@@ -116,7 +104,6 @@ upper_bias_limit_helper <- function(x, k){
 #' function to identify samples that show strong biases
 #' @param counts counts
 #' @param bias either vector with bias values for peaks, or GenomicRanges object with column named "gc"
-#' @param norm count normalization
 #' @param what filter based on gc bias, enrichment bias, or both? default is gc
 #' @param k parameter controlling stringency of filtering. see details
 #' @details Samples are scored based on the accessibility deviations for sets of peaks with a characteristic 
@@ -125,7 +112,7 @@ upper_bias_limit_helper <- function(x, k){
 #' greater than Q3 + k * (Q3 - Q1) are rejected.   
 #' @return vector of indices of peaks that pass bias filter
 #' @export
-bias_filtering <- function(counts, bias, norm = TRUE, what = c("bias","count","both"), k = 1.5){
+bias_filtering <- function(counts, bias,  what = c("bias","count","both"), k = 1.5){
   
   what = match.arg(what)
   
@@ -134,11 +121,11 @@ bias_filtering <- function(counts, bias, norm = TRUE, what = c("bias","count","b
   }
   
   if (what %in% c("both","bias")){
-    gc_skew <- colSums(abs(bias_skew(counts, bias, norm = norm)),na.rm = TRUE)
+    gc_skew <- colSums(abs(bias_skew(counts, bias)),na.rm = TRUE)
     gc_pass <- which(gc_skew < upper_bias_limit_helper(gc_skew, k))              
   }
   if (what %in% c("both","count")){
-    count_skew <- colSums(abs(bias_skew(counts, rowSums(counts), norm = norm)),na.rm = TRUE)
+    count_skew <- colSums(abs(bias_skew(counts, rowSums(counts))),na.rm = TRUE)
     count_pass <- which(count_skew < upper_bias_limit_helper(count_skew, k))
   }
   
