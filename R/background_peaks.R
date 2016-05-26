@@ -50,9 +50,8 @@ get_background_peaks <- function(counts_mat, bias, niterations = 50, window = 50
   grpsize <- 2000
   grps <- lapply(1:(countsum$npeak %/% grpsize + ((countsum$npeak %% grpsize)!=0)), function(x) ((x-1)*grpsize +1):(min(x*grpsize,countsum$npeak)))
   
-  bghelper <- function(grp, w, tmp_vals, with_replacement, niterations){
-    in2 = tmp_vals[grp,]
-    tmp_nns <- w$query(in2, k = window + 1, eps = 0)$nn.idx
+  bghelper <- function(grp, tmp_vals, with_replacement, niterations){
+    tmp_nns <- nabor::knn(tmp_vals, tmp_vals[grp,], window + 1, eps = 0)$nn.idx
     if (niterations == 1){
       return(matrix(sapply(1:nrow(tmp_nns), function(x) sample(tmp_nns[x,][tmp_nns[x,] != grp[x]], niterations, replace = with_replacement)),
                     ncol = 1))
@@ -61,8 +60,7 @@ get_background_peaks <- function(counts_mat, bias, niterations = 50, window = 50
     }
   }
   
-  knn_kd_tree = nabor::WKNND(tmp_vals)
-  background_peaks <- do.call(rbind, BiocParallel::bplapply(grps, bghelper, knn_kd_tree, tmp_vals, with_replacement, niterations))
+  background_peaks <- do.call(rbind, BiocParallel::bplapply(grps, bghelper, tmp_vals, with_replacement, niterations))
   
   return(background_peaks)
 }
