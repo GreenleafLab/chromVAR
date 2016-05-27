@@ -202,7 +202,7 @@ compute_deviations_single <- function(peak_set,
                expected = expected,
                sampled_expected = sampled_expected,
                observed_deviation = observed_deviation ,
-               sampled_deviation = sampled_deviation,
+               sampled_deviation = sampled_deviation
                )
   } else{
     out = list(z = z, 
