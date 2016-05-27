@@ -241,13 +241,13 @@ getFragmentCountsByRG <- function(bam, peaks, paired){
   rg_fragments <- bamToFragmentsByRG(bam, paired)
   
   tmpfun <- function(frags){
-    overlaps = as.data.frame(GenomicRanges::findOverlaps(peaks, frags, type="any", ignore.strand=T))
+    overlaps = as.data.frame(GenomicRanges::findOverlaps(peaks, frags, type="any", ignore.strand=TRUE))
     return(overlaps)
   }
   
   all_overlaps <-  BiocParallel::bplapply(rg_fragments,tmpfun)
   counts_mat <- sparseMatrix(i = do.call(rbind,all_overlaps)$queryHits, 
-                             j = unlist(lapply(seq_along(all_overlaps),function(y) rep(y,nrow(all_overlaps[[y]]))),use.names=F),
+                             j = unlist(lapply(seq_along(all_overlaps),function(y) rep(y,nrow(all_overlaps[[y]]))),use.names=FALSE),
                              x = 1, dims = c(length(peaks),length(rg_fragments)), dimnames = list(NULL,names(rg_fragments)))
   
   return(counts_mat)
