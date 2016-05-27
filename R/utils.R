@@ -282,11 +282,11 @@ make_bias_bins <- function(counts_mat, bias, nbins = 25){
   return(tmp)
 }
 
-make_permuted_sets <- function(counts_mat, bias, peak_indices, window = 10, count=TRUE){
+make_permuted_sets <- function(counts_mat, bias, peak_indices, window = 10){
   if (inherits(peak_indices, "Matrix") || inherits(peak_indices, "matrix")){
     peak_indices <- convert_to_ix_list(peak_indices)
   }
-  bg <- get_background_peaks(counts_mat, bias, niterations = 1, window = window, count = count)
+  bg <- get_background_peaks(counts_mat, bias, niterations = 1, window = window)
   sets <- lapply(seq_along(peak_indices), function(x) bg[peak_indices[[x]],1])
   names(sets) <- sapply(names(peak_indices), function(x) paste("permuted.",x,collapse="",sep=""))
   return(sets)
@@ -294,7 +294,7 @@ make_permuted_sets <- function(counts_mat, bias, peak_indices, window = 10, coun
 
 # Summarize counts and store summaries in list ---------------------------------
 
-
+#'@import Matrix
 counts_summary <- function(counts_mat){
   out <- list(fragments_per_sample = colSums(counts_mat),
               fragments_per_peak = rowSums(counts_mat),

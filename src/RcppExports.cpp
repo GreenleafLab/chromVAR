@@ -6,6 +6,43 @@
 
 using namespace Rcpp;
 
+// ProbSampleReplace
+arma::urowvec ProbSampleReplace(int size, arma::vec prob);
+RcppExport SEXP chromVAR_ProbSampleReplace(SEXP sizeSEXP, SEXP probSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type prob(probSEXP);
+    __result = Rcpp::wrap(ProbSampleReplace(size, prob));
+    return __result;
+END_RCPP
+}
+// bg_sample_helper
+arma::umat bg_sample_helper(arma::uvec bin_membership, arma::mat bin_p, arma::vec bin_density, arma::uword niterations);
+RcppExport SEXP chromVAR_bg_sample_helper(SEXP bin_membershipSEXP, SEXP bin_pSEXP, SEXP bin_densitySEXP, SEXP niterationsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::uvec >::type bin_membership(bin_membershipSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type bin_p(bin_pSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type bin_density(bin_densitySEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type niterations(niterationsSEXP);
+    __result = Rcpp::wrap(bg_sample_helper(bin_membership, bin_p, bin_density, niterations));
+    return __result;
+END_RCPP
+}
+// euc_dist
+arma::mat euc_dist(arma::mat x);
+RcppExport SEXP chromVAR_euc_dist(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    __result = Rcpp::wrap(euc_dist(x));
+    return __result;
+END_RCPP
+}
 // downsample_dense
 NumericMatrix downsample_dense(NumericMatrix X, double p);
 RcppExport SEXP chromVAR_downsample_dense(SEXP XSEXP, SEXP pSEXP) {
