@@ -6,18 +6,14 @@ get_independent_variability_helper <- function(index,
                                                counts_mat, 
                                                background_peaks, 
                                                peak_indices, 
-                                               expectation,
-                                               norm,
-                                               counts_info){
+                                               expectation){
     
   tmpsets <- remove_overlap(peak_indices, peak_indices[[index]])
   tmpvar <- do.call(c,BiocParallel::bplapply(tmpsets,
                                              compute_variability_single,
                                              counts_mat  = counts_mat,
                                              background_peaks = background_peaks,
-                                             expectation = expectation,
-                                             counts_info = counts_info,
-                                             norm = norm))
+                                             expectation = expectation))
 
   return(tmpvar)
 }
@@ -27,8 +23,7 @@ get_independent_variability <-  function(index,
                                          counts_mat, 
                                          background_peaks, 
                                          peak_indices, 
-                                         expectation = NULL,
-                                         norm = TRUE){
+                                         expectation = NULL){
   
   if (inherits(counts_mat,"matrix")){
     counts_mat = Matrix(counts_mat)
@@ -67,21 +62,12 @@ get_independent_variability <-  function(index,
     names(peak_indices) = 1:length(peak_indices)
   }
   
-  if (norm){
-    if (inherits(counts_mat,"dgCMatrix")){
-      counts_mat <- get_normalized_counts(counts_mat,expectation, counts_info$fragments_per_sample)
-    } else{
-      counts_mat <- counts_mat / outer(sqrt(expectation),sqrt(counts_info$fragments_per_sample))
-    }
-  }
   
   indep_var <- get_independent_variability_helper(index,
                                             counts_mat,
                                             background_peaks, 
                                             peak_indices,
-                                            expectation,
-                                            norm,
-                                            counts_info)
+                                            expectation)
   
   return(indep_var)
 }
@@ -93,7 +79,6 @@ get_top_sets <- function(counts_mat,
                          peak_indices, 
                          variabilities = NULL,
                          expectation = NULL,
-                         norm = TRUE,
                          max_iter = NULL,
                          var_threshold = NULL){
   
@@ -132,22 +117,13 @@ get_top_sets <- function(counts_mat,
     names(peak_indices) = 1:length(peak_indices)
   }
   
-  if (norm){
-    if (inherits(counts_mat,"dgCMatrix")){
-      counts_mat <- get_normalized_counts(counts_mat,expectation, counts_info$fragments_per_sample)
-    } else{
-      counts_mat <- counts_mat / outer(sqrt(expectation),sqrt(counts_info$fragments_per_sample))
-    }
-  }
-  
+
   if (is.null(variabilities)){
     variabilities = do.call(c,BiocParallel::bplapply(peak_indices,
                                                      compute_variability_single,
                                                      counts_mat  = counts_mat,
                                                      background_peaks = background_peaks,
-                                                     expectation = expectation,
-                                                     counts_info = counts_info,
-                                                     norm = norm))
+                                                     expectation = expectation))
   } else if (is.data.frame(variabilities)){
     variabilities = variabilities$variability
   }
@@ -181,9 +157,7 @@ get_top_sets <- function(counts_mat,
                                                  counts_mat,
                                                  background_peaks, 
                                                  peak_indices[candidates],
-                                                 expectation,
-                                                 norm,
-                                                 counts_info)
+                                                 expectation)
     if (max(tmpvar, na.rm=TRUE) < var_threshold){
       break
     } else{

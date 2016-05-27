@@ -1,4 +1,20 @@
 
+get_kmer_var <- function(kmer, v){
+  if (kmer %ni% rownames(v)){
+    return(v[get_reverse_complement(kmer),"variability"])
+  } else{
+    return(v[kmer,"variability"])
+  }
+}
+
+get_kmer_dev <- function(kmer, devs){
+  if (kmer %ni% rownames(devs$z)){
+    return(devs$z[get_reverse_complement(kmer),])
+  } else{
+    return(devs$z[kmer,])
+  }
+}
+
 # kmer comparison and grouping functions ---------------------------------------
 
 get_single_mm_var <- function(kmer, kmer_variability){
@@ -17,10 +33,7 @@ get_single_mm_var <- function(kmer, kmer_variability){
       kmod = kmer_nucs
       kmod[i] = j
       kmod = paste(kmod, sep="",collapse="")
-      if (kmod %ni% row.names(kmer_variability)){
-        kmod = get_reverse_complement(kmod)
-      }
-      out[j,i] = kmer_variability[kmod,"variability"]
+      out[j,i] = get_kmer_var(kmod, kmer_variability)
       out2[j,i] = kmod
     }
   }
@@ -42,10 +55,7 @@ get_single_mm_cor <- function(kmer, kmer_deviations){
       kmod = kmer_nucs
       kmod[i] = j
       kmod = paste(kmod, sep="",collapse="")
-      if (kmod %ni% row.names(kmer_deviations$z)){
-        kmod = get_reverse_complement(kmod)
-      }
-      out[j,i] = cor(as.vector(kmer_deviations$z[kmod,]),as.vector(kmer_deviations$z[kmer,]), use = "pairwise.complete.obs")
+      out[j,i] = cor(as.vector(get_kmer_dev(kmod, kmer_deviations)), as.vector(kmer_deviations$z[kmer,]), use = "pairwise.complete.obs")  
       out2[j,i] = kmod
     }
   }
@@ -120,7 +130,7 @@ get_overlap_kmers <- function(kmer, max_extend, dir = "both"){
   }
 }
 
-get_kmer_overlap_effect <- function(kmer, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation = NULL, norm = TRUE, max_extend = 2){
+get_kmer_overlap_effect <- function(kmer, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation = NULL, max_extend = 2){
   k <- nchar(kmer)
   nucs <- c("A","C","G","T")
   kmer_nucs = strsplit(kmer,"")[[1]]
@@ -128,26 +138,26 @@ get_kmer_overlap_effect <- function(kmer, kmer_variability, kmer_deviations, cou
   ncands = sum(sapply(1:max_extend, function(x) 4^x*2))
   #get candidate kmers that are extension of up to max_extend bases
   out$kmers = get_overlap_kmers(kmer, max_extend)
+  kmer2 = ifelse(kmer %in% colnames(peak_indices), kmer, get_reverse_complement(kmer))
   kmers2 = ifelse(out$kmers %in% colnames(peak_indices), out$kmers, get_reverse_complement((out$kmers)))
   out$shift = do.call(c, sapply(1:max_extend, function(x) c(rep(-x,4^x),rep(x,4^x))))
   #get variability boost for those kmers
   out$var_boost = chromVAR:::get_variability_boost(1, 
                                                    counts_mat, 
                                                    background_peaks, 
-                                                   peak_indices[,c(kmer, kmers2)], 
-                                                   expectation,
-                                                   norm)[2:(length(kmers2)+1)]
+                                                   peak_indices[,c(kmer2, kmers2)], 
+                                                   expectation)[2:(length(kmers2)+1)]
   #get variability of those kmers
   out$var = kmer_variability[kmers2,"variability"]
   #get deviation correlation for those kmers
-  out$cor = cor(t(kmer_deviations$z[c(kmer,kmers2),]), use ="pairwise.complete.obs")[1,2:(length(kmers2)+1)]
+  out$cor = cor(t(kmer_deviations$z[c(kmer2,kmers2),]), use ="pairwise.complete.obs")[1,2:(length(kmers2)+1)]
   return(out)
 }
 
 
 #'@export
-make_kmer_group <- function(kmer, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation = NULL, norm = TRUE, max_extend = 2,
-                            cor_threshold = 0.67, var_threshold = 0.67, boost_threshold = 3){
+make_kmer_group <- function(kmer, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation = NULL, max_extend = 2,
+                            cor_threshold = 0.5, var_threshold = 0.1, boost_threshold = 3){
   
   mm_var = get_single_mm_var(kmer, kmer_variability)
   mm_cor = get_single_mm_cor(kmer, kmer_deviations)
@@ -159,7 +169,7 @@ make_kmer_group <- function(kmer, kmer_variability, kmer_deviations, counts_mat,
     out = rbind(out, data.frame( kmer = mm_var$kmers[mm_keep], type = "mismatch", var = mm_var$var[mm_keep], cor = mm_cor$cor[mm_keep], boost = NA, shift =0, stringsAsFactors = FALSE))
   }
   
-  overlap_effect = get_kmer_overlap_effect(kmer, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation, norm , max_extend = 2)
+  overlap_effect = get_kmer_overlap_effect(kmer, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation, max_extend = 2)
   overlap_keep = intersect(which(overlap_effect$var_boost > boost_threshold),which(overlap_effect$cor > cor_threshold))
   
   if (length(overlap_keep) >= 1){
@@ -174,7 +184,7 @@ make_kmer_group <- function(kmer, kmer_variability, kmer_deviations, counts_mat,
   
   
   for (j in mm_var$kmers[mm_keep]){
-    overlap_effect = get_kmer_overlap_effect(j, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation, norm , max_extend = 2)
+    overlap_effect = get_kmer_overlap_effect(j, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation,  max_extend = 2)
     overlap_keep = intersect(intersect(which(overlap_effect$var_boost > boost_threshold),which(overlap_effect$cor > cor_threshold)), which(overlap_effect %ni% out$kmer))
     if (length(overlap_keep) >= 1){
       out = rbind(out, 

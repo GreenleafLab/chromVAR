@@ -6,8 +6,6 @@ get_variability_boost_helper <- function(index,
                                          background_peaks, 
                                          peak_indices, 
                                          expectation,
-                                         norm,
-                                         counts_info,
                                          nbg){
   
   tmpsets <- remove_nonoverlap(peak_indices, peak_indices[[index]])
@@ -15,9 +13,7 @@ get_variability_boost_helper <- function(index,
                                                  compute_variability_single,
                                                  counts_mat  = counts_mat,
                                                  background_peaks = background_peaks,
-                                                 expectation = expectation,
-                                                 counts_info = counts_info,
-                                                 norm = norm))
+                                                 expectation = expectation))
   
   setlen = sapply(tmpsets,length)
   
@@ -27,9 +23,7 @@ get_variability_boost_helper <- function(index,
                                                 compute_variability_single,
                                                 counts_mat  = counts_mat,
                                                 background_peaks = background_peaks,
-                                                expectation = expectation,
-                                                counts_info = counts_info,
-                                                norm = norm))
+                                                expectation = expectation))
     
   var_boost <- sapply(seq_along(tmpvar), 
                       function(x) (tmpvar[x] - mean(bgvar[((x-1)*nbg+1):(x*nbg)]))/ 
@@ -43,7 +37,6 @@ get_variability_boost <- function(index,
                                   background_peaks, 
                                   peak_indices, 
                                   expectation = NULL,
-                                  norm = TRUE,
                                   nbg = 50){
   
   if (inherits(counts_mat,"matrix")){
@@ -83,21 +76,11 @@ get_variability_boost <- function(index,
     names(peak_indices) = 1:length(peak_indices)
   }
   
-  if (norm){
-    if (inherits(counts_mat,"dgCMatrix")){
-      counts_mat <- get_normalized_counts(counts_mat,expectation, counts_info$fragments_per_sample)
-    } else{
-      counts_mat <- counts_mat / outer(sqrt(expectation),sqrt(counts_info$fragments_per_sample))
-    }
-  }
-  
   var_boost <- get_variability_boost_helper(index,
                                             counts_mat,
                                             background_peaks, 
                                             peak_indices,
                                             expectation,
-                                            norm,
-                                            counts_info,
                                             nbg)
   
   return(var_boost)
@@ -109,7 +92,6 @@ get_variability_synergy <- function(counts_mat,
                                     peak_indices, 
                                     variabilities = NULL,
                                     expectation = NULL,
-                                    norm = TRUE,
                                     nbg = 50){
   
   if (inherits(counts_mat,"matrix")){
@@ -147,22 +129,13 @@ get_variability_synergy <- function(counts_mat,
     names(peak_indices) = 1:length(peak_indices)
   }
   
-  if (norm){
-    if (inherits(counts_mat,"dgCMatrix")){
-      counts_mat <- get_normalized_counts(counts_mat,expectation, counts_info$fragments_per_sample)
-    } else{
-      counts_mat <- counts_mat / outer(sqrt(expectation),sqrt(counts_info$fragments_per_sample))
-    }
-  }
   
   if (is.null(variabilities)){
     variabilities = do.call(c,BiocParallel::bplapply(peak_indices,
                                                      compute_variability_single,
                                                      counts_mat  = counts_mat,
                                                      background_peaks = background_peaks,
-                                                     expectation = expectation,
-                                                     counts_info = counts_info,
-                                                     norm = norm))
+                                                     expectation = expectation))
   } else if (is.data.frame(variabilities)){
     variabilities = variabilities$variability
   }
@@ -179,8 +152,6 @@ get_variability_synergy <- function(counts_mat,
                                                       background_peaks, 
                                                       peak_indices[var_order[i:l]],
                                                       expectation,
-                                                      norm,
-                                                      counts_info,
                                                       nbg)
   }
   colnames(outmat) = rownames(outmat) = names(peak_indices)[var_order]
