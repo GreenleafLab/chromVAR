@@ -12,8 +12,6 @@ Description: Determine variation in chromatin accessibility across sets of
     accessibility, e.g. from scATAC-seq or sparse ATAC or DNAse-seq experiments.
 License: GPL-3
 Imports:
-    Matrix,
-    GenomicRanges,
     IRanges,
     GenomeInfoDb,
     ggplot2,
@@ -31,6 +29,9 @@ Imports:
     RcppArmadillo,
     ggdendro,
     grid
+Depends:
+  Matrix,
+  GenomicRanges
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     readr,

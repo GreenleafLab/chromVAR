@@ -61,14 +61,16 @@ bias_skew <- function(counts_mat,
     bias <- mcols(bias)$gc
   }
   
-  keep  <- which(rowSums(counts) > 0)
+  keep  <- which(rowSums(counts_mat) > 0)
   counts_mat <- counts_mat[keep,]
   bias <- bias[keep]
   
   counts_info <- counts_summary(counts_mat)
   
+  bias = bias + runif(length(bias),0,0.001)
   bias_quantiles = quantile(bias, seq(0,1,1/nbins))
   bias_cut = cut(bias, breaks = bias_quantiles)
+
   bias_bins = split(1:counts_info$npeak, bias_cut)
   
   if (is.null(expectation)){

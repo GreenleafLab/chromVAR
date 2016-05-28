@@ -4,19 +4,18 @@
 \alias{get_background_peaks}
 \title{get_background_peaks}
 \usage{
-get_background_peaks(counts_mat, bias, niterations = 50, window = 500,
-  with_replacement = TRUE)
+get_background_peaks(counts_mat, bias, niterations = 50, w = 0.1, bs = 50)
 }
 \arguments{
 \item{counts_mat}{counts matrix}
 
-\item{bias}{either vector with bias values for peaks, or GenomicRanges object with column named "gc"}
+\item{bias}{vector with bias values for peaks, typically GC content}
 
 \item{niterations}{number of background peaks to sample}
 
-\item{window}{window size around peak in which to sample a background peak}
+\item{w}{parameter controlling similarity of background peaks}
 
-\item{with_replacement}{sample peaks with replacement? Default is TRUE}
+\item{bs}{bin size parameter}
 }
 \value{
 matrix with one row per peak and one column per iteration.  values in a row
@@ -27,8 +26,10 @@ Function to get a set of background peaks for each peak based on GC content and 
 across all samples
 }
 \details{
-Background peaks are chosen by finding the window nearest neighbors to a peak in terms of
-GC content and # of fragments across samples using the Mahalanobis distance.  From those nearest
-neighbors, niterations peaks are sampled from that background.
+Background peaks are chosen by sampling peaks based on similarity in
+GC content and # of fragments across samples using the Mahalanobis distance.
+The w paramter controls how similar background peaks should be.  The bs parameter
+controls the precision with which the similarity is computed; increasing bs will
+make the function run slower. Sensible default parameters are chosen for both.
 }
 

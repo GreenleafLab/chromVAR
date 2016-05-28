@@ -286,7 +286,7 @@ make_permuted_sets <- function(counts_mat, bias, peak_indices, window = 10){
   if (inherits(peak_indices, "Matrix") || inherits(peak_indices, "matrix")){
     peak_indices <- convert_to_ix_list(peak_indices)
   }
-  bg <- get_background_peaks(counts_mat, bias, niterations = 1, window = window)
+  bg <- get_background_peaks_old(counts_mat, bias, niterations = 1, window = window)
   sets <- lapply(seq_along(peak_indices), function(x) bg[peak_indices[[x]],1])
   names(sets) <- sapply(names(peak_indices), function(x) paste("permuted.",x,collapse="",sep=""))
   return(sets)
@@ -327,7 +327,6 @@ get_jaccard <- function(x){
   i <- outer(t,t,FUN = "+")
   return(as.matrix(u/(i - u)))
 }
-
 
 
 
