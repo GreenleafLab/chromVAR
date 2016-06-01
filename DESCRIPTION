@@ -37,4 +37,4 @@ Suggests:
     readr,
     testthat
 LinkingTo: Rcpp, RcppArmadillo
-
+SystemRequirements: C++11

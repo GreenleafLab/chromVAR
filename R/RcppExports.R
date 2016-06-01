@@ -29,6 +29,22 @@ compute_pwm_dist <- function(pwms) {
     .Call('chromVAR_compute_pwm_dist', PACKAGE = 'chromVAR', pwms)
 }
 
+get_thresholds <- function(mats, nuc_freqs, p) {
+    .Call('chromVAR_get_thresholds', PACKAGE = 'chromVAR', mats, nuc_freqs, p)
+}
+
+get_motif_ix <- function(mats, x, nuc_freqs, p, w) {
+    .Call('chromVAR_get_motif_ix', PACKAGE = 'chromVAR', mats, x, nuc_freqs, p, w)
+}
+
+get_max_motif_score <- function(mats, x, nuc_freqs, p, w) {
+    .Call('chromVAR_get_max_motif_score', PACKAGE = 'chromVAR', mats, x, nuc_freqs, p, w)
+}
+
+get_motif_positions <- function(mats, x, nuc_freqs, p, w) {
+    .Call('chromVAR_get_motif_positions', PACKAGE = 'chromVAR', mats, x, nuc_freqs, p, w)
+}
+
 col_sds <- function(X, na_rm = FALSE) {
     .Call('chromVAR_col_sds', PACKAGE = 'chromVAR', X, na_rm)
 }

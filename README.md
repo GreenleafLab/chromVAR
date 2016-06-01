@@ -1,5 +1,7 @@
 # chromVAR
 
+chromVAR is an R package for the analysis of sparse chromatin accessibility or histone modification data.  The package incorporates motif matching code from the MOODS package, developed by Pasi Rastas, Janne Korhonen, and Petri Martinmaki.
+
 ##Installation
 Installation is easiest using the devtools package.  The function `install_github` will install the package.
 ```{r}
@@ -117,14 +119,7 @@ For using a collection other than core, use the `core` argument.  Options includ
 
 The `get_motifs` function is simply a wrapper around `getMatrixSet` from TFBSTools-- you can also use that function to fetch motifs from JASPAR if you prefer, and/or check out the documentation for that function for more information.  
 
-The function `match_pwms` from the MOODSR package finds which peaks contain which motifs.  Install MOODSR using:
-```{r}
-devtools::install_github("AliciaSchep/MOODSR")
-```
-No auth token needed, as it is a public repo.
-
-```{r}
-require(MOODSR)
+The function `match_pwms` finds which peaks contain which motifs.  
 
 motif_ix <- match_pwms(motifs,  peaks, out = "match")
 ```
