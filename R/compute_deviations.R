@@ -124,9 +124,9 @@ compute_deviations <- function(counts_mat,
   out <- list()
   out$z <- t(vapply(results, function(x) x[["z"]], rep(0,counts_info$nsample)))
   out$dev <- t(vapply(results, function(x) x[["dev"]], rep(0,counts_info$nsample)))
-
-  colnames(out$z) = sample_names
-  colnames(out$dev) = sample_names
+  out$norm <- t(vapply(results, function(x) x[["norm"]], rep(0,counts_info$nsample)))
+  
+  colnames(out$z) = colnames(out$dev) = colnames(out$norm) = sample_names
 
   return(out)
 }
@@ -189,14 +189,18 @@ compute_deviations_single <- function(peak_set,
 
   normdev <- (observed_deviation - mean_sampled_deviation) 
   z <-  normdev / sd_sampled_deviation
+  normval <- (1 + normdev) * sum(expectation[peak_set]) * 100
+  
   if (length(fail_filter) > 0){
     z[fail_filter] = NA
     normdev[fail_filter] = NA
+    normval[fail_filter] = NA
   } 
 
   if (intermediate_results){
     out = list(z = z,
                dev = normdev,
+               norm = normval,
                observed = observed,
                sampled = sampled,
                expected = expected,
@@ -206,7 +210,8 @@ compute_deviations_single <- function(peak_set,
                )
   } else{
     out = list(z = z, 
-               dev = normdev)
+               dev = normdev,
+               norm = normval)
   }
   return(out)
 }
