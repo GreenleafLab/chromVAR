@@ -144,6 +144,7 @@ get_counts_from_beds <- function(beds, peaks, paired){
 
 # Helper functions for reading in counts from bam ------------------------------
 
+#' @export
 readAlignmentFromBed <- function(filename, paired){
   if (is.installed('readr')){
     tmp <- readr::read_tsv(file = filename, col_names = FALSE)
@@ -183,7 +184,7 @@ left_right_to_grglist <- function(left, right){
   return(out)
 }
 
-
+#' @export
 bamToFragmentsByRG <- function(bamfile, paired){
   
   if (paired){
@@ -226,7 +227,7 @@ bamToFragmentsByRG <- function(bamfile, paired){
   return(out)
 }
 
-
+#' @export
 bamToFragments <- function(bamfile, paired){
   if (paired){
     scanned <- Rsamtools::scanBam(bamfile, param = Rsamtools::ScanBamParam(flag = Rsamtools::scanBamFlag(isMinusStrand=FALSE, isProperPair = TRUE), what = c("rname","pos","isize")))[[1]]
