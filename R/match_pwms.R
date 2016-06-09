@@ -345,11 +345,10 @@ setMethod("match_pwms", signature(pwms = "PWMatrix", subject = "GenomicRanges"),
               out <- get_max_motif_score(motif_mats,seqs,bg,p.cutoff,w)
             } else{
               tmp_out <- get_motif_positions(motif_mats,seqs,bg,p.cutoff,w)
-              m_ix <- which(tmp_out$motif_ix == x - 1)
-              out <- GenomicRanges::GRanges(GenomicRanges::seqnames(subject)[tmp_out$seq_ix[m_ix] + 1],
-                                              IRanges::IRanges(start = GenomicRanges::start(subject[tmp_out$seq_ix[m_ix] + 1]) + tmp_out$pos[m_ix],
-                                                               width = ncol(motif_mats[[x]])),
-                                              strand = tmp_out$strand[m_ix], score = tmp_out$score[m_ix])
+              out <- GenomicRanges::GRanges(GenomicRanges::seqnames(subject)[tmp_out$seq_ix + 1],
+                                              IRanges::IRanges(start = GenomicRanges::start(subject[tmp_out$seq_ix + 1]) + tmp_out$pos,
+                                                               width = ncol(motif_mats[[1]])),
+                                              strand = tmp_out$strand, score = tmp_out$score)
 
             }
             return(out)
@@ -450,12 +449,10 @@ setMethod("match_pwms", signature(pwms = "PFMatrix", subject = "GenomicRanges"),
               out <- get_max_motif_score(motif_mats,seqs,bg,p.cutoff,w)
             } else{
               tmp_out <- get_motif_positions(motif_mats,seqs,bg,p.cutoff,w)
-              m_ix <- which(tmp_out$motif_ix == x - 1)
-              out <- GenomicRanges::GRanges(GenomicRanges::seqnames(subject)[tmp_out$seq_ix[m_ix] + 1],
-                                              IRanges::IRanges(start = GenomicRanges::start(subject[tmp_out$seq_ix[m_ix] + 1]) + tmp_out$pos[m_ix],
-                                                               width = ncol(motif_mats[[x]])),
-                                              strand = tmp_out$strand[m_ix], score = tmp_out$score[m_ix])
-            }
+              out <- GenomicRanges::GRanges(GenomicRanges::seqnames(subject)[tmp_out$seq_ix + 1],
+                                            IRanges::IRanges(start = GenomicRanges::start(subject[tmp_out$seq_ix + 1]) + tmp_out$pos,
+                                                             width = ncol(motif_mats[[1]])),
+                                            strand = tmp_out$strand, score = tmp_out$score)            }
             return(out)
           })
 
