@@ -150,10 +150,18 @@ readAlignmentFromBed <- function(filename, paired){
   } else{
     tmp <- read.delim(file = filename, col.names = FALSE, sep = "\t", stringsAsFactors = FALSE)
   }
-    tmp <- tmp[,1:3]
-    colnames(tmp) <- c("chr", "start", "end")
-    tmp[,"start"] <- tmp[,"start"] + 1
-    tmp <- makeGRangesFromDataFrame(tmp)  
+   strand_col <- which(apply(tmp[1:min(100, nrow(tmp)),], 2, function(x) all_true(x %in% c("+","-","*"))))
+   if (length(strand_col) == 1){
+     tmp <- tmp[,c(1:3,strand_col)]
+     colnames(tmp) <- c("chr", "start", "end", "strand")
+     tmp[,"start"] <- tmp[,"start"] + 1
+     tmp <- with(tmp, GRanges(tmp$chr, ranges = IRanges(tmp$start, tmp$end), strand = strand))     
+   } else{
+      tmp <- tmp[,1:6]
+      colnames(tmp) <- c("chr", "start", "end")
+      tmp[,"start"] <- tmp[,"start"] + 1
+      tmp <- with(tmp, GRanges(tmp$chr, ranges = IRanges(tmp$start, tmp$end)))     
+   }
   if (paired){
     left <- resize(tmp, width = 1, fix = "start", ignore.strand = TRUE)
     right <- resize(tmp, width = 1, fix = "end", ignore.strand = TRUE)
