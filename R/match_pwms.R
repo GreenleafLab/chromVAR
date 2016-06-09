@@ -15,7 +15,7 @@
 #' with values set to the max motif score in each sequence (but zero for sequences with no score above minimum p value threshold),
 #' or \code{\link[GenomicRanges]{GenomicRanges}} if positions
 #' @import Biostrings
-#' @import TFBSTools
+#' @importClassesFrom TFBSTools PWMatrixList PWMatrix PFMatrixList PFMatrix
 #' @import Matrix
 #'@export
 setGeneric("match_pwms", function(pwms, subject,...) standardGeneric("match_pwms"))
