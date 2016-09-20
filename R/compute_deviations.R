@@ -220,5 +220,91 @@ compute_deviations_single <- function(peak_set,
 
 
 
+compute_deviations_single_no_bg <- function(peak_set,
+                                      counts_mat,
+                                      expectation = NULL,
+                                      threshold = 1){
+  
+  #require Matrix (for some multiprocessing options)
+  suppressPackageStartupMessages(library(Matrix, quietly = TRUE, warn.conflicts = FALSE))
+  
+  if (length(peak_set) == 0){
+    return(list(z = rep(NA, ncol(counts_mat)), dev = rep(NA,ncol(counts_mat))))
+  }
+  
+  fragments_per_sample = colSums(counts_mat)  
+  
+  ### counts_mat should already be normed!
+  tf_count <- length(peak_set)
+  
+  if (tf_count == 1){
+    observed <- as.vector(counts_mat[peak_set,])
+    expected <- expectation[peak_set] * fragments_per_sample    
+    observed_deviation <- (observed - expected) / expected
+    
+  } else{
+    tf_vec <- sparseMatrix(j = peak_set, i = rep(1,tf_count), x = 1,
+                           dims = c(1, nrow(counts_mat)))
+    
+    observed <- as.vector(tf_vec %*% counts_mat)
+    
+    expected <- as.vector(tf_vec %*% expectation %*% fragments_per_sample)
+    observed_deviation = (observed - expected) / expected
+    
+  }
+  
+  return(observed_deviation)
+}
+
+compute_deviations_no_bg <- function(counts_mat,
+                               peak_indices = NULL,
+                               expectation = NULL){
+  
+  if (inherits(counts_mat,"matrix")){
+    counts_mat = Matrix(counts_mat)
+  }
+  stopifnot(inherits(counts_mat,"Matrix"))
+  
+  counts_info <- counts_summary(counts_mat)
+  if (min(counts_info$fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
+  
+  if (is.null(peak_indices)){
+    peak_indices <- lapply(1:counts_info$npeak, function(x) x)
+  } else if (inherits(peak_indices, "Matrix") || inherits(peak_indices, "matrix")){
+    peak_indices <- convert_to_ix_list(peak_indices)
+  } else if (!is.list(peak_indices) && is.vector(peak_indices)){
+    peak_indices = list(peak_indices)
+  }
+  stopifnot(inherits(peak_indices,"list"))  
+  
+  if (is.null(expectation)){
+    expectation <- compute_expectations(counts_mat)
+  } else{
+    stopifnot(length(expectation) == nrow(counts_mat))
+  }
+  
+  # check that indices fall within appropriate bounds
+  tmp <- unlist(peak_indices, use.names =F)
+  if (is.null(tmp) ||
+        !(all.equal(tmp, as.integer(tmp))) ||
+        max(tmp) > counts_info$npeak ||
+        min(tmp) < 1){
+    stop("peak_indices are not valid")
+  }
+  
+  if(is.null(names(peak_indices))){
+    names(peak_indices) = 1:length(peak_indices)
+  }
+  
+  sample_names <- colnames(counts_mat)
+  
+  results <- t(simplify2array(BiocParallel::bplapply(peak_indices,
+                                    compute_deviations_single_no_bg,
+                                    counts_mat = counts_mat,
+                                    expectation = expectation)))
+  colnames(results) <- sample_names
+  
+  return(results)
+}
 
 
