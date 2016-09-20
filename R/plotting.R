@@ -358,9 +358,6 @@ plot_kmer_group <- function(a, similar_motifs = NULL, plot.consensus = TRUE){
       if (inherits(similar_motifs[[i]],"PWMatrix")){
         m = exp(as.matrix(similar_motifs[[i]]))*matrix(bg(similar_motifs[[i]]), 
                                                        nrow = 4, ncol =length(similar_motifs[[i]]), byrow = FALSE)
-        if (length(similar_motifs[[i]]@pseudocounts) != 0){
-          m = m - similar_motifs[[i]]@pseudocounts
-        }
       } else if (inherits(similar_motifs[[i]],"PFMatrix")){
         m = as.matrix(similar_motifs[[i]])
       }

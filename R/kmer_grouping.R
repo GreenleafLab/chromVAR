@@ -157,7 +157,7 @@ get_kmer_overlap_effect <- function(kmer, kmer_variability, kmer_deviations, cou
 
 #'@export
 make_kmer_group <- function(kmer, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation = NULL, max_extend = 2,
-                            cor_threshold = 0.5, var_threshold = 0.1, boost_threshold = 3){
+                            cor_threshold = 0.5, var_threshold = 0.25, boost_threshold = 3){
   
   mm_var = get_single_mm_var(kmer, kmer_variability)
   mm_cor = get_single_mm_cor(kmer, kmer_deviations)
@@ -185,7 +185,9 @@ make_kmer_group <- function(kmer, kmer_variability, kmer_deviations, counts_mat,
   
   for (j in mm_var$kmers[mm_keep]){
     overlap_effect = get_kmer_overlap_effect(j, kmer_variability, kmer_deviations, counts_mat, background_peaks, peak_indices, expectation,  max_extend = 2)
-    overlap_keep = intersect(intersect(which(overlap_effect$var_boost > boost_threshold),which(overlap_effect$cor > cor_threshold)), which(overlap_effect %ni% out$kmer))
+    overlap_keep = intersect(intersect(which(overlap_effect$var_boost > boost_threshold),
+                                       which(overlap_effect$cor > cor_threshold)), 
+                             which(overlap_effect$kmer %ni% out$kmer))
     if (length(overlap_keep) >= 1){
       out = rbind(out, 
                   data.frame(kmer = overlap_effect$kmers[overlap_keep], 

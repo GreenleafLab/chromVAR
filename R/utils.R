@@ -25,7 +25,7 @@ is.installed <- function(pkg) is.element(pkg, installed.packages()[,1])
 
 mean_smooth <- function(X, window){
   if (is.na(as.integer(window)) || length(window) != 1 || window < 2 ||
-        indow >= length(X)){
+        window >= length(X)){
     stop("window must be an integer between 2 and length(X)")
   }
   pad_left = rev(X[1:(window %/% 2)])
@@ -318,6 +318,18 @@ convert_to_ix_list <- function(ix){
   names(out) = colnames(ix)
   return(out)  
 }
+
+# Convert list of indices to matrix  -------------------------------------------
+convert_from_ix_list <- function(ix, npeaks){
+  stopifnot(inherits(ix,"list"))
+  sparseMatrix(j = unlist(lapply(seq_along(ix), function(x) rep(x, length(ix[[x]]))),use.names = FALSE),
+                      i = unlist(ix, use.names = FALSE),
+                      dims = c(npeaks, length(ix)),
+                      x = 1,
+               dimnames = list(NULL, names(ix)))
+  
+}
+
 
 # Jaccard ----------------------------------------------------------------------
 
