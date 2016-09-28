@@ -62,6 +62,30 @@ get_single_mm_cor <- function(kmer, kmer_deviations){
   return(list(cor = out, kmers = out2))
 }
 
+get_single_mm_cov <- function(kmer, kmer_deviations){
+  
+  k <- nchar(kmer)
+  nucs <- c("A","C","G","T")
+  kmer_nucs = strsplit(kmer,"")[[1]]
+  
+  out <- matrix(nrow = 4,ncol = k)
+  out2 <- matrix(nrow = 4,ncol = k)
+  rownames(out) <- nucs
+  rownames(out2) <- nucs
+  for (i in 1:k){
+    for (j in nucs[nucs != kmer_nucs[i]]){
+      kmod = kmer_nucs
+      kmod[i] = j
+      kmod = paste(kmod, sep="",collapse="")
+      out[j,i] = cov(as.vector(get_kmer_dev(kmod, kmer_deviations)), as.vector(kmer_deviations$z[kmer,]), use = "pairwise.complete.obs")  
+      out2[j,i] = kmod
+    }
+  }
+  out = out / var( as.vector(kmer_deviations$z[kmer,]))
+  return(list(cor = out, kmers = out2))
+}
+
+
 
 plot_mm_var_effect <- function(mm_var, k_var){
   
@@ -94,6 +118,22 @@ plot_mm_cor_effect <- function(mm_cor){
     chromVAR_theme() + scale_color_manual(name="Nucleotide",
                                          breaks = c("A","C","G","T"),
                                          values = RColorBrewer::brewer.pal(4,"Dark2"))
+  
+}
+
+plot_mm_cov_effect <- function(mm_cor){
+  
+  mm_df2 <- data.frame(val = as.vector(mm_cor), pos = rep(1:ncol(mm_cor),each = 4),
+                       Nucleotide = rep(c("A","C","G","T"),ncol(mm_cor)))
+  mm_df2 <- mm_df2[!is.na(mm_df2$val),]
+  
+  ggplot(mm_df2, aes(x = pos, y = val, col = Nucleotide)) + 
+    geom_point( position = position_jitter(height = 0, width = 0.1))  + 
+    geom_hline(yintercept = c(0,1,-1), lty = 2, col = "gray") + ylab("Co-variability") +
+    xlab("Position") + scale_x_continuous(breaks = c(1:ncol(mm_cor)))+
+    chromVAR_theme() + scale_color_manual(name="Nucleotide",
+                                          breaks = c("A","C","G","T"),
+                                          values = RColorBrewer::brewer.pal(4,"Dark2"))
   
 }
 

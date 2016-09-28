@@ -7,51 +7,52 @@
 #' @param xlab label for x-axis (default is "Sorted TFs")
 #' @param n  number of toppoints to label?
 #' @param labels names of sets. if not given, uses rownames of variability
-#' @import ggplot2
+#' @import ggplot2 plotly
 #' @export
 plot_variability <- function(variability, xlab = "Sorted TFs", 
-                   n = 3, labels = NULL){
+                   n = 3, labels = variability$name, interactive = TRUE){
   
-  if (is.null(labels)) labels = rownames(variability)
-  res_df = cbind(variability,ranks = rank(-1 * variability$variability,
+  res_df = cbind(variability, rank = rank(-1 * variability$variability,
                                           ties.method="random"),
-                 tf = labels)
+                 annotation = labels)
   
   ylab = "Variability"
   
   if ("bootstrap_lower_bound" %ni% colnames(variability)){
     
-    out = ggplot2::ggplot(res_df, ggplot2::aes_string(x = "ranks", 
+    out = ggplot(res_df,aes_string(x = "rank", 
                                                       y = "variability")) + 
       geom_point() +
-      ggplot2::xlab(xlab) + ggplot2::ylab(ylab) + 
-      ggplot2::scale_y_continuous(expand=c(0,0),
+      xlab(xlab) + ylab(ylab) + 
+      scale_y_continuous(expand=c(0,0),
                                   limits=c(0,max(res_df$variability, na.rm =TRUE)*1.05)) +
       chromVAR_theme() 
   } else{
     
-    out = ggplot2::ggplot(res_df, ggplot2::aes_string(x = "ranks", 
+    out = ggplot(res_df, aes_string(x = "rank", 
                                                     y = "variability",
                                                     min = "bootstrap_lower_bound", 
-                                                    max = "bootstrap_upper_bound")) + 
-    ggplot2::geom_point()+ ggplot2::geom_errorbar() +
-    ggplot2::xlab(xlab) + ggplot2::ylab(ylab) + 
-    ggplot2::scale_y_continuous(expand=c(0,0),
+                                                    max = "bootstrap_upper_bound",
+                                                    label = "annotation")) + 
+    geom_point()+ geom_errorbar() +
+    xlab(xlab) + ylab(ylab) + 
+    scale_y_continuous(expand=c(0,0),
                                 limits=c(0,max(res_df$bootstrap_upper_bound, na.rm =TRUE)*1.05)) +
     chromVAR_theme()    
   }
   
-  if (n >=1){
-    top_df = res_df[res_df$ranks <= n,]
-    out = out + ggplot2::geom_text(data = top_df, 
-                                   ggplot2::aes_string(x = "ranks", 
-                                                       y = "variability", 
-                                                       label = "tf"),
-                                   size = 3, hjust=-0.45,col = "Black")
-  } 
   
-  return(out)
-  
+  if (interactive){
+    return(ggplotly(out))
+  } else{
+    if (n >=1){
+      top_df = res_df[res_df$rank <= n,]
+      out = out + geom_text(data = top_df,
+                            size = 3, hjust=-0.45,col = "Black")
+    }
+    return(out)
+  }
+ 
 }
 
 

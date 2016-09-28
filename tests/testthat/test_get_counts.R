@@ -14,7 +14,7 @@ test_peaks <- get_peaks(peaks_file)
 
 test_that("can count fragments using RG tags", {
   counts <- get_counts(test_rg, test_peaks, by_rg = TRUE, paired = TRUE)
-  expect_is(counts, "Matrix")
+  expect_is(counts, "SummarizedExperiment")
   expect_equal_to_reference(counts, "counts_rg.rds")
 })
 
@@ -23,7 +23,7 @@ test_that("can count fragments using RG tags", {
 
 test_that("can count fragments with multiple bams", {
   counts <- get_counts(c(test_bam1, test_bam2, test_bam3), test_peaks, by_rg = FALSE, paired = TRUE)
-  expect_is(counts, "Matrix")
+  expect_is(counts, "SummarizedExperiment")
   expect_equal_to_reference(counts, "counts_multiple_bam.rds")
 })
 

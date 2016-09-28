@@ -68,22 +68,7 @@ align_pwms <- function(pwm1,pwm2, minimum = FALSE, both_strands = TRUE){
 
 # kmer position functions ------------------------------------------------------
 
-get_kmer_positions <- function(kmer, peaks, seqs){
-  matches <- Biostrings::vmatchPattern(Biostrings::DNAString(kmer), seqs, fixed=FALSE)
-  rc_matches <- Biostrings::vmatchPattern(Biostrings::reverseComplement(Biostrings::DNAString(kmer)), seqs, fixed=FALSE)
-  
-  tmp1 <- elementLengths(matches)
-  tmp2 <-  unlist(sapply(1:length(peaks), function(x) rep(x,tmp1[x])), use.names=F)
-  f_pos <- resize(shift(peaks[tmp2],shift = start(unlist(matches)))+1,width = 1)
-  BiocGenerics::strand(f_pos) <- "+"
-  
-  tmp1 <- elementLengths(rc_matches)
-  tmp2 <-  unlist(sapply(1:length(peaks), function(x) rep(x,tmp1[x])), use.names=F)
-  r_pos <- resize(shift(peaks[tmp2], shift = start(unlist(rc_matches)) -1),width = 1)
-  BiocGenerics::strand(r_pos) <- "-"  
-  
-  return(BiocGenerics::sort(c(f_pos, r_pos)))
-}
+
 
 get_kmer_to_kmer_dist <- function(kmer1, kmer2, peaks, seqs, all_seqs, max_dist = 25){
   

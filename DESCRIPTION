@@ -1,7 +1,7 @@
 Package: chromVAR
 Type: Package
 Title: Chromatin Variation Across Regions
-Version: 0.1.5
+Version: 0.2.1
 Date: 2015-08-28
 Authors@R: c(
     person("Alicia", "Schep", email = "aschep@stanford.edu", role = c("aut","cre")),
@@ -14,13 +14,13 @@ License: GPL-3
 Imports:
     IRanges,
     GenomeInfoDb,
+    GenomicRanges,
     ggplot2,
     nabor,
     BiocParallel,
     BiocGenerics,
     Biostrings,
     TFBSTools,
-    JASPAR2014,
     Rsamtools,
     S4Vectors,
     plyr,
@@ -28,13 +28,21 @@ Imports:
     Rcpp,
     RcppArmadillo,
     ggdendro,
-    grid
+    grid,
+    plotly,
+    shiny,
+    miniUI
 Depends:
-  Matrix,
-  GenomicRanges
+    Matrix,
+    SummarizedExperiment
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
+    JASPAR2016,
     readr,
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
 LinkingTo: Rcpp, RcppArmadillo
 SystemRequirements: C++11
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1

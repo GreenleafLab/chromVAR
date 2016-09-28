@@ -8,3 +8,4 @@ R/experimental.R
 R/kmer_experimental.R
 src/*.o
 src/*.so
+inst/doc

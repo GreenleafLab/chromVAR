@@ -1,7 +1,7 @@
 
 #' compute_expectations
 #' 
-#' @param counts_mat matrix of counts
+#' @param object SummarizedExperiment
 #' @param norm weight all samples equally?
 #' @param annotation an annotation vector, optional
 #' @details By default, this function will compute the expected fraction of reads
@@ -17,39 +17,43 @@
 #'reads per peak within the sample divided by the total reads within each sample.
 #' @return vector with expected fraction of reads per peak
 #' @export
-compute_expectations <- function(counts_mat,
+compute_expectations <- function(object,
                                  norm = FALSE,
                                  annotation = NULL){
 
-  counts_info = counts_summary(counts_mat)
-
   if (is.null(annotation)){
     if (norm){
-      expectation = rowSums(counts_mat /
-                              matrix(counts_info$fragments_per_sample,
-                                     nrow = counts_info$npeak,
-                                     ncol = counts_info$nsample,
+      expectation = rowSums(assays(object)$counts /
+                              matrix(get_fragments_per_sample(object),
+                                     nrow = nrow(object),
+                                     ncol = ncol(object),
                                      byrow = TRUE))
     } else{
-      expectation = counts_info$fragments_per_peak / counts_info$total_fragments
+      expectation = get_fragments_per_peak(object) / get_total_fragments(object)
     }
   } else {
-    anno = as.factor(annotation)
+    if (length(annotation) == 1 && annotation %in% colnames(colData(object))){
+      anno = as.factor(colData(object)[[annotation]])
+    } else if (length(annotation) == ncol(object)){
+      anno = as.factor(annotation)
+    } else{
+      stop("annotation must be vector of length of columns of object, or a character vector referring to name of column in colData of object")
+    }
     n_anno = length(levels(anno))
     mat = matrix(nrow = counts_info$npeak, ncol = n_anno)
     if (norm){
       for (i in 1:n_anno){
         ix = which(anno = levels(anno)[i])
-        mat[,i] = rowSums(counts_mat[,ix] /
-                            matrix(counts_info$fragments_per_sample[ix],
-                                   nrow = counts_info$npeak,
+        mat[,i] = rowSums(assays(object)$counts[,ix] /
+                            matrix(get_fragments_per_sample(object)[ix],
+                                   nrow = nrow(object),
                                    ncol = length(ix),
                                    byrow = TRUE))
       }
     } else{
       for (i in 1:n_anno){
         ix = which(anno = levels(anno)[i])
-        mat[,i] = rowSums(counts_mat[,ix]) / sum(counts_mat[,ix])
+        mat[,i] = rowSums(assays(object)$counts[,ix]) / sum(assays(object)$counts[,ix])
       }
     }
     expectation = rowMeans(mat)
@@ -62,49 +66,54 @@ compute_expectations <- function(counts_mat,
 #' compute_deviations
 #'
 #' Computes deviations across sets of annotations
-#' @param peak_indices list of indices representing different sets of peaks
-#' @param counts_mat matrix with counts
+#' @param object SummarizedExperiment
 #' @param background_peaks background peaks matrix
+#' @param annotations SummarizedExperiment
 #' @param expectation expectations computed using \code{\link{compute_expectations}}
 #' @details multiprocessing using \code{\link[BiocParallel]{bplapply}}
 #' @return  list with two elements: 1) z: matrix with deviation z-scores,
 #' 2) dev: matrix with normalized deviations
 #' @seealso  \code{\link{compute_variability}}, \code{\link{plot_variability}}
 #' @export
-compute_deviations <- function(counts_mat,
-                               background_peaks,
-                               peak_indices = NULL,
+compute_deviations <- function(object,
+                               annotations = NULL,
+                               background_peaks = NULL,
                                expectation = NULL){
 
-  if (inherits(counts_mat,"matrix")){
-    counts_mat = Matrix(counts_mat)
+  stopifnot(inherits(object, "SummarizedExperiment"))
+  
+  if (is.null(assays(object)$counts)) stop("No counts slot")
+  
+  if (inherits(assays(object)$counts,"matrix")){
+    assays(object)$counts = Matrix(counts_mat)
   }
-  stopifnot(inherits(counts_mat,"Matrix"))
-  stopifnot(nrow(counts_mat) == nrow(background_peaks))
-
-  counts_info <- counts_summary(counts_mat)
-  if (min(counts_info$fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
-
-  if (is.null(peak_indices)){
-    peak_indices <- lapply(1:counts_info$npeak, function(x) x)
-  } else if (inherits(peak_indices, "Matrix") || inherits(peak_indices, "matrix")){
-    peak_indices <- convert_to_ix_list(peak_indices)
-  } else if (!is.list(peak_indices) && is.vector(peak_indices)){
-    peak_indices = list(peak_indices)
+  stopifnot(inherits(assays(object)$counts,"Matrix"))
+  
+  if (min(get_fragments_per_peak(object)) <= 0) stop("All peaks must have at least one fragment in one sample")
+  
+  if (is.null(background_peaks)){
+    background_peaks <- get_background_peaks(object)
   }
-  stopifnot(inherits(peak_indices,"list"))  
+  
+  stopifnot(nrow(object) == nrow(background_peaks))
+
+  if (inherits(annotations, "SummarizedExperiment")){
+    peak_indices <- convert_to_ix_list(assays(annotations)$match)
+  } else {
+    stop("peak_indices must be given as SummarizedExperiment with a 'match' slot")
+  }
   
   if (is.null(expectation)){
-    expectation <- compute_expectations(counts_mat)
+    expectation <- compute_expectations(object)
   } else{
-    stopifnot(length(expectation) == nrow(counts_mat))
+    stopifnot(length(expectation) == nrow(object))
   }
 
   # check that indices fall within appropriate bounds
   tmp <- unlist(peak_indices, use.names =F)
   if (is.null(tmp) ||
         !(all.equal(tmp, as.integer(tmp))) ||
-        max(tmp) > counts_info$npeak ||
+        max(tmp) > nrow(object) ||
         min(tmp) < 1){
     stop("peak_indices are not valid")
   }
@@ -113,21 +122,23 @@ compute_deviations <- function(counts_mat,
     names(peak_indices) = 1:length(peak_indices)
   }
 
-  sample_names <- colnames(counts_mat)
+  sample_names <- colnames(object)
 
   results <- BiocParallel::bplapply(peak_indices,
                                       compute_deviations_single,
-                                    counts_mat = counts_mat,
+                                    counts_mat = assays(object)$counts,
                                       background_peaks = background_peaks,
                                     expectation = expectation)
 
-  out <- list()
-  out$z <- t(vapply(results, function(x) x[["z"]], rep(0,counts_info$nsample)))
-  out$dev <- t(vapply(results, function(x) x[["dev"]], rep(0,counts_info$nsample)))
-  out$norm <- t(vapply(results, function(x) x[["norm"]], rep(0,counts_info$nsample)))
+  z <- t(vapply(results, function(x) x[["z"]], rep(0,ncol(object))))
+  dev <- t(vapply(results, function(x) x[["dev"]], rep(0,ncol(object))))
   
-  colnames(out$z) = colnames(out$dev) = colnames(out$norm) = sample_names
+  colnames(z) = colnames(dev) = sample_names
 
+  out <- SummarizedExperiment(assays = list(deviations = dev, z = z), 
+                              colData = colData(object),
+                              rowData = colData(annotations))
+  
   return(out)
 }
 
@@ -189,18 +200,15 @@ compute_deviations_single <- function(peak_set,
 
   normdev <- (observed_deviation - mean_sampled_deviation) 
   z <-  normdev / sd_sampled_deviation
-  normval <- (1 + normdev) * sum(expectation[peak_set]) * 100
-  
+
   if (length(fail_filter) > 0){
     z[fail_filter] = NA
     normdev[fail_filter] = NA
-    normval[fail_filter] = NA
   } 
 
   if (intermediate_results){
     out = list(z = z,
                dev = normdev,
-               norm = normval,
                observed = observed,
                sampled = sampled,
                expected = expected,
@@ -210,8 +218,7 @@ compute_deviations_single <- function(peak_set,
                )
   } else{
     out = list(z = z, 
-               dev = normdev,
-               norm = normval)
+               dev = normdev)
   }
   return(out)
 }

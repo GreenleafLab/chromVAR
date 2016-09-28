@@ -75,11 +75,12 @@ arma::sp_mat get_motif_ix(List mats, const std::vector<std::string> x,
   return out;
 }
 
+
 // [[Rcpp::export]]
-arma::sp_mat get_max_motif_score(List& mats, const std::vector<std::string> x,
-          const std::vector<double> nuc_freqs,
-          const double p,
-          const size_t w){
+List get_motif_ix_plus(List& mats, const std::vector<std::string> x,
+                                 const std::vector<double> nuc_freqs,
+                                 const double p,
+                                 const size_t w){
   size_t n = mats.size();
   std::vector<double> thresholds(2 * n);
   std::vector<score_matrix> matrices(2 * n);
@@ -95,6 +96,7 @@ arma::sp_mat get_max_motif_score(List& mats, const std::vector<std::string> x,
   std::vector<unsigned int> iloc;
   std::vector<unsigned int> jloc;
   std::vector<double> values;
+  std::vector<unsigned int> counts;
   for (size_t i = 0; i < nstrings; i++){
     auto results = scanner.scan(x[i]);
     for (size_t j = 0; j < n; j++){
@@ -105,15 +107,18 @@ arma::sp_mat get_max_motif_score(List& mats, const std::vector<std::string> x,
             max_result = results[j][k].score;
           }
         }
+        unsigned int nhits = results[j].size();
         if (results[n+j].size() > 0){
           for (size_t k = 0; k < results[n+j].size(); k++){
             if (results[n+j][k].score > max_result){
               max_result = results[n+j][k].score;
             }
           }
+          nhits += results[n+j].size();
         }
         iloc.push_back(i);
         jloc.push_back(j);
+        counts.push_back(nhits);
         values.push_back(max_result);
       } else if (results[n+j].size() > 0){
         double max_result = thresholds[j];
@@ -124,6 +129,7 @@ arma::sp_mat get_max_motif_score(List& mats, const std::vector<std::string> x,
         }
         iloc.push_back(i);
         jloc.push_back(j);
+        counts.push_back(results[n+j].size());
         values.push_back(max_result);
       }
     }
@@ -131,11 +137,15 @@ arma::sp_mat get_max_motif_score(List& mats, const std::vector<std::string> x,
   arma::umat locs(2, iloc.size());
   locs.row(0) = arma::conv_to< arma::urowvec >::from(iloc);
   locs.row(1) = arma::conv_to< arma::urowvec >::from(jloc);
-  arma::vec values2 = arma::conv_to< arma::vec>::from(values);
-  arma::sp_mat out = arma::sp_mat(locs, values2, nstrings, n, true, true);
-  return out;
+  //arma::vec values2 = arma::conv_to< arma::vec>::from(values);
+  arma::sp_mat score_mat = arma::sp_mat(locs, arma::conv_to< arma::vec>::from(values), nstrings, n, true, true);
+  arma::vec match_values(iloc.size(), arma::fill::ones);
+  arma::sp_mat match_mat = arma::sp_mat(locs, match_values, nstrings, n, true, true);
+  arma::sp_mat count_mat = arma::sp_mat(locs, arma::conv_to< arma::vec>::from(counts), nstrings, n, true, true);
+  return List::create(Named("scores") = score_mat,
+                      Named("matches") = match_mat,
+                      Named("counts") = count_mat);
 }
-
 
 // [[Rcpp::export]]
 List get_motif_positions(List& mats, const std::vector<std::string> x,

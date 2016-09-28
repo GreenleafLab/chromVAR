@@ -30,23 +30,37 @@ setMethod("get_nuc_freqs", signature(subject = "character"),
 
 ## convert_pwm to adjust background in pwm model ---------------------------------
 
-setGeneric("convert_pwms", function(pwms,...) standardGeneric("convert_pwms"))
+convert_pwms <- function(pwms, bg_freqs) {
+  stopifnot(inherits(pwms, "PWMatrixList"))
+  lapply(pwms, convert_pwm, bg_freqs)
+}
 
-setMethod("convert_pwms", signature(pwms = "PWMatrixList"),
-          function(pwms, bg_freqs) {
-            lapply(pwms, function(x){
-              out = TFBSTools::as.matrix(x)
-              norm_mat = matrix(log(TFBSTools::bg(x)) - log(bg_freqs), nrow = 4, ncol = ncol(out), byrow = FALSE)
-              return(out - norm_mat)})
-          })
+convert_pwm <- function(pwm, bg_freqs){
+    type = pwm_type(pwm)
+    out = TFBSTools::as.matrix(pwm)
+    if (type == "prob"){
+      norm_mat = matrix(bg_freqs, nrow = 4, ncol = length(pwm), byrow = FALSE)
+      out <- log(TFBSTools::as.matrix(pwm) / norm_mat)
+    } else if (type == "log2"){
+      norm_mat = matrix(log2(TFBSTools::bg(pwm)) - log2(bg_freqs), nrow = 4, ncol = length(pwm), byrow = FALSE)
+      out <- log(2**(TFBSTools::as.matrix(pwm) - norm_mat))
+    } else if (type == "log"){
+      norm_mat = matrix(log(TFBSTools::bg(pwm)) - log(bg_freqs), nrow = 4, ncol = length(pwm), byrow = FALSE)
+      out <- TFBSTools::as.matrix(pwm) - norm_mat
+    }
+    return(out)
+}
 
-setMethod("convert_pwms", signature(pwms = "PWMatrix"),
-          function(pwms, bg_freqs) {
-            out = TFBSTools::as.matrix(pwms)
-            norm_mat = matrix(log(TFBSTools::bg(pwms)) - log(bg_freqs), nrow = 4, ncol = ncol(out), byrow = FALSE)
-            return(list(out - norm_mat))
-})
-
-
-
+pwm_type <- function(pwm){
+  # Determine whether un-logged, natural log, or log2
+  if (isTRUE(all.equal(colSums(as.matrix(pwm)), rep(1, length(pwm))))){
+    return("frequency")
+  } else if (isTRUE(all.equal(colSums(2**(as.matrix(pwm)) * matrix(bg(pwm), byrow = FALSE, ncol = length(pwm), nrow = 4)), rep(1, length(pwm))))){
+    return("log2")
+  } else if (isTRUE(all.equal(colSums(exp(as.matrix(pwm)) * matrix(bg(pwm), byrow = FALSE, ncol = length(pwm), nrow = 4)), rep(1, length(pwm))))){
+    return("log")
+  } else{
+    stop("Can't determine format of PWM -- should be numeric frequency summing to 1 or log or log2 odds ratio")
+  }
+}
 

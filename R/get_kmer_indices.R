@@ -1,57 +1,5 @@
-# Functions for finding kmer indices -------------------------------------------
 
-#' get_kmer_indices
-#' 
-#' For each possible kmer of size k, finds which peaks contain 1 or more copies 
-#' of that kmer
-#' @param peak \code{\link[GenomicRanges]{GenomicRanges}} object
-#' @param genome \code{\link[BSgenome]{BSgenome-class}} object, default is hg19
-#' @param k length of kmer, default is 6, must be between 5 and 8
-#' @return list of vectors with indices of peaks containing kmer
-#' @export
-get_kmer_indices <- function(peaks,
-                             genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
-                             k = 6){
-  if (k > 8){
-    stop("k must be less than or equal to 8")
-  }
-  if (k < 5){
-    stop("k must be greater than or equal to 5")
-  }
-  seqs <- Biostrings::getSeq(genome, peaks)
-  kmers <- Biostrings::DNAStringSet(Biostrings::mkAllStrings(c("A","C","G","T"),
-                                                             width = k))
-  kmers <- remove_rc(kmers)
-  
-  out <- match_kmers(kmers, seqs)
-  
-  return(out)
-}
 
-match_kmers <- function(kmers, seqs, var = FALSE){
-  if (is.character(kmers)) kmers = Biostrings::DNAStringSet(kmers)
-  stopifnot(inherits(kmers,"DNAStringSet"))
-  if (!all_true(width(kmers) == width(kmers[1])) || var){
-    indices  <- Biostrings::vwhichPDict(kmers,seqs, fixed = FALSE)
-    indices_rc <- Biostrings::vwhichPDict(kmers,Biostrings::reverseComplement(seqs), 
-                                          fixed = FALSE)
-  } else {
-    pd <- Biostrings::PDict(kmers)
-    indices  <- Biostrings::vwhichPDict(pd,seqs)
-    indices_rc <- Biostrings::vwhichPDict(pd,Biostrings::reverseComplement(seqs))
-  } 
-  indices <- merge_lists(indices, indices_rc, by = "order")
-  indices <- lapply(indices, unique)
-    
-  out <- sparseMatrix(i = unlist(lapply(seq_along(indices),
-                                        function(x) rep(x, length(indices[[x]]))),use.names = FALSE),
-                      j = unlist(indices, use.names = FALSE),
-                      x = 1,
-                      dims = c(length(seqs), length(kmers)),
-                      dimnames = list(NULL, as.character(kmers)))
-  
-  return(out)
-}
 
 
 

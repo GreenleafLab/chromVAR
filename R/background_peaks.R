@@ -1,16 +1,18 @@
-#' get_gc
+#' add_gc_bias
 #' 
 #' Computes GC content for peaks
+#' @param counts_mat SummarizedExperiment
 #' @param peaks GenomicRanges
 #' @param genome BSgenome object
 #' @export
-get_gc <- function(peaks, 
+add_gc_bias <- function(counts_mat, 
                    genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19){
+  peaks <- rowRanges(counts_mat)
   seqs = Biostrings::getSeq(genome, peaks)
   nucfreqs <- Biostrings::letterFrequency(seqs, c("A","C","G","T"))
   gc <- apply(nucfreqs, 1, function(x) sum(x[2:3])/sum(x))
-  mcols(peaks)$gc <- gc 
-  return(peaks)
+  rowData(counts_mat)$bias <- gc 
+  return(counts_mat)
 }
 
 
@@ -18,8 +20,7 @@ get_gc <- function(peaks,
 #' 
 #' Function to get a set of background peaks for each peak based on GC content and # of counts
 #' across all samples
-#' @param counts_mat counts matrix
-#' @param bias vector with bias values for peaks, typically GC content
+#' @param counts_mat SummarizedExperiment
 #' @param niterations number of background peaks to sample
 #' @param w parameter controlling similarity of background peaks
 #' @param bs bin size parameter
@@ -30,17 +31,20 @@ get_gc <- function(peaks,
 #' The w paramter controls how similar background peaks should be.  The bs parameter
 #' controls the precision with which the similarity is computed; increasing bs will
 #' make the function run slower. Sensible default parameters are chosen for both.
+#' @import SummarizedExperiment
 #' @export
-get_background_peaks <- function(counts_mat, bias, niterations = 50, w = 0.1, bs = 50){
-  
-  if (inherits(bias, "GenomicRanges")){
-    bias = mcols(bias)$gc
+get_background_peaks <- function(object, niterations = 50, w = 0.1, bs = 50){
+
+  bias = rowData(object)$bias
+
+  if (is.null(bias)){
+    stop("bias column in rowData must be set!")
   }
   
-  countsum <- counts_summary(counts_mat)
-  if (min(countsum$fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
+  fragments_per_peak <- get_fragments_per_peak(object)
+  if (min(fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
   
-  intensity = log10(countsum$fragments_per_peak)
+  intensity = log10(fragments_per_peak)
   norm_mat = matrix(c(intensity, bias), ncol = 2, byrow = FALSE)
   
   chol_cov_mat <- chol(cov(norm_mat))
@@ -64,39 +68,4 @@ get_background_peaks <- function(counts_mat, bias, niterations = 50, w = 0.1, bs
   return(background_peaks)
 }
 
-
-get_background_peaks_old <- function(counts_mat, bias, niterations = 50, window = 500, with_replacement = TRUE){
-  
-  if (inherits(bias, "GenomicRanges")){
-    bias = mcols(bias)$gc
-  }
-  
-  countsum <- counts_summary(counts_mat)
-  if (min(countsum$fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
-  if (!with_replacement && niterations > window){
-    stop("If with_replacement is FALSE, then niterations must be less than window")
-  }
-  
-  norm_mat <- cbind(countsum$fragments_per_peak, bias)
-  
-  chol_cov_mat <- chol(cov(norm_mat))
-  tmp_vals <- t(forwardsolve(t(chol_cov_mat),t(norm_mat)))
-  
-  grpsize <- 2000
-  grps <- lapply(1:(countsum$npeak %/% grpsize + ((countsum$npeak %% grpsize)!=0)), function(x) ((x-1)*grpsize +1):(min(x*grpsize,countsum$npeak)))
-  
-  bghelper <- function(grp, tmp_vals, with_replacement, niterations){
-    tmp_nns <- nabor::knn(tmp_vals, tmp_vals[grp,], window + 1, eps = 0)$nn.idx
-    if (niterations == 1){
-      return(matrix(sapply(1:nrow(tmp_nns), function(x) sample(tmp_nns[x,][tmp_nns[x,] != grp[x]], niterations, replace = with_replacement)),
-                    ncol = 1))
-    } else{
-      return(t(sapply(1:nrow(tmp_nns), function(x) sample(tmp_nns[x,][tmp_nns[x,] != grp[x]], niterations, replace = with_replacement))))
-    }
-  }
-  
-  background_peaks <- do.call(rbind, BiocParallel::bplapply(grps, bghelper, tmp_vals, with_replacement, niterations))
-  
-  return(background_peaks)
-}
   

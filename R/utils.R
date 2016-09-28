@@ -292,17 +292,7 @@ make_permuted_sets <- function(counts_mat, bias, peak_indices, window = 10){
   return(sets)
 }
 
-# Summarize counts and store summaries in list ---------------------------------
 
-#'@import Matrix
-counts_summary <- function(counts_mat){
-  out <- list(fragments_per_sample = colSums(counts_mat),
-              fragments_per_peak = rowSums(counts_mat),
-              npeak = nrow(counts_mat),
-              nsample = ncol(counts_mat),
-              total_fragments = sum(counts_mat))
-  return(out)
-}
 
 # Convert matrix of indices to list of lists -----------------------------------
 
