@@ -5,3 +5,5 @@ R/motif_crap.R
 R/kmer_experimental.R
 *.png
 README.md
+README.rmd
+README_files
