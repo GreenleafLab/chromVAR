@@ -11,7 +11,7 @@ devtools::install_github("GreenleafLab/chromVAR", auth_token = "my_token")
 
 The argument auth\_token takes in your github [personal acces token](https://github.com/settings/applications). This token is needed because at the moment this repository is private.
 
-A number of needed packages are installed in this process. Note that for functions that require a genome sequence, the package [BSgenome.Hsapiens.UCSC.hg19](https://bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg19.html) is used as a default argument. However that package will not be automatically installed -- if using the default argument and that genome build, you will need to install that package. If using another genome build, the appropraiate BSgenome object for your species should be passed to functions requiring a genome build (e.g. `get_motif_indices`, `get_gc`, and `get_kmer_indices`).
+A number of needed packages are installed in this process. Note that for functions that require a genome sequence, the package [BSgenome.Hsapiens.UCSC.hg19](https://bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg19.html) is used as a default argument. However that package will not be automatically installed -- if using the default argument and that genome build, you will need to install that package. If using another genome build, the appropraiate BSgenome object for your species should be passed to functions requiring a genome build (e.g. `match_pwms`, `add_gc_bias`).
 
 Depending on your repository settings, the Bioconductor dependencies may fail to install. Use `setRepositories(graphics=F)` to see what repositories you have activated and to add the BioC software repository if need be.
 
@@ -22,77 +22,6 @@ Use library or require to load package.
 
 ``` r
 library(chromVAR)
-```
-
-    ## Loading required package: Matrix
-
-    ## Loading required package: SummarizedExperiment
-
-    ## Loading required package: GenomicRanges
-
-    ## Loading required package: BiocGenerics
-
-    ## Loading required package: parallel
-
-    ## 
-    ## Attaching package: 'BiocGenerics'
-
-    ## The following objects are masked from 'package:parallel':
-    ## 
-    ##     clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
-    ##     clusterExport, clusterMap, parApply, parCapply, parLapply,
-    ##     parLapplyLB, parRapply, parSapply, parSapplyLB
-
-    ## The following objects are masked from 'package:stats':
-    ## 
-    ##     IQR, mad, xtabs
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     anyDuplicated, append, as.data.frame, cbind, colnames,
-    ##     do.call, duplicated, eval, evalq, Filter, Find, get, grep,
-    ##     grepl, intersect, is.unsorted, lapply, lengths, Map, mapply,
-    ##     match, mget, order, paste, pmax, pmax.int, pmin, pmin.int,
-    ##     Position, rank, rbind, Reduce, rownames, sapply, setdiff,
-    ##     sort, table, tapply, union, unique, unsplit
-
-    ## Loading required package: S4Vectors
-
-    ## Loading required package: stats4
-
-    ## 
-    ## Attaching package: 'S4Vectors'
-
-    ## The following objects are masked from 'package:Matrix':
-    ## 
-    ##     colMeans, colSums, expand, rowMeans, rowSums
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     colMeans, colSums, expand.grid, rowMeans, rowSums
-
-    ## Loading required package: IRanges
-
-    ## Loading required package: GenomeInfoDb
-
-    ## Loading required package: Biobase
-
-    ## Welcome to Bioconductor
-    ## 
-    ##     Vignettes contain introductory material; view with
-    ##     'browseVignettes()'. To cite Bioconductor, see
-    ##     'citation("Biobase")', and for packages 'citation("pkgname")'.
-
-    ## Warning: replacing previous import 'Matrix::Matrix' by 'TFBSTools::Matrix'
-    ## when loading 'chromVAR'
-
-    ## Warning: replacing previous import 'ggplot2::last_plot' by
-    ## 'plotly::last_plot' when loading 'chromVAR'
-
-    ## Warning: replacing previous import 'TFBSTools::tags' by 'shiny::tags' when
-    ## loading 'chromVAR'
-
-``` r
 library(chromVARexamples)
 ```
 
@@ -180,7 +109,7 @@ Unless `plot = FALSE` given as argument to function `filter_samples`, a plot wil
 
 ``` r
 #find indices of samples to keep
-counts_filtered = filter_samples(counts, shiny = FALSE)
+counts_filtered <- filter_samples(counts, shiny = FALSE)
 ```
 
     ## min_in_peaks set to 0.25
@@ -193,7 +122,7 @@ To get just the plot of what is filtered, use `filter_samples_plot`. By default,
 
 ``` r
 #find indices of samples to keep
-filtering_plot = filter_samples_plot(counts, interactive = FALSE)
+filtering_plot <- filter_samples_plot(counts, interactive = FALSE)
 ```
 
     ## min_in_peaks set to 0.25
@@ -209,13 +138,13 @@ filtering_plot
 To instead return the indexes of the samples to keep instead of a new SummarizedExperiment object, use ix\_return = TRUE.
 
 ``` r
-ix= filter_samples(counts, ix_return = TRUE, shiny = FALSE)
+ix <- filter_samples(counts, ix_return = TRUE, shiny = FALSE)
 ```
 
 For both bulk and single cell data, peaks should be filtered based on having at least a certain number of fragments. At minimum, each peak should have at least one fragment across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data). Otherwise, downstream functions won't work. The function `filter_peaks` will also reduce the peak set to non-overlapping peaks (keeping the peak with higher counts for peaks that overlap) if non\_overlapping argument is set to TRUE (which is default).
 
 ``` r
-counts_filtered = filter_peaks(counts_filtered, non_overlapping = TRUE)
+counts_filtered <- filter_peaks(counts_filtered, non_overlapping = TRUE)
 ```
 
 Get motifs and what peaks contain motifs
