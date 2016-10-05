@@ -3,8 +3,8 @@ match_kmers_inner_helper <- function(kmers, seqs, var = FALSE){
   if (is.character(kmers)) kmers = Biostrings::DNAStringSet(kmers)
   stopifnot(inherits(kmers,"DNAStringSet"))
   if (!all_true(width(kmers) == width(kmers[1])) || var){
-    indices  <- Biostrings::vwhichPDict(kmers,seqs, fixed = FALSE)
-    indices_rc <- Biostrings::vwhichPDict(kmers,Biostrings::reverseComplement(seqs), 
+    indices  <- Biostrings::vwhichPDict(kmers, seqs, fixed = FALSE)
+    indices_rc <- Biostrings::vwhichPDict(kmers, Biostrings::reverseComplement(seqs), 
                                           fixed = FALSE)
   } else {
     pd <- Biostrings::PDict(kmers)
@@ -45,7 +45,7 @@ match_kmers_helper <- function(seqs, kmers, out, ranges){
   
   if (out == "matches"){
     kmer_ix <- match_kmers_inner_helper(kmers, seqs)
-    out <- SummarizedExperiment(assays = list(match = kmer_ix), rowRanges = peaks)
+    out <- SummarizedExperiment(assays = list(match = kmer_ix), rowRanges = ranges)
   } else if (out == "positions"){
     stopifnot(!is.null(ranges))
     out <- lapply(kmers, get_kmer_positions, ranges, seqs)
@@ -76,7 +76,7 @@ setMethod("match_kmers", signature(k = "character", subject = "DNAStringSet"),
           function(k, subject, genome = NULL, out = c("matches","positions"), ranges = NULL){
             out = match.arg(out)
             
-            seqs <- as.character(subject)
+            seqs <- subject
             
             match_kmers_helper(seqs, k, out, ranges)
           })
@@ -87,7 +87,7 @@ setMethod("match_kmers", signature(k = "character", subject = "character"),
           function(k, subject, out = c("matches","positions"), ranges = NULL ){
             out = match.arg(out)
             
-            match_kmers_helper(seqs, k, out, ranges)
+            match_kmers_helper(DNAStringSet(seqs), k, out, ranges)
           })
 
 #' @describeIn match_kmers
@@ -108,8 +108,6 @@ setMethod("match_kmers", signature( k = "character", subject = "GenomicRanges"),
             out = match.arg(out)
             GenomicRanges::strand(subject) <- "+"
             seqs <- getSeq(genome, subject)
-            
-            seqs <- as.character(seqs)
             
             match_kmers_helper(seqs, k, out, subject)
           })
@@ -140,7 +138,7 @@ setMethod("match_kmers", signature(k = "numeric", subject = "ANY"),
 setMethod("match_kmers", signature(k = "DNAStringSet", subject = "ANY"),
           function(k, subject, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, out = c("matches","counts","positions"), ranges = NULL){
             out = match.arg(out)
-            kmers <- as.character(kmers)
+            kmers <- as.character(k)
             match_kmers(kmers, subject, genome, out, ranges)
           })
 
@@ -150,7 +148,7 @@ setMethod("match_kmers", signature(k = "DNAStringSet", subject = "ANY"),
 setMethod("match_kmers", signature(k = "DNAString", subject = "ANY"),
           function(k, subject,  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, out = c("matches","counts","positions"), ranges = NULL){
             out = match.arg(out)
-            kmers <- as.character(kmers)
+            kmers <- as.character(k)
             match_kmers(kmers, subject, genome, out, ranges)
           })
 
