@@ -60,7 +60,8 @@ compute_variability <- function(object,
                         p_value = p_sd,
                         p_value_adj = p_adj,
                         row.names = rownames(object))    
-  } 
+    } 
+
   return(out)
 }
 

@@ -74,46 +74,6 @@ chromVAR_theme <-function(base_size = 12, base_family="Helvetica"){
           plot.background = element_blank())
 }
 
-
-pretty_scientific <- function(l) {
-  # format as scientific
-  l <- format(l, nsmall = 0, scientific = TRUE)
-  # remove + sign
-  l <- gsub("+", "", l, fixed=T)
-  # break into prefix and suffix
-  pre <- sapply(l, function(x) substr(x,1,gregexpr("e",x)[[1]][1]-1))
-  post <- format(as.numeric(sapply(l, function(x) substr(x,gregexpr("e",x)[[1]][1]+1,nchar(x)))))
-  # combine prefix and suffix with plotmath
-  out <- sapply(1:length(l), function(x) paste(pre[x],"%*%10^",post[x],sep="",collapse=""))
-  out[which(pre=="")]=NA
-  # return as expression
-  return(parse(text=out))
-}
-
-
-order_of_magnitude <- function(x){
-  if (x==0){
-    return(0)
-  }
-  else if (x< 0){
-    x = -1 * x
-  }
-  return(floor(log10(x)))
-}
-
-
-pretty_scale_format <- function(l){
-  digits = order_of_magnitude(max(l)) - order_of_magnitude(min(diff(l))) + 2
-  l = signif(l, digits = digits)
-  if (max(l)>1000){
-    return(pretty_scientific(l))
-  }
-  else if (max(l)<0.001){
-    return(pretty_scientific(l))
-  }
-  else{return(format(l, nsmall = 0))}
-}
-
 cor_dist <- function(x){
   as.dist(1 - cor(t(x), use = "pairwise.complete.obs"))
 }
@@ -122,271 +82,253 @@ cor_dist <- function(x){
 #' plot_deviations
 #' 
 #' plot heatmap of deviations
-#' @param X deviations matrix (either z-score or fold change)
-#' @param xlabel label for x axis
-#' @param ylabel label for y axis
-#' @param name title for plot
-#' @param cluster_row cluster rows?
-#' @param cluster_col cluster columns?
-#' @param cluster_row_dist distance function to use for clustering rows
-#' @param cluster_col_dist distance function to use for clustering columns
+#' @param object 
+#' @param what "z" or "deviations"
+#' @param cluster_rows cluster rows?
+#' @param cluster_cols cluster columns?
 #' @param sample_annotation annotation of sample
-#' @return ggplot object
+#' @param show_rownames show row names?
+#' @param show_colnames show column names?
+#' @return pheatmap output
+#' @import pheatmap
 #' @export
-plot_deviations <- function(X, 
-                            xlabel = NA, 
-                            ylabel = NA,  
-                            name = NA, 
-                            cluster_row = TRUE, 
-                            cluster_col = TRUE, 
-                            cluster_row_dist = cor_dist, 
-                            cluster_col_dist = cor_dist,
-                            sample_annotation = NULL,
-                            set_names = NULL){
-  if (!is.factor(sample_annotation)){
-    sample_annotation = as.factor(sample_annotation)
-  }
-  if (cluster_row){
-    rowclust = hclust(cluster_row_dist(X))
-    X = X[rowclust$order,]
-    if (!is.null(set_names)){
-      set_names = set_names[rowclust$order]
-    } 
-  }
-  if (cluster_col){
-    colclust = hclust(cluster_col_dist(t(X)))
-    X = X[,colclust$order]
-    if (!is.null(sample_annotation)){
-      sample_annotation = sample_annotation[colclust$order]
-    }
+plot_deviations_heatmap <- function(object, top = 100, what = c("z","deviations"),
+                            cluster_rows = TRUE, cluster_cols = TRUE,
+                            sample_annotation = colData(object), 
+                            show_rownames = FALSE, show_colnames = FALSE, ...){
+  
+  what <- match.arg(what)
+  
+  x <- if (what =="z") assays(object)$z else assays(object)$deviations
+ 
+  if (top < nrow(object)){
+    vars <- compute_variability(object, bootstrap_error = FALSE)$variability
+    x <- x[which(vars > quantile(vars, 1 - (top/length(vars)))),]
   }
   
-  df = cbind(data.frame("y" = factor(rownames(X), levels = rownames(X), ordered=T)),X)
-  mdf = reshape2::melt(df, id = "y")
-  p = ggplot(mdf, aes(x=variable, y=y)) + 
-    geom_raster(aes(fill=value)) + 
-    theme(
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      panel.background = element_blank(),
-      axis.line = element_blank(),
-      axis.ticks.x = element_blank(),
-      axis.ticks.y = element_blank(),
-      axis.text.y = element_text(size = 6),
-      axis.text.x = element_text(angle=90, vjust = 0.5, hjust = 1, size = 6),
-      plot.margin = grid::unit(c(0.1,0.1,0.1,0.1),"cm")
-    )
-  if (cluster_row){
-    dendro_row = ggdendro::dendro_data(rowclust)
-    dendro_segments_row = dendro_row$segments
-    dendro_segments_row[,c("y","yend")] = (dendro_segments_row[,c("y","yend")] * sqrt(nrow(X)*ncol(X)) / max(dendro_segments_row[,c("y","yend")]) * 0.4) + ncol(X) + 1
-    p = p + geom_segment(data = dendro_segments_row,  mapping = aes(x=y,xend=yend, y = x, yend = xend, col=NULL))
-  }
-  if (cluster_col){
-    dendro_col = ggdendro::dendro_data(colclust)
-    dendro_segments_col = dendro_col$segments
-    dendro_segments_col[,c("y","yend")] = (dendro_segments_col[,c("y","yend")]* sqrt(nrow(X)*ncol(X)) / max(dendro_segments_col[,c("y","yend")])  * 0.4) + nrow(X) + 1
-    p = p + geom_segment(data = dendro_segments_col,  mapping = aes(x=x,xend=xend, y = y, yend = yend, col=NULL))
-  }
-  
-  colors = c(scales::muted("blue"),"white",scales::muted("red"))
-  limits = c(min(mdf$value,na.rm=T), max(mdf$value,na.rm=T))
-  guidebreaks = c(limits[1],0,limits[2])
-
-  p = p + scale_fill_gradient2(name = "Deviation\nScore",limits = limits,low = colors[1], mid = colors[2], high = colors[3], 
-                               breaks = guidebreaks, label = pretty_scale_format, expand=c(0,0), midpoint = 0)
-  if (!is.null(set_names)){
-    p = p + scale_y_discrete(labels = as.character(set_names))  
-  }
-  if (!is.na(xlabel)){
-    p = p + xlab(xlabel)
-  } else{
-    p = p + theme(axis.title.x = element_blank())
-  }
-  if (!is.na(ylabel)){
-    p = p + ylab(ylabel)
-  } else{
-    p = p + theme(axis.title.y = element_blank())
-  }  
-  if (!is.na(name)){
-    p = p + ggtitle(name)
-  }
-  if (!is.null(sample_annotation)){  
-    if ( length(levels(sample_annotation)) <= 8){
-      cols = RColorBrewer::brewer.pal(n  = length(levels(sample_annotation)), "Dark2")   
-    } else{
-      cols = hue_pal()(length(levels(sample_annotation)))
-    }      
-    anno_col = cols[as.integer(sample_annotation)]
-    tmp_df = data.frame(x = 1:ncol(X),  y = -2.75,  z = sample_annotation)
-    p = p +  annotate("rect",xmin = 1:ncol(X) -0.5, xmax = 1:ncol(X) + 0.5, ymax = -1.5, ymin = min(-2 - nrow(X) *0.025,-3), col = anno_col,
-                      fill = anno_col) + geom_point(data = tmp_df, 
-                        mapping= aes(x = x, y =y, colour = z, fill = NULL), size = 0)+ 
-      theme(legend.box = "horizontal", legend.background=element_blank(), axis.text.x = element_blank())
-    if ( length(levels(sample_annotation)) <= 8){
-      p = p + scale_color_brewer(name = "Sample\nAnnotation", palette = "Dark2") 
-
-    } else{
-      p = p + scale_color_discrete(name = "Sample\nAnnotation")
-    }
-  }
-  return(p)
-}
-
-plot_deviations2 <- function(X, 
-                            xlabel = NA, 
-                            ylabel = NA,  
-                            name = NA, 
-                            cluster_row = TRUE, 
-                            cluster_col = TRUE, 
-                            cluster_row_dist = cor_dist, 
-                            cluster_col_dist = cor_dist,
-                            sample_annotation = NULL,
-                            set_names = NULL){
-  
-  if (cluster_row){
-    rowclust = hclust(cluster_row_dist(X))
-    X = X[rowclust$order,]
-    if (!is.null(set_names)){
-      set_names = set_names[rowclust$order]
-    }
-  }
-  if (cluster_col){
-    colpc = prcomp(X)
+  if (isTRUE(cluster_cols)){
+    colpc = prcomp(x)
     colpci = summary(colpc)$importance[2,]
-    colclust = hclust(cluster_col_dist(colpc$rotation[,which(colpci > 0.01)]))
-    X = X[,colclust$order]
-    if (!is.null(sample_annotation)){
-      sample_annotation = sample_annotation[colclust$order]
-    }
+    cluster_cols = hclust(dist(colpc$rotation[,which(colpci > 0.01)]))
   }
   
-  df = cbind(data.frame("y" = factor(rownames(X), levels = rownames(X), ordered=T)),X)
-  mdf = reshape2::melt(df, id = "y")
-  p = ggplot(mdf, aes(x=variable, y=y)) + 
-    geom_raster(aes(fill=value)) + 
-    theme(
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      panel.background = element_blank(),
-      axis.line = element_blank(),
-      axis.ticks.x = element_blank(),
-      axis.ticks.y = element_blank(),
-      axis.text.y = element_text(size = 6),
-      axis.text.x = element_text(angle=90, vjust = 0.5, hjust = 1, size = 6),
-      plot.margin = grid::unit(c(0.1,0.1,0.1,0.1),"cm")
+  pheatmap(x, cluster_cols = cluster_cols, cluster_rows = cluster_rows, 
+           annotation_col = as.data.frame(sample_annotation), show_rownames = show_rownames,
+           show_colnames = show_colnames, ...)
+  
+}
+
+#' deviations_tsne
+#'
+#' @param object deviations result
+#' @param threshold variability threshold -- use only deviations with variability greater than threshold
+#' @param perplexity perplexity parameter for tsne
+#' @param shiny output shiny gadget for choosing parameters & visualizing results
+#' @param ... 
+#'
+#' @return list with three elements: threshold used, perplexity used, tsne results 
+#' from \code{\link[Rtsne]{Rtsne}}
+#' @export
+#'
+#' @examples
+deviations_tsne <- function(object,
+                            threshold = 1.5, 
+                            perplexity = 30,
+                            shiny = interactive(),
+                            ...){
+  
+  if (shiny){
+    return(deviations_tsne_shiny(object, threshold, perplexity))
+  } else{
+    vars <- row_sds(assays(object)$z, FALSE)
+    if (threshold > max(vars, na.rm = TRUE)) stop("threshold too high")
+    ix <- which(vars > threshold)
+    tsne_res <- Rtsne::Rtsne(t(assays(object)[["deviations"]][ix,]))
+    out <- list(threshold = threshold, perplexity = perplexity, tsne = tsne_res)
+    return(out)
+  }
+}
+
+
+deviations_tsne_shiny <- function(object, threshold = 1.5, perplexity = 30){
+  
+  
+  vars <- row_sds(assays(object)$z, FALSE)
+  if (threshold > max(vars, na.rm = TRUE)) threshold <- quantile(vars[which(vars > 1)], 0.8)
+  
+  #starting_value <- median(vars[which(vars > 1)])
+  
+  ui <- miniPage(
+    gadgetTitleBar("tsne visualization: adjust parameters on left"),
+    fillRow(miniContentPanel(fillCol(
+                             sliderInput("perplexity", "Perplexity", min = 3, max = floor(ncol(object)/2), value = perplexity, round = TRUE),
+                             sliderInput("threshold", "Variability threshold", min = 1, max = round(max(vars, na.rm = TRUE),digits = 2), 
+                                 value = threshold),
+                             selectInput("color", "color by", choices = c("none",colnames(colData(object)),
+                                                                  rownames(object)[order(vars, decreasing = TRUE)]), selected = "none"))),
+    miniContentPanel(plotlyOutput("plot1", height = "100%")), width = "95%", height ="95%"
     )
-  if (cluster_row){
-    dendro_row = ggdendro::dendro_data(rowclust)
-    dendro_segments_row = dendro_row$segments
-    dendro_segments_row[,c("y","yend")] = (dendro_segments_row[,c("y","yend")] * sqrt(nrow(X)*ncol(X)) / max(dendro_segments_row[,c("y","yend")]) * 0.4) + ncol(X) + 1
-    p = p + geom_segment(data = dendro_segments_row,  mapping = aes(x=y,xend=yend, y = x, yend = xend, col=NULL))
-  }
-  if (cluster_col){
-    dendro_col = ggdendro::dendro_data(colclust)
-    dendro_segments_col = dendro_col$segments
-    dendro_segments_col[,c("y","yend")] = (dendro_segments_col[,c("y","yend")]* sqrt(nrow(X)*ncol(X)) / max(dendro_segments_col[,c("y","yend")])  * 0.4) + nrow(X) + 1
-    p = p + geom_segment(data = dendro_segments_col,  mapping = aes(x=x,xend=xend, y = y, yend = yend, col=NULL))
+  )
+  
+  server <- function(input, output, session) {
+    
+    
+    get_tsne <- reactive({
+      Rtsne::Rtsne(t(assays(object)[["deviations"]][which(vars > input$threshold),]),
+                   perplexity = input$perplexity)
+    })
+    
+    # Render the plot
+    output$plot1 <- renderPlotly({
+      tsne <- get_tsne()
+      
+      if (input$color == "none"){
+        p1 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], text = colnames(object)),
+                    aes(x = x, y = y,  text = text))  + 
+          geom_point(size = 2) + chromVAR_theme(12) + 
+          xlab("tSNE dim 1") + ylab("tSNE dim 2")
+      } else if (input$color %in% colnames(colData(object))){
+        p1 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = colData(object)[,input$color], text = colnames(object)),
+                  aes(x = x, y = y, col = color, text = text))  + 
+        geom_point(size = 2) + chromVAR_theme(12) + 
+        labs(col = input$color) + 
+        xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+      } else{
+        p1 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = assays(object[input$color,])[["deviations"]][1,], text = colnames(object)),
+                    aes(x = x, y = y, col = color, text = text)) + geom_point(size= 2) +
+          scale_color_gradient2(name = rowData(object[input$color,])[,"name"],mid = "lightgray", low = "blue", high = "red") + chromVAR_theme(12) +
+          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+      }
+      ggplotly(p1)
+    })
+    
+    observeEvent(input$done, {
+      stopApp(list(perplexity = input$perplexity, threshold = input$threshold, tsne = get_tsne()))
+    })
+    
   }
   
-  colors = c(scales::muted("blue"),"white",scales::muted("red"))
-  limits = c(min(mdf$value,na.rm=T), max(mdf$value,na.rm=T))
-  guidebreaks = c(limits[1],0,limits[2])
   
-  p = p + scale_fill_gradient2(name = "Deviation\nScore",limits = limits,low = colors[1], mid = colors[2], high = colors[3], 
-                               breaks = guidebreaks, label = pretty_scale_format, expand=c(0,0), midpoint = 0)
-  if (!is.null(set_names)){
-    p = p + scale_y_discrete( labels = as.character(set_names))  
-  }
-  if (!is.na(xlabel)){
-    p = p + xlab(xlabel)
-  } else{
-    p = p + theme(axis.title.x = element_blank())
-  }
-  if (!is.na(ylabel)){
-    p = p + ylab(ylabel)
-  } else{
-    p = p + theme(axis.title.y = element_blank())
-  }  
-  if (!is.na(name)){
-    p = p + ggtitle(name)
-  }
-  if (!is.null(sample_annotation)){  
-    cols = RColorBrewer::brewer.pal(n  = length(levels(sample_annotation)), "Dark2")
-    anno_col = cols[as.integer(sample_annotation)]
-    tmp_df = data.frame(x = 1:ncol(X),  y = -2.75,  z = anno)
-    p = p +  annotate("rect",xmin = 1:ncol(X) -0.5, xmax = 1:ncol(X) + 0.5, ymax = -1.5, ymin = min(-2 - nrow(X) *0.025,-3), col = anno_col,
-                      fill = anno_col) + geom_point(data = tmp_df, 
-                                                    mapping= aes(x = x, y =y, colour = z, fill = NULL), size = 0) + 
-      scale_color_brewer(name = "Sample\nAnnotation", palette = "Dark2") + theme(legend.box = "horizontal", legend.background=element_blank(), axis.text.x = element_blank())
-  }
-  return(p)
+  runGadget(ui, server)
   
 }
 
 
 
-# Plotting kmer group ----------------------------------------------------------
+variability_table <- function(var_df){
+  DT::datatable(var_df, options = list(order = list(2,'desc'), pageLength = 5),
+                selection = "single") %>% DT::formatSignif(colnames(var_df), 3)
+}
 
-#'@export
-plot_kmer_group <- function(a, similar_motifs = NULL, plot.consensus = TRUE){
-  p = ggplot()
-  for (i in 1:nrow(a)){
-    p = p + ggmotif(a$kmer[i], y.pos = (nrow(a)-i)*1.25, x.pos = a$shift[i])
-  }  
-  anno_df = data.frame(y = (nrow(a)-1)*1.25+0.5, label = "kmers")
-  if (plot.consensus){  
-    consensus = Biostrings::consensusMatrix(Biostrings::DNAStringSet(a$kmer),
-                                            shift = a$shift - min(a$shift))[1:4,]
-    consensus_shift = align_pwms(consensus, seq_to_pwm(a$kmer[1]), both_strands = FALSE)$pos
-    tmp_y = min(sapply(ggplot_build(p)$data, function(obj) min(obj$y))) - 2
-    p = p + ggmotif(consensus / matrix(apply(consensus,2,sum),nrow = 4, ncol=ncol(consensus),byrow=TRUE), 
-                    y.pos = tmp_y, 
-                    x.pos = consensus_shift)
-    anno_df = rbind(anno_df, data.frame(y = tmp_y + 0.5, label = "Consensus"))
-  }
-  if (!is.null(similar_motifs)){
-    if (!plot.consensus){
-      consensus = Biostrings::consensusMatrix(Biostrings::DNAStringSet(a$kmer),
-                                              shift = a$shift - min(a$shift))[1:4,]
-      consensus_shift = align_pwms(consensus, seq_to_pwm(a$kmer[1]), both_strands = FALSE)$pos
+
+#' plot_deviations_tsne
+#'
+#' @param object deviations result object
+#' @param tsne result from \code{\link{deviations_tsne}}
+#' @param var_df variability result
+#' @param annotation_column column name for colData(object) of annotation to be used
+#' for coloring samples
+#'
+#' @return shiny widget
+#' @export
+#'
+#' @examples
+plot_deviations_tsne <- function(object,
+                                 tsne,
+                                 var_df = NULL,
+                                 annotation_column = NULL,
+                                 motif = NULL,
+                                 shiny = interactive()){
+  
+  if (shiny) return(plot_deviations_tsne_shiny(object, tsne, var_df, annotation_column))
+  
+  stopifnot(annotation_column %in% colnames(colData(object)))
+  anno = colData(object)[,annotation_column]
+  
+  if ("tsne" %in% names(tsne)) tsne <- tsne$tsne
+  
+  out <- list()
+  if (!is.null(annotation_column)){
+    for (i in annotation_column){
+      anno = colData(object)[,i]
+      out[[i]] =ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = anno, text = colnames(object)),
+             aes(x = x, y = y, col = color, text = text))  + 
+        geom_point(size = 2) + chromVAR_theme(12) + 
+        scale_color_brewer(palette = "Dark2", name = i) + 
+        xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
     }
-    tmp_y = min(sapply(ggplot_build(p)$data, function(obj) min(obj$y))) - 2
-    if (inherits(similar_motifs,"PFMatrixList")){
-      similar_motifs = TFBSTools::PWMatrixList(lapply(similar_motifs, TFBSTools::toPWM))
-    }    
-    for (i in 1:length(similar_motifs)){
-      if (inherits(similar_motifs[[i]],"PWMatrix")){
-        m = exp(as.matrix(similar_motifs[[i]]))*matrix(bg(similar_motifs[[i]]), 
-                                                       nrow = 4, ncol =length(similar_motifs[[i]]), byrow = FALSE)
-      } else if (inherits(similar_motifs[[i]],"PFMatrix")){
-        m = as.matrix(similar_motifs[[i]])
+  }
+  if (!is.null(motif)){
+    for (i in motif){
+      if (i %in% rownames(object)){
+        ix <- motif
+      } else if (i %in% rowData(object)$name){
+        ix <- which(rowData(object)$name == i)
+        if (length(ix) > 1) ix <- ix[which.max(row_sds(assays(object[ix,])$z))]
+      } else if (is.numeric(i)){
+        ix <- i
+      } else{
+        stop("motif name invalid")
       }
-      m = m / matrix(apply(m,2,sum), nrow = 4, ncol = ncol(m), byrow = TRUE)
-      tmp_a = align_pwms(m, consensus, both_strands = TRUE)
-      tmp_shift = tmp_a$pos[1] + consensus_shift
-      if (tmp_a$strand[1] == -1) m = Biostrings::reverseComplement(m)
-      p = p + ggmotif(m, 
-                      y.pos = tmp_y - (i-1) * 1.25, 
-                      x.pos = tmp_shift)
-      anno_df = rbind(anno_df, data.frame(y = tmp_y - (i-1) * 1.25 + 0.5, label = name(similar_motifs[[i]])))
+      out[[i]] <- ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = assays(object)[["deviations"]][ix,], text = colnames(object)),
+                         aes(x = x, y = y, col = color, text = text)) + geom_point(size= 2) +
+        scale_color_gradient2(name = rowData(object)[ix,"name"],mid = "lightgray", low = "blue", high = "red") + chromVAR_theme(12) +
+        xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
     }
   }
-  
-  out = p + ggmotif_scale() + ggmotif:::ggmotif_theme() +
-    scale_x_continuous(breaks = 0:max(sapply(1:nrow(a), function(x) nchar(a$kmer[x]) + a$shift[x]))) +
-    scale_y_continuous(breaks = anno_df$y, labels = anno_df$label) +
-    xlab("position relative to start of seed kmer (bp)") +
-    theme(axis.line = element_blank(),
-          axis.text.x = element_blank(),
-          axis.text.y = element_text(face="bold",size=12),
-          axis.ticks = element_blank(),
-          axis.title = element_blank())
-  
   return(out)
 }
 
-
-
-
+plot_deviations_tsne_shiny <- function(object,
+                                 tsne,
+                                 var_df,
+                                 annotation_column){
+  
+  if (is.null(var_df)) var_df <- compute_variability(object)
+  stopifnot(!is.null(annotation_column))
+  stopifnot(annotation_column %in% colnames(colData(object)))
+  anno = colData(object)[,annotation_column]
+  
+  if ("tsne" %in% names(tsne)) tsne <- tsne$tsne
+  
+  ui <- fluidPage(
+    titlePanel("Select row of table:"),
+    fluidRow(column(10,DT::dataTableOutput('tbl', width = 500),offset = 1)),
+    fluidRow(column(6,plotlyOutput("plot1")),
+             column(6,plotlyOutput("plot2")))
+  )
+  
+  var_tab <- variability_table(var_df)
+  
+  server <- function(input, output, session) {
+    
+    
+    output$tbl = DT::renderDataTable(
+      var_tab
+    )
+    
+    # Render the plot
+    output$plot1 <- renderPlotly({
+      p1 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = anno, text = colnames(object)),
+                  aes(x = x, y = y, col = color, text = text))  + 
+        geom_point(size = 2) + chromVAR_theme(12) + 
+        scale_color_brewer(palette = "Dark2", name = annotation_column) + 
+        xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+      ggplotly(p1)
+    })
+    
+    output$plot2 <- renderPlotly({
+      s = input$tbl_rows_selected
+      if (length(s) == 0) return(NULL)
+      p2 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = assays(object)[["deviations"]][s,], text = colnames(object)),
+                  aes(x = x, y = y, col = color, text = text)) + geom_point(size= 2) +
+        scale_color_gradient2(name = rowData(object)[s,"name"],mid = "lightgray", low = "blue", high = "red") + chromVAR_theme(12) +
+        xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+      ggplotly(p2)
+    })
+    
+  }
+  
+  shinyApp(ui, server, options = list(width = 750))
+}
 

@@ -224,3 +224,22 @@ plot_variability(variability, interactive = FALSE)
 The function `compute_variability` returns a data.frame that contains the variability (standard deviation of the z scores computed above across all cell/samples for a set of peaks), bootstrap confidence intervals for that variability (by resampling cells/samples), and a p-value for the variability being greater than the null hypothesis of 1.
 
 `plot_variability` takes the output of `compute_variability` and returns a plot of rank sorted annotation sets and their variability. By default, the plot will be interactive, unless you set `interactive = FALSE`.
+
+Visualizing Deviations
+----------------------
+
+For visualizing cells, it can be useful to project the deviation values into two dimension using TSNE. A convenience function for doing so is provided in `deviations_tsne`. If running in an interactive session, shiny can be set to TRUE to load up a shiny gadget for exploring parameters.
+
+``` r
+tsne_results <- deviations_tsne(deviations, threshold = 1.3, perplexity = 45, shiny = FALSE)
+```
+
+To plot the results, `plot_deviations_tsne` can be used. If running in an interactive session or an interactive Rmarkdown document, shiny can be set to TRUE to generate a shiny widget. Here we will show static results.
+
+``` r
+plot_deviations_tsne(deviations, tsne_results, motif = "RELA", shiny = FALSE)
+```
+
+    ## $RELA
+
+![](README_files/figure-markdown_github/unnamed-chunk-20-1.png)

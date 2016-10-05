@@ -13,5 +13,7 @@ get_jaspar_motifs <- function(species = "Homo sapiens", collection = "CORE", ...
   opts['species'] = species
   opts['collection'] = collection
   opts = c(opts, list(...))
-  TFBSTools::getMatrixSet(JASPAR2016::JASPAR2016, opts)
+  out <- TFBSTools::getMatrixSet(JASPAR2016::JASPAR2016, opts)
+  if (!isTRUE(all.equal(TFBSTools::name(out), names(out)))) names(out) <- paste(names(out), TFBSTools::name(out), sep="_")
+  return(out)
 }
