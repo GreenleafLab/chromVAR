@@ -263,39 +263,46 @@ compute_deviations_single_no_bg <- function(peak_set,
   return(observed_deviation)
 }
 
-compute_deviations_no_bg <- function(counts_mat,
-                               peak_indices = NULL,
-                               expectation = NULL){
+compute_deviations_no_bg <- function(object,
+                                     annotations = NULL,
+                                     background_peaks = NULL,
+                                     expectation = NULL){
   
-  if (inherits(counts_mat,"matrix")){
-    counts_mat = Matrix(counts_mat)
+  stopifnot(inherits(object, "SummarizedExperiment"))
+  
+  if (is.null(assays(object)$counts)) stop("No counts slot")
+  
+  if (inherits(assays(object)$counts,"matrix")){
+    assays(object)$counts = Matrix(counts_mat)
   }
-  stopifnot(inherits(counts_mat,"Matrix"))
+  stopifnot(inherits(assays(object)$counts,"Matrix"))
   
-  counts_info <- counts_summary(counts_mat)
-  if (min(counts_info$fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
+  if (min(get_fragments_per_peak(object)) <= 0) stop("All peaks must have at least one fragment in one sample")
   
-  if (is.null(peak_indices)){
-    peak_indices <- lapply(1:counts_info$npeak, function(x) x)
-  } else if (inherits(peak_indices, "Matrix") || inherits(peak_indices, "matrix")){
-    peak_indices <- convert_to_ix_list(peak_indices)
-  } else if (!is.list(peak_indices) && is.vector(peak_indices)){
-    peak_indices = list(peak_indices)
+  if (is.null(background_peaks)){
+    background_peaks <- get_background_peaks(object)
   }
-  stopifnot(inherits(peak_indices,"list"))  
+  
+  stopifnot(nrow(object) == nrow(background_peaks))
+  
+  if (inherits(annotations, "SummarizedExperiment")){
+    peak_indices <- convert_to_ix_list(assays(annotations)$match)
+  } else {
+    stop("peak_indices must be given as SummarizedExperiment with a 'match' slot")
+  }
   
   if (is.null(expectation)){
-    expectation <- compute_expectations(counts_mat)
+    expectation <- compute_expectations(object)
   } else{
-    stopifnot(length(expectation) == nrow(counts_mat))
+    stopifnot(length(expectation) == nrow(object))
   }
   
   # check that indices fall within appropriate bounds
   tmp <- unlist(peak_indices, use.names =F)
   if (is.null(tmp) ||
-        !(all.equal(tmp, as.integer(tmp))) ||
-        max(tmp) > counts_info$npeak ||
-        min(tmp) < 1){
+      !(all.equal(tmp, as.integer(tmp))) ||
+      max(tmp) > nrow(object) ||
+      min(tmp) < 1){
     stop("peak_indices are not valid")
   }
   
@@ -303,15 +310,20 @@ compute_deviations_no_bg <- function(counts_mat,
     names(peak_indices) = 1:length(peak_indices)
   }
   
-  sample_names <- colnames(counts_mat)
+  sample_names <- colnames(object)
   
   results <- t(simplify2array(BiocParallel::bplapply(peak_indices,
                                     compute_deviations_single_no_bg,
-                                    counts_mat = counts_mat,
+                                    counts_mat = assays(object)$counts,
                                     expectation = expectation)))
-  colnames(results) <- sample_names
   
-  return(results)
+  colnames(results) = sample_names
+  
+  out <- SummarizedExperiment(assays = list(deviations = results), 
+                              colData = colData(object),
+                              rowData = colData(annotations))
+  
+  return(out)
 }
 
 
