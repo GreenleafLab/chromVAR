@@ -113,6 +113,7 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE, sample_anno
   if (by_rg){
     tmp <- lapply(bams, getFragmentCountsByRG, peaks = peaks, paired = paired)
     if (!is.null(colData) && nrow(sample_annotation) == length(bams)){
+      sample_annotation <- as(sample_annotation,"DataFrame")
       l <- sapply(tmp, function(x) length(x$depths))
       sample_annotation <- do.call(rbind, lapply(seq_along(l), function(x) rep(sample_annotation[x,,drop=FALSE],l[x])))
     }
