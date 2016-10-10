@@ -22,7 +22,6 @@ Use library or require to load package.
 
 ``` r
 library(chromVAR)
-library(chromVARexamples)
 ```
 
 Setting multiprocessing options
@@ -44,32 +43,32 @@ Reading in inputs
 -----------------
 
 ``` r
-peakfile <- system.file("extdata/peaks.bed", package = "chromVARexamples")
+# Not evaluated 
+peakfile <- "mypeaks.bed"
 peaks <- get_peaks(peakfile)
+
+bamfiles <- c("mybam1.bam","mybam2.bam")
+counts <- get_counts(bamfiles, peaks, paired =  TRUE, by_rg = TRUE, format = "bam", colData = DataFrame(celltype = c("GM","K562")))
 ```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   X1 = col_character(),
-    ##   X2 = col_integer(),
-    ##   X3 = col_integer()
-    ## )
-
-    ## Warning in get_peaks(peakfile): Peaks are overlapping!
-    ##             After getting peak counts, peaks can be reduced to non-overlapping set
-    ##               using filter_peaks function
-
-``` r
-bamfiles <- c(system.file("extdata/scatac_human_bam/single-GM.mergeAll.bam", package = "chromVARexamples"),
-             system.file("extdata/scatac_human_bam/single-GM-TNFa6h.mergeAll.bam", package = "chromVARexamples"))
-counts <- get_counts(bamfiles, peaks, paired =  TRUE, by_rg = TRUE, format = "bam", colData = DataFrame(treatment = c("none","TNFa")))
-```
-
-    ## Reading in file: /home/alicia/R/x86_64-pc-linux-gnu-library/3.3/chromVARexamples/extdata/scatac_human_bam/single-GM.mergeAll.bam
-
-    ## Reading in file: /home/alicia/R/x86_64-pc-linux-gnu-library/3.3/chromVARexamples/extdata/scatac_human_bam/single-GM-TNFa6h.mergeAll.bam
 
 The function `get_peaks` reads in the peaks as a GenomicRanges object. The function `get_counts` returns a RangedSummarizedExperiment object with a Matrix of fragment counts per sample/cell for each peak in assays. This data can be accessed with `assays(counts)$counts`. The Matrix package is used so that if the matrix is sparse, the matrix will be stored as a sparse Matrix.
+
+For the rest of the vignette, we will use a very small example data set of 10 GM cells and 10 H1 cells that has already been read in as a RangedSummarizedExperiment object.
+
+``` r
+data(example_counts, package = "chromVAR")
+head(example_counts)
+```
+
+    ## class: RangedSummarizedExperiment 
+    ## dim: 6 20 
+    ## metadata(0):
+    ## assays(1): counts
+    ## rownames: NULL
+    ## rowData names(0):
+    ## colnames(20): singles-GM-140815-1 singles-GM-140815-2 ...
+    ##   singles-H1ESC-140820-9 singles-H1ESC-140820-10
+    ## colData names(3): celltype treatment depth
 
 Getting GC content of peaks
 ---------------------------
@@ -77,25 +76,26 @@ Getting GC content of peaks
 The GC content will be used for determining background peaks. The function `add_gc_bias` returns an updated SummarizedExperiment with a new rowData column named "bias".
 
 ``` r
-counts <- add_gc_bias(counts)
-head(rowData(counts))
+example_counts <- add_gc_bias(example_counts)
+head(rowData(example_counts))
 ```
 
     ## DataFrame with 6 rows and 1 column
     ##        bias
     ##   <numeric>
-    ## 1 0.5353535
-    ## 2 0.6700000
-    ## 3 0.5320000
-    ## 4 0.6140000
-    ## 5 0.4720000
-    ## 6 0.4100000
+    ## 1     0.480
+    ## 2     0.436
+    ## 3     0.468
+    ## 4     0.730
+    ## 5     0.760
+    ## 6     0.748
 
 Note that the function `add_gc_bias` also takes in an argument for a BSgenome object. The default is BSgenome.Hsapiens.UCSC.hg19, so if using a different genome build be sure to provide the correct genome. For example, if using sacCer3 you could do:
 
 ``` r
+# Not evaluated 
 library(BSgenome.Scerevisiae.UCSC.sacCer3)
-counts <- add_gc_bias(counts, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
+example_ounts <- add_gc_bias(example_counts, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
 ```
 
 Check out `available.genomes` from the BSgenome package for what genomes are available. For making your own BSgenome object, check out `BSgenomeForge`.
@@ -109,12 +109,8 @@ Unless `plot = FALSE` given as argument to function `filter_samples`, a plot wil
 
 ``` r
 #find indices of samples to keep
-counts_filtered <- filter_samples(counts, shiny = FALSE)
+counts_filtered <- filter_samples(example_counts, min_depth = 1500, min_in_peaks = 0.15, shiny = FALSE)
 ```
-
-    ## min_in_peaks set to 0.25
-
-    ## min_depth set to 605.4
 
 If shiny argument is set to TRUE (the default), a shiny gadget will pop up which allows you to play with the filtering parameters and see which cells pass filters or not.
 
@@ -122,14 +118,7 @@ To get just the plot of what is filtered, use `filter_samples_plot`. By default,
 
 ``` r
 #find indices of samples to keep
-filtering_plot <- filter_samples_plot(counts, interactive = FALSE)
-```
-
-    ## min_in_peaks set to 0.25
-
-    ## min_depth set to 605.4
-
-``` r
+filtering_plot <- filter_samples_plot(example_counts, min_depth = 1500, min_in_peaks = 0.15, interactive = FALSE)
 filtering_plot
 ```
 
@@ -138,7 +127,8 @@ filtering_plot
 To instead return the indexes of the samples to keep instead of a new SummarizedExperiment object, use ix\_return = TRUE.
 
 ``` r
-ix <- filter_samples(counts, ix_return = TRUE, shiny = FALSE)
+# Not evaluated 
+ix <- filter_samples(example_counts, ix_return = TRUE, shiny = FALSE)
 ```
 
 For both bulk and single cell data, peaks should be filtered based on having at least a certain number of fragments. At minimum, each peak should have at least one fragment across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data). Otherwise, downstream functions won't work. The function `filter_peaks` will also reduce the peak set to non-overlapping peaks (keeping the peak with higher counts for peaks that overlap) if non\_overlapping argument is set to TRUE (which is default).
@@ -159,6 +149,7 @@ motifs <- get_jaspar_motifs()
 The function get\_motifs() by default gets human motifs from JASPAR core database. For other species motifs, change the species argument.
 
 ``` r
+# Not evaluated 
 motifs <- get_jaspar_motifs(species = "Saccharomyces cerevisiae")
 ```
 
@@ -175,6 +166,7 @@ motif_ix <- match_pwms(motifs, counts_filtered)
 For the function `match_pwm` a genome sequence is again required. So for sacCer3 for example:
 
 ``` r
+# Not evaluated 
 motif_ix <- match_pwms(motifs, counts_filtered, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
 ```
 
@@ -207,6 +199,7 @@ The result from get\_background\_peaks is a matrix of indices, where each column
 To use the background peaks computed, simply add those to the call to compute\_deviations:
 
 ``` r
+# Not evaluated 
 deviations <- compute_deviations(object = counts_filtered, annotations = motif_ix, background_peaks = bg)
 ```
 
@@ -231,15 +224,20 @@ Visualizing Deviations
 For visualizing cells, it can be useful to project the deviation values into two dimension using TSNE. A convenience function for doing so is provided in `deviations_tsne`. If running in an interactive session, shiny can be set to TRUE to load up a shiny gadget for exploring parameters.
 
 ``` r
-tsne_results <- deviations_tsne(deviations, threshold = 1.3, perplexity = 45, shiny = FALSE)
+tsne_results <- deviations_tsne(deviations, threshold = 1.3, perplexity = 4, shiny = FALSE)
 ```
 
 To plot the results, `plot_deviations_tsne` can be used. If running in an interactive session or an interactive Rmarkdown document, shiny can be set to TRUE to generate a shiny widget. Here we will show static results.
 
 ``` r
-plot_deviations_tsne(deviations, tsne_results, motif = "RELA", shiny = FALSE)
+tsne_plots <- plot_deviations_tsne(deviations, tsne_results, motif = "TEAD3", annotation_column = "celltype", shiny = FALSE)
+tsne_plots[[1]]
 ```
 
-    ## $RELA
+![](README_files/figure-markdown_github/unnamed-chunk-21-1.png)
 
-![](README_files/figure-markdown_github/unnamed-chunk-20-1.png)
+``` r
+tsne_plots[[2]]
+```
+
+![](README_files/figure-markdown_github/unnamed-chunk-21-2.png)

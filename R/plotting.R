@@ -143,7 +143,7 @@ deviations_tsne <- function(object,
     vars <- row_sds(assays(object)$z, FALSE)
     if (threshold > max(vars, na.rm = TRUE)) stop("threshold too high")
     ix <- which(vars > threshold)
-    tsne_res <- Rtsne::Rtsne(t(assays(object)[["deviations"]][ix,]))
+    tsne_res <- Rtsne::Rtsne(t(assays(object)[["deviations"]][ix,]), perplexity = perplexity)
     out <- list(threshold = threshold, perplexity = perplexity, tsne = tsne_res)
     return(out)
   }
