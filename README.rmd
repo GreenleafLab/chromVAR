@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r, echo = FALSE}
-knitr::opts_chunk$set(cache = TRUE)
+set.seed(2016)
 ```
 
 
