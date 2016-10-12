@@ -37,6 +37,8 @@ compute_variability <- function(object,
     
   p_adj <- p.adjust(p = p_sd, method = "BH")  
     
+  name_vals <- if (!is.null(rowData(object)$name)) rowData(object)$name else rownames(object)
+  
   if (bootstrap_error){
       #check some arguments
       stopifnot(bootstrap_samples > 0 && all_whole(bootstrap_samples))
@@ -47,7 +49,7 @@ compute_variability <- function(object,
       boot_sd <- do.call(rbind,BiocParallel::bplapply(1:bootstrap_samples, function(x) row_sds_perm(assays(object)$z, na.rm)))
       sd_error <- apply(boot_sd, 2, quantile_helper, quantiles = bootstrap_quantiles, na.rm = na.rm)
       
-      out <- data.frame(name = rowData(deviations)$name,
+      out <- data.frame(name = name_vals,
                         variability = sd_deviations, 
                         bootstrap_lower_bound = sd_error[1,], 
                         bootstrap_upper_bound = sd_error[2,],
@@ -55,7 +57,7 @@ compute_variability <- function(object,
                         p_value_adj = p_adj,
                         row.names = rownames(object))    
     } else{
-      out <- data.frame(name = rowData(deviations)$name,
+      out <- data.frame(name = name_vals,
                         variability = sd_deviations,
                         p_value = p_sd,
                         p_value_adj = p_adj,
