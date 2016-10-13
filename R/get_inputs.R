@@ -17,7 +17,7 @@
 #' @export
 get_peaks <- function(filename, extra_cols = c(), sort_peaks = TRUE){
   if (is.installed('readr')){
-    bed <- as.data.frame(readr::read_tsv(file = filename, col_names = FALSE)[, c(1:3, extra_cols)])
+    bed <- as.data.frame(suppressMessages(readr::read_tsv(file = filename, col_names = FALSE)[, c(1:3, extra_cols)]))
   } else{
     bed <- read.delim(file = filename, header = FALSE, sep = "\t", stringsAsFactors = FALSE)[, c(1:3, extra_cols)]
   }
@@ -112,7 +112,7 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE, sample_anno
 
   if (by_rg){
     tmp <- lapply(bams, getFragmentCountsByRG, peaks = peaks, paired = paired)
-    if (!is.null(colData) && nrow(sample_annotation) == length(bams)){
+    if (!is.null(sample_annotation) && nrow(sample_annotation) == length(bams)){
       sample_annotation <- as(sample_annotation,"DataFrame")
       l <- sapply(tmp, function(x) length(x$depths))
       sample_annotation <- do.call(rbind, lapply(seq_along(l), function(x) rep(sample_annotation[x,,drop=FALSE],l[x])))
@@ -130,7 +130,7 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE, sample_anno
       mat[,i] = GenomicRanges::countOverlaps(peaks, fragments, type="any", ignore.strand=T)
     }
     colnames(mat) = basename(bams)
-    counts_mat = Matrix(mat)
+    counts_mat = Matrix::Matrix(mat)
   }
   if (is.null(sample_annotation)){
     sample_annotation <- DataFrame(depth = depths)
@@ -145,18 +145,22 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE, sample_anno
 get_counts_from_beds <- function(beds, peaks, paired, colData = NULL){
 
 
-  tmp <- BiocParallel::bplapply(seq_along(beds), function(i){
+  results <- BiocParallel::bplapply(seq_along(beds), function(i){
     fragments = readAlignmentFromBed(beds[i], paired = paired)
-
+    if (!isTRUE(all.equal(sort(seqlevels(fragments)), sort(seqlevels(peaks))))){
+      merged_seq <- unique(c(seqlevels(fragments), seqlevels(peaks)))
+      seqlevels(fragments) <- merged_seq
+      seqlevels(peaks) <- merged_seq
+    }
     return(list(counts = GenomicRanges::countOverlaps(peaks, fragments, type="any", ignore.strand=TRUE),
                 depth = length(fragments)))
   })
 
-  mat <-  t(vapply(results, function(x) x[["counts"]], rep(0,length(beds))))
+  mat <-  vapply(results, function(x) x[["counts"]], rep(0, length(peaks)))
   depths <- vapply(results, function(x) x[["depth"]], 0)
 
   colnames(mat) = basename(beds)
-  counts_mat = Matrix(mat)
+  counts_mat = Matrix::Matrix(mat)
   if (is.null(colData)){
     colData <- DataFrame(depth = depths)
   } else{
@@ -173,7 +177,7 @@ get_counts_from_beds <- function(beds, peaks, paired, colData = NULL){
 #' @export
 readAlignmentFromBed <- function(filename, paired){
   if (is.installed('readr')){
-    tmp <- readr::read_tsv(file = filename, col_names = FALSE)
+    tmp <- suppressMessages(readr::read_tsv(file = filename, col_names = FALSE))
   } else{
     tmp <- read.delim(file = filename, col.names = FALSE, sep = "\t", stringsAsFactors = FALSE)
   }
@@ -327,7 +331,7 @@ get_sample_depths_from_bams <- function(bams, paired = TRUE, by_rg = FALSE){
 
 get_sample_depths_from_beds <- function(beds){
   if (is.installed('readr')){
-    out = do.call(c, BiocParallel::bplapply(beds, function(filename) nrow(readr::read_tsv(file = filename, col_names = FALSE))))
+    out = do.call(c, BiocParallel::bplapply(beds, function(filename) nrow(suppressMessages(readr::read_tsv(file = filename, col_names = FALSE)))))
   } else{
     out = do.call(c, BiocParallel::bplapply(beds, function(filename) nrow(read.delim(file = filename, header = FALSE, sep = "\t", stringsAsFactors = FALSE))))
   }
