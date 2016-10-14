@@ -19,7 +19,7 @@ deviations_tsne(object, threshold = 1.5, perplexity = 30,
 \item{...}{}
 }
 \value{
-list with three elements: threshold used, perplexity used, tsne results 
+list with three elements: threshold used, perplexity used, tsne results
 from \code{\link[Rtsne]{Rtsne}}
 }
 \description{

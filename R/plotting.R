@@ -123,7 +123,7 @@ plot_deviations_heatmap <- function(object, top = 100, what = c("z","deviations"
 
 variability_table <- function(var_df){
   DT::datatable(var_df, options = list(order = list(2,'desc'), pageLength = 5),
-                selection = "single") %>% DT::formatSignif(colnames(var_df), 3)
+                selection = list(mode = "single", selected = which.max(var_df$variability))) %>% DT::formatSignif(colnames(var_df), 3)
 }
 
 
@@ -185,21 +185,32 @@ plot_deviations_tsne <- function(object,
   return(out)
 }
 
+#' @import plotly shiny
 plot_deviations_tsne_shiny <- function(object,
                                  tsne,
                                  var_df,
                                  annotation_column){
   
   if (is.null(var_df)) var_df <- compute_variability(object)
-  stopifnot(!is.null(annotation_column))
-  stopifnot(annotation_column %in% colnames(colData(object)))
-  anno = colData(object)[,annotation_column]
   
   if ("tsne" %in% names(tsne)) tsne <- tsne$tsne
+  if (is.null(annotation_column)){
+    annotation_column <- "none"
+  } else {
+    stopifnot(annotation_column %in% colnames(colData(object)))
+  }
+  
   
   ui <- fluidPage(
-    titlePanel("Select row of table:"),
-    fluidRow(column(10,DT::dataTableOutput('tbl', width = 500),offset = 1)),
+    fluidRow(column(3,
+                    h4("Select options for coloring plots:"),
+                    br(),
+                    selectInput("color", "Color first plot by:", 
+                                choices = c("none",colnames(colData(object))), 
+                                selected = annotation_column),
+                    br(),
+                    p(strong("Color second plot by selecting from table:"))),
+            column(9,DT::dataTableOutput('tbl', width = 350))),
     fluidRow(column(6,plotlyOutput("plot1")),
              column(6,plotlyOutput("plot2")))
   )
@@ -215,11 +226,18 @@ plot_deviations_tsne_shiny <- function(object,
     
     # Render the plot
     output$plot1 <- renderPlotly({
-      p1 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = anno, text = colnames(object)),
+      if (input$color == "none"){
+        p1 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], text = colnames(object)),
+                    aes(x = x, y = y, text = text))  + 
+          geom_point(size = 2) + chromVAR_theme(12) + 
+          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+      } else{
+        p1 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = colData(object)[,input$color], text = colnames(object)),
                   aes(x = x, y = y, col = color, text = text))  + 
-        geom_point(size = 2) + chromVAR_theme(12) + 
-        scale_color_brewer(palette = "Dark2", name = annotation_column) + 
-        xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+          geom_point(size = 2) + chromVAR_theme(12) + 
+          labs(col = input$color)  + 
+          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+      }
       ggplotly(p1)
     })
     
