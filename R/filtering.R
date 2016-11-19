@@ -210,7 +210,7 @@ filter_peaks <- function(counts_mat, min_fragments_per_peak = 1, non_overlapping
       stop("peaks must be sorted to be able to filter non-overlapping peaks!")
     }
     while (!(isDisjoint(peaks[keep_peaks]))){
-      chr_names = seqnames(peaks[keep_peaks])
+      chr_names = as.character(seqnames(peaks[keep_peaks]))
       starts = start(peaks[keep_peaks])
       ends = end(peaks[keep_peaks])      
       overlap_next = intersect(which(chr_names[1:(length(keep_peaks) -1)] == chr_names[2:(length(keep_peaks))]),
