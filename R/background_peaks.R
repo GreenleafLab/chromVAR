@@ -11,7 +11,7 @@ add_gc_bias <- function(counts_mat,
   seqs = Biostrings::getSeq(genome, peaks)
   nucfreqs <- Biostrings::letterFrequency(seqs, c("A","C","G","T"))
   gc <- apply(nucfreqs, 1, function(x) sum(x[2:3])/sum(x))
-  rowData(counts_mat)$bias <- gc
+  rowRanges(counts_mat)$bias <- gc
   return(counts_mat)
 }
 
@@ -54,7 +54,7 @@ get_background_peaks <- function(object, niterations = 50, w = 0.1, bs = 50){
   bins1 = seq(min(trans_norm_mat[,1]), max(trans_norm_mat[,1]), length.out = bs)
   bins2 = seq(min(trans_norm_mat[,2]), max(trans_norm_mat[,2]), length.out = bs)
 
-  bin_data = do.call(rbind,lapply(1:50, function(x) matrix(c(rep(bins1[x], bs),bins2), ncol = 2, byrow = FALSE)))
+  bin_data = do.call(rbind,lapply(1:bs, function(x) matrix(c(rep(bins1[x], bs),bins2), ncol = 2, byrow = FALSE)))
 
   bin_dist = euc_dist(bin_data)
   bin_p = dnorm(bin_dist, 0, w)
@@ -87,10 +87,10 @@ get_background_peaks <- function(object, niterations = 50, w = 0.1, bs = 50){
 get_permuted_data <- function(object, niterations = 10, w = 0.1, bs = 50){
 
   out <- BiocParallel::bplapply(1:niterations, function(x) get_permuted_data_helper(object, w, bs))
-  names(out) <- paste("perm",1:niterations,sep="_") 
-  
+  names(out) <- paste("perm",1:niterations,sep="_")
+
   assays(object) <- c(assays(object), out)
-  
+
   return(object)
 }
 

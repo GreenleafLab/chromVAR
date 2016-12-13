@@ -11,6 +11,7 @@ output:
 set.seed(2016)
 ```
 
+# chromVAR
 
 chromVAR is an R package for the analysis of sparse chromatin accessibility or histone modification data.  The package incorporates motif matching code from the MOODS package, developed by Pasi Rastas, Janne Korhonen, and Petri Martinmaki.
 
@@ -75,7 +76,7 @@ Note that the function `add_gc_bias` also takes in an argument for a BSgenome ob
 ```{r, eval = FALSE}
 # Not evaluated 
 library(BSgenome.Scerevisiae.UCSC.sacCer3)
-example_ounts <- add_gc_bias(example_counts, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
+example_counts <- add_gc_bias(example_counts, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
 ```
 
 Check out `available.genomes` from the BSgenome package for what genomes are available. For making your own BSgenome object, check out `BSgenomeForge`.  

@@ -78,7 +78,7 @@ compute_variability_single <- function(peak_set,
 
   tmp <- compute_deviations_single(peak_set, counts_mat, background_peaks, expectation)
   
-  v <- sd(assays(tmp)$z, na.rm = TRUE)
+  v <- sd(tmp$z, na.rm = TRUE)
   
   return(v)
 }

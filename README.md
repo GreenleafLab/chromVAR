@@ -1,3 +1,6 @@
+chromVAR
+========
+
 chromVAR is an R package for the analysis of sparse chromatin accessibility or histone modification data. The package incorporates motif matching code from the MOODS package, developed by Pasi Rastas, Janne Korhonen, and Petri Martinmaki.
 
 Installation
