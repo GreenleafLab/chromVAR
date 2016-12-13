@@ -1,3 +1,10 @@
+remove_rc <- function(seqs){
+  temp <- cbind(as.character(seqs),
+                as.character(Biostrings::reverseComplement(seqs)))
+  temp[temp[,1] > temp[,2],1] <- temp[temp[,1] > temp[,2],2]
+  Biostrings::DNAStringSet(unique(temp[,1]))
+}
+
 
 match_kmers_inner_helper <- function(kmers, seqs, var = FALSE){
   if (is.character(kmers)) kmers = Biostrings::DNAStringSet(kmers)

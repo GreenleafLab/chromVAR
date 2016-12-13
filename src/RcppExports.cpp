@@ -55,6 +55,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// downsample_dense2
+NumericMatrix downsample_dense2(NumericMatrix X, NumericVector p);
+RcppExport SEXP chromVAR_downsample_dense2(SEXP XSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(downsample_dense2(X, p));
+    return rcpp_result_gen;
+END_RCPP
+}
 // pwm_euclidean
 double pwm_euclidean(arma::mat mat1, arma::mat mat2);
 RcppExport SEXP chromVAR_pwm_euclidean(SEXP mat1SEXP, SEXP mat2SEXP) {
@@ -68,25 +80,40 @@ BEGIN_RCPP
 END_RCPP
 }
 // pwm_dist_single
-arma::vec pwm_dist_single(arma::mat mat1, arma::mat mat2);
-RcppExport SEXP chromVAR_pwm_dist_single(SEXP mat1SEXP, SEXP mat2SEXP) {
+arma::vec pwm_dist_single(arma::mat mat1, arma::mat mat2, arma::uword min_overlap);
+RcppExport SEXP chromVAR_pwm_dist_single(SEXP mat1SEXP, SEXP mat2SEXP, SEXP min_overlapSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type mat1(mat1SEXP);
     Rcpp::traits::input_parameter< arma::mat >::type mat2(mat2SEXP);
-    rcpp_result_gen = Rcpp::wrap(pwm_dist_single(mat1, mat2));
+    Rcpp::traits::input_parameter< arma::uword >::type min_overlap(min_overlapSEXP);
+    rcpp_result_gen = Rcpp::wrap(pwm_dist_single(mat1, mat2, min_overlap));
     return rcpp_result_gen;
 END_RCPP
 }
 // compute_pwm_dist
-List compute_pwm_dist(List pwms);
-RcppExport SEXP chromVAR_compute_pwm_dist(SEXP pwmsSEXP) {
+List compute_pwm_dist(List pwms, arma::uword min_overlap);
+RcppExport SEXP chromVAR_compute_pwm_dist(SEXP pwmsSEXP, SEXP min_overlapSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type pwms(pwmsSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_pwm_dist(pwms));
+    Rcpp::traits::input_parameter< arma::uword >::type min_overlap(min_overlapSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_pwm_dist(pwms, min_overlap));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_pwm_dist2
+List compute_pwm_dist2(List pwms, List pwms2, arma::uword min_overlap);
+RcppExport SEXP chromVAR_compute_pwm_dist2(SEXP pwmsSEXP, SEXP pwms2SEXP, SEXP min_overlapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type pwms(pwmsSEXP);
+    Rcpp::traits::input_parameter< List >::type pwms2(pwms2SEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type min_overlap(min_overlapSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_pwm_dist2(pwms, pwms2, min_overlap));
     return rcpp_result_gen;
 END_RCPP
 }

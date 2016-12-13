@@ -1,0 +1,14 @@
+---
+title: "Synergy"
+author: "Alicia Schep"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Synergy}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Synergy
+
+## Stuff

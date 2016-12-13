@@ -17,16 +17,24 @@ downsample_dense <- function(X, p) {
     .Call('chromVAR_downsample_dense', PACKAGE = 'chromVAR', X, p)
 }
 
+downsample_dense2 <- function(X, p) {
+    .Call('chromVAR_downsample_dense2', PACKAGE = 'chromVAR', X, p)
+}
+
 pwm_euclidean <- function(mat1, mat2) {
     .Call('chromVAR_pwm_euclidean', PACKAGE = 'chromVAR', mat1, mat2)
 }
 
-pwm_dist_single <- function(mat1, mat2) {
-    .Call('chromVAR_pwm_dist_single', PACKAGE = 'chromVAR', mat1, mat2)
+pwm_dist_single <- function(mat1, mat2, min_overlap) {
+    .Call('chromVAR_pwm_dist_single', PACKAGE = 'chromVAR', mat1, mat2, min_overlap)
 }
 
-compute_pwm_dist <- function(pwms) {
-    .Call('chromVAR_compute_pwm_dist', PACKAGE = 'chromVAR', pwms)
+compute_pwm_dist <- function(pwms, min_overlap) {
+    .Call('chromVAR_compute_pwm_dist', PACKAGE = 'chromVAR', pwms, min_overlap)
+}
+
+compute_pwm_dist2 <- function(pwms, pwms2, min_overlap) {
+    .Call('chromVAR_compute_pwm_dist2', PACKAGE = 'chromVAR', pwms, pwms2, min_overlap)
 }
 
 get_thresholds <- function(mats, nuc_freqs, p) {

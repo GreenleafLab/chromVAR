@@ -59,6 +59,7 @@ read_macs2_narrowpeaks <- function(filename, width = 500, non_overlapping = TRUE
                       col.names= c("chr","start","end","name","score","strand","fc","pval","qval","summit"))
   }
   bed[,"summit"] <- bed[,"start"] + bed[,"summit"]
+  bed <- as(bed, "DataFrame")
   bed <- makeGRangesFromDataFrame(bed[,c("chr","summit","score","qval","name")],
                                   start.field = "summit",
                                   end.field = "summit",
@@ -69,7 +70,7 @@ read_macs2_narrowpeaks <- function(filename, width = 500, non_overlapping = TRUE
   if (non_overlapping){
     keep_peaks = 1:length(bed)
     while (!(isDisjoint(bed[keep_peaks]))){
-      chr_names = seqnames(bed[keep_peaks])
+      chr_names = as.character(seqnames(bed[keep_peaks]))
       starts = start(bed[keep_peaks])
       ends = end(bed[keep_peaks])
       overlap_next = intersect(which(chr_names[1:(length(keep_peaks) -1)] == chr_names[2:(length(keep_peaks))]),

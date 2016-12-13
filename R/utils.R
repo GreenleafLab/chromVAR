@@ -252,9 +252,14 @@ mxsort <- function(x){
 
 # making permutations ----------------------------------------------------------
 
-make_bias_bins <- function(counts_mat, bias, nbins = 25){
-  npeaks = nrow(counts_mat)
-  fragments_per_peak <- rowSums(counts_mat)
+#' @export
+make_bias_bins <- function(object, nbins = 25, frac = 0.3){
+  bias = rowData(object)$bias
+  if (is.null(bias)){
+    stop("bias column in rowData of object must be set!")
+  }
+  npeaks = nrow(object)
+  fragments_per_peak <- get_fragments_per_peak(object)
   #make bias bins
   bias_quantiles = quantile(bias, seq(0,1,1/nbins))
   bias_cut = cut(bias, breaks = bias_quantiles)
@@ -277,19 +282,70 @@ make_bias_bins <- function(counts_mat, bias, nbins = 25){
   bias_count_bins = sapply(1:nbins, function(x) sapply(1:nbins, function(y) intersect(tmp_bias_bins[[y]], tmp_count_bins[[x]])))
   names(bias_count_bins) = sapply(1:nbins, function(x) sapply(1:nbins, function(y) paste("bias_count_bin_",x,"_",y,sep="",collapse="")))
   tmp = c(bias_bins, count_bins, bias_count_bins)
-  #out = lapply(tmp, function(x) sample(x, size = length(x)/3))
-  #return(out)
-  return(tmp)
+  sets = lapply(tmp, function(x) sample(x, size = length(x)* frac))
+  mean_bias <- sapply(sets, function(x) mean(bias[x]))
+  mean_counts <- sapply(sets, function(x) mean(fragments_per_peak[x]))
+  rd <- DataFrame(bias = mean_bias, counts = mean_counts)
+  out <- SummarizedExperiment(assays = list(matches = convert_from_ix_list(sets, nrow(object))),
+                              colData = rd)
+  return(out)
 }
 
-make_permuted_sets <- function(counts_mat, bias, peak_indices, window = 10){
-  if (inherits(peak_indices, "Matrix") || inherits(peak_indices, "matrix")){
-    peak_indices <- convert_to_ix_list(peak_indices)
+#' @export
+make_permuted_sets <- function(object, annotations, window = 10){
+  if (inherits(annotations, "SummarizedExperiment")){
+    peak_indices <- convert_to_ix_list(assays(annotations)$match)
+  } else {
+    stop("annotations must be given as SummarizedExperiment with a 'matches' slot")
   }
-  bg <- get_background_peaks_old(counts_mat, bias, niterations = 1, window = window)
+  bg <- get_background_peaks_alternative(object, niterations = 1, window = window)
   sets <- lapply(seq_along(peak_indices), function(x) bg[peak_indices[[x]],1])
   names(sets) <- sapply(names(peak_indices), function(x) paste("permuted.",x,collapse="",sep=""))
-  return(sets)
+  cd <- colData(annotations)
+  if ("name" %in% colnames(cd)){
+    cd$name <- sapply(cd$name, function(x) paste("permuted.",x,collapse="",sep=""))
+  } else{
+    cd$name <- names(sets)
+  }
+  rownames(cd) <- names(sets)
+  out <- SummarizedExperiment(assays = list(matches = convert_from_ix_list(sets, nrow(object))),
+                              colData = cd)
+  return(out)
+}
+
+get_background_peaks_alternative <- function(object, niterations = 50, window = 500){
+  
+  bias = rowData(object)$bias
+  
+  if (is.null(bias)){
+    stop("bias column in rowData must be set!")
+  }
+  
+  fragments_per_peak <- get_fragments_per_peak(object)
+  if (min(fragments_per_peak)<=0) stop("All peaks must have at least one fragment in one sample")
+  npeak <- nrow(object)
+  
+  norm_mat <- cbind(fragments_per_peak, bias)
+  
+  chol_cov_mat <- chol(cov(norm_mat))
+  tmp_vals <- t(forwardsolve(t(chol_cov_mat),t(norm_mat)))
+  
+  grpsize <- 2000
+  grps <- lapply(1:(npeak %/% grpsize + ((npeak %% grpsize)!=0)), function(x) ((x-1)*grpsize +1):(min(x*grpsize,npeak)))
+  
+  bghelper <- function(grp, tmp_vals, niterations){
+    tmp_nns <- nabor::knn(tmp_vals, tmp_vals[grp,], window + 1, eps = 0)$nn.idx
+    if (niterations == 1){
+      return(matrix(sapply(1:nrow(tmp_nns), function(x) sample(tmp_nns[x,][tmp_nns[x,] != grp[x]], niterations, replace = TRUE)),
+                    ncol = 1))
+    } else{
+      return(t(sapply(1:nrow(tmp_nns), function(x) sample(tmp_nns[x,][tmp_nns[x,] != grp[x]], niterations, replace = TRUE))))
+    }
+  }
+  
+  background_peaks <- do.call(rbind, BiocParallel::bplapply(grps, bghelper, tmp_vals, niterations))
+  
+  return(background_peaks)
 }
 
 
