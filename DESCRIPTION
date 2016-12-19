@@ -1,8 +1,8 @@
 Package: chromVAR
 Type: Package
 Title: Chromatin Variation Across Regions
-Version: 0.2.8
-Date: 2015-08-28
+Version: 0.3
+Date: 2016-12-20
 Authors@R: c(
     person("Alicia", "Schep", email = "aschep@stanford.edu", role = c("aut","cre")),
     person("Jason", "Buenrostro", email = "jbuenros@stanford.edu", role = "ctb"),
@@ -10,7 +10,7 @@ Authors@R: c(
 Description: Determine variation in chromatin accessibility across sets of
     annotations or peaks. Designed primarily for single-cell or sparse chromatin
     accessibility data, e.g. from scATAC-seq or sparse bulk ATAC or DNAse-seq experiments.
-License: GPL-3
+License: GPL-3 + file
 Imports:
     IRanges,
     GenomeInfoDb,
@@ -42,6 +42,7 @@ Suggests:
     testthat,
     knitr,
     rmarkdown
+LazyData: TRUE
 LinkingTo: Rcpp, RcppArmadillo
 SystemRequirements: C++11
 VignetteBuilder: knitr

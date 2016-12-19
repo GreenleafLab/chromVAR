@@ -1,9 +1,9 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-R/experimental.R
-R/motif_crap.R
-R/kmer_experimental.R
-*.png
-README.md
-README.rmd
-README_files
+^R/experimental.R
+^R/motif_crap.R
+^R/kmer_experimental.R
+^README.md
+^README.rmd
+^README_files
+^README_*

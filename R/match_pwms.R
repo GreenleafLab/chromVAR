@@ -97,7 +97,9 @@ setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "DNAStringSet
 #' @describeIn match_pwms
 #' @export
 setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "character"),
-          function(pwms, subject, genome = NULL, bg = NULL,out = c("matches","scores","positions"),p.cutoff = 0.00005, w =7, ranges = NULL ){
+          function(pwms, subject, genome = NULL, bg = NULL,
+                   out = c("matches","scores","positions"), p.cutoff = 0.00005, w = 7, ranges = NULL){
+            
             out = match.arg(out)
             
             if (is.null(bg)){
@@ -105,7 +107,6 @@ setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "character"),
             } else{
               stopifnot(length(bg)==4 && is.numeric(bg))
             }
-            
             match_pwms_helper(pwms, seqs, bg, p.cutoff, w, out, ranges)
           })
 
