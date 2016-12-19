@@ -12,7 +12,7 @@ Installation is easiest using the devtools package. The function `install_github
 devtools::install_github("GreenleafLab/chromVAR", auth_token = "my_token")
 ```
 
-The argument auth\_token takes in your github [personal acces token](https://github.com/settings/applications). This token is needed because at the moment this repository is private.
+The argument auth\_token takes in your github [personal access token](https://github.com/settings/tokens). This token is needed because at the moment this repository is private.
 
 A number of needed packages are installed in this process. Note that for functions that require a genome sequence, the package [BSgenome.Hsapiens.UCSC.hg19](https://bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg19.html) is used as a default argument. However that package will not be automatically installed -- if using the default argument and that genome build, you will need to install that package. If using another genome build, the appropraiate BSgenome object for your species should be passed to functions requiring a genome build (e.g. `match_pwms`, `add_gc_bias`).
 
@@ -98,7 +98,7 @@ Note that the function `add_gc_bias` also takes in an argument for a BSgenome ob
 ``` r
 # Not evaluated 
 library(BSgenome.Scerevisiae.UCSC.sacCer3)
-example_ounts <- add_gc_bias(example_counts, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
+example_counts <- add_gc_bias(example_counts, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
 ```
 
 Check out `available.genomes` from the BSgenome package for what genomes are available. For making your own BSgenome object, check out `BSgenomeForge`.
