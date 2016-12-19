@@ -13,6 +13,9 @@ plot_kmer_mismatch(kmer, cov_mat, pval = 0.01)
 
 \item{pval}{}
 }
+\value{
+A plot
+}
 \description{
 plot_kmer_mismatch
 }

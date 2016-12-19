@@ -63,7 +63,9 @@ match_kmers_helper <- function(seqs, kmers, out, ranges){
 
 #' match_kmers
 #'
-#' Find kmer matches
+#' Find kmer matches in the DNA string-based subject
+#' 
+#' 
 #' @param subject either \code{\link[GenomicRanges]{GenomicRanges}}, \code{\link[Biostrings]{DNAStringSet}},
 #' \code{\link[Biostrings]{DNAString}}, or character vector
 #' @param k k 
@@ -77,7 +79,7 @@ match_kmers_helper <- function(seqs, kmers, out, ranges){
 #'@export
 setGeneric("match_kmers", function(k, subject,...) standardGeneric("match_kmers"))
 
-#' @describeIn match_kmers
+#' @describeIn match_kmers For DNAStringSet Objects
 #' @export
 setMethod("match_kmers", signature(k = "character", subject = "DNAStringSet"),
           function(k, subject, genome = NULL, out = c("matches","positions"), ranges = NULL){
@@ -88,7 +90,7 @@ setMethod("match_kmers", signature(k = "character", subject = "DNAStringSet"),
             match_kmers_helper(seqs, k, out, ranges)
           })
 
-#' @describeIn match_kmers
+#' @describeIn match_kmers For character strings
 #' @export
 setMethod("match_kmers", signature(k = "character", subject = "character"),
           function(k, subject, out = c("matches","positions"), ranges = NULL ){
@@ -97,7 +99,7 @@ setMethod("match_kmers", signature(k = "character", subject = "character"),
             match_kmers_helper(DNAStringSet(seqs), k, out, ranges)
           })
 
-#' @describeIn match_kmers
+#' @describeIn match_kmers For DNA String objects
 #' @export
 setMethod("match_kmers", signature(k = "character", subject = "DNAString"),
           function(k, subject, out = c("matches","positions"),ranges = NULL){
@@ -108,7 +110,7 @@ setMethod("match_kmers", signature(k = "character", subject = "DNAString"),
             match_kmers_helper(seqs, k, out, ranges)
           })
 
-#' @describeIn match_kmers
+#' @describeIn match_kmers For GenomicRanges
 #' @export
 setMethod("match_kmers", signature( k = "character", subject = "GenomicRanges"),
           function(k, subject, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, out = c("matches","positions"), ranges = NULL){
@@ -119,7 +121,7 @@ setMethod("match_kmers", signature( k = "character", subject = "GenomicRanges"),
             match_kmers_helper(seqs, k, out, subject)
           })
 
-#' @describeIn match_kmers
+#' @describeIn match_kmers For RangedSummarizedExperiment (containing GRanges in rowRanges)
 #' @export
 setMethod("match_kmers", signature(k = "character", subject = "RangedSummarizedExperiment"),
           function( k, subject , genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, out = c("matches","counts","positions"), ranges = NULL){
@@ -128,7 +130,7 @@ setMethod("match_kmers", signature(k = "character", subject = "RangedSummarizedE
           })
 
 
-#' @describeIn match_kmers
+#' @describeIn match_kmers Catch-all for other un-documented types
 #' @export
 setMethod("match_kmers", signature(k = "numeric", subject = "ANY"),
           function(k, subject, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, out = c("matches","counts","positions"), ranges = NULL){
@@ -140,7 +142,7 @@ setMethod("match_kmers", signature(k = "numeric", subject = "ANY"),
           })
 
 
-#' @describeIn match_kmers
+#' @describeIn match_kmers Catch-all for other un-documented types with DNAStringSet
 #' @export
 setMethod("match_kmers", signature(k = "DNAStringSet", subject = "ANY"),
           function(k, subject, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, out = c("matches","counts","positions"), ranges = NULL){
@@ -150,7 +152,7 @@ setMethod("match_kmers", signature(k = "DNAStringSet", subject = "ANY"),
           })
 
 
-#' @describeIn match_kmers
+#' @describeIn match_kmers Catch-all for other un-documented types with DNAString
 #' @export
 setMethod("match_kmers", signature(k = "DNAString", subject = "ANY"),
           function(k, subject,  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, out = c("matches","counts","positions"), ranges = NULL){
@@ -158,8 +160,4 @@ setMethod("match_kmers", signature(k = "DNAString", subject = "ANY"),
             kmers <- as.character(k)
             match_kmers(kmers, subject, genome, out, ranges)
           })
-
-
-
-
 

@@ -8,6 +8,10 @@
 #' @import GenomicRanges
 #' @import Biostrings
 #' @import methods
+#' @importFrom graphics text
+#' @importFrom stats anova approx as.dist cor cov dist dnorm hclust kruskal.test lm median
+#' @importFrom stats na.omit oneway.test p.adjust pchisq pnorm prcomp quantile runif sd t.test var wilcox.test
+#' @importFrom utils installed.packages read.delim setTxtProgressBar txtProgressBar
 #' @importFrom Rcpp sourceCpp
 #' @useDynLib chromVAR
 #' @docType package
@@ -17,5 +21,5 @@ NULL
 
 
 .onUnload <- function (libpath) {
-  library.dynam.unload("mypackage", libpath)
+  library.dynam.unload("chromVAR", libpath)
 }

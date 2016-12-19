@@ -78,7 +78,7 @@ match_pwms_helper <- function(pwms, seqs, bg, p.cutoff, w, out, ranges){
 #'@export
 setGeneric("match_pwms", function(pwms, subject,...) standardGeneric("match_pwms"))
 
-#' @describeIn match_pwms
+#' @describeIn match_pwms PWMatrixList/DNAStringSet
 #' @export
 setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "DNAStringSet"),
           function(pwms, subject, genome = NULL, bg = NULL, out = c("matches","scores","positions"), p.cutoff = 0.00005, w = 7, ranges = NULL){
@@ -94,7 +94,7 @@ setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "DNAStringSet
             match_pwms_helper(pwms, seqs, bg, p.cutoff, w, out, ranges)
           })
 
-#' @describeIn match_pwms
+#' @describeIn match_pwms PWMatrixList/character
 #' @export
 setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "character"),
           function(pwms, subject, genome = NULL, bg = NULL,
@@ -110,7 +110,7 @@ setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "character"),
             match_pwms_helper(pwms, seqs, bg, p.cutoff, w, out, ranges)
           })
 
-#' @describeIn match_pwms
+#' @describeIn match_pwms PWMatrixList/DNAString
 #' @export
 setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "DNAString"),
           function(pwms, subject, genome = NULL,  bg = NULL,out = c("matches","scores","positions"),p.cutoff = 0.00005, w = 7, ranges = NULL){
@@ -126,7 +126,7 @@ setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "DNAString"),
             match_pwms_helper(pwms, seqs, bg, p.cutoff, w, out, ranges)
           })
 
-#' @describeIn match_pwms
+#' @describeIn match_pwms PWMatrixList/GenomicRanges
 #' @export
 setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "GenomicRanges"),
           function(pwms, subject, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, bg = NULL, out = c("matches","scores","positions"),p.cutoff = 0.00005, w = 7, ranges = NULL){
@@ -144,7 +144,7 @@ setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "GenomicRange
             match_pwms_helper(pwms, seqs, bg, p.cutoff, w, out, subject)
           })
 
-#' @describeIn match_pwms
+#' @describeIn match_pwms PWMatrixList/RangedSummarizedExperiment
 #' @export
 setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "RangedSummarizedExperiment"),
           function(pwms, subject, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,  bg = NULL,out = c("matches","scores","positions"),p.cutoff = 0.00005, w = 7, ranges = NULL){
@@ -155,7 +155,7 @@ setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "RangedSummar
 ### PFMatrixList ---------------------------------------------------------------
 
 
-#' @describeIn match_pwms
+#' @describeIn match_pwms PFMatrixList/ANY
 #' @export
 setMethod("match_pwms", signature(pwms = "PFMatrixList", subject = "ANY"),
           function(pwms, subject, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, bg = NULL,out = c("matches","scores","positions"), p.cutoff = 0.00005, w =7, ranges = NULL){
@@ -166,7 +166,7 @@ setMethod("match_pwms", signature(pwms = "PFMatrixList", subject = "ANY"),
 
 # Single PWM input -------------------------------------------------------------
 
-#' @describeIn match_pwms
+#' @describeIn match_pwms PWMatrix/ANY
 #' @export
 setMethod("match_pwms", signature(pwms = "PWMatrix", subject = "ANY"),
           function(pwms, subject, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, bg = NULL,out = c("matches","scores","positions"), p.cutoff = 0.00005, w = 7, ranges = NULL){
@@ -178,7 +178,7 @@ setMethod("match_pwms", signature(pwms = "PWMatrix", subject = "ANY"),
 
 # Single PFM -------------------------------------------------------------------
 
-#' @describeIn match_pwms
+#' @describeIn match_pwms PFMatrix/ANY
 #' @export
 setMethod("match_pwms", signature(pwms = "PFMatrix", subject = "ANY"),
           function(pwms, subject, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19, bg = NULL,out = c("matches","scores","positions"), p.cutoff = 0.00005, w = 7, ranges = NULL){

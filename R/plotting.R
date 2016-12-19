@@ -13,34 +13,25 @@ plot_variability <- function(variability, xlab = "Sorted TFs",
                    n = 3, labels = variability$name, interactive = TRUE){
 
   res_df = cbind(variability, rank = rank(-1 * variability$variability,
-                                          ties.method="random"),
-                 annotation = labels)
+                ties.method="random"), annotation = labels)
 
   ylab = "Variability"
 
   if ("bootstrap_lower_bound" %ni% colnames(variability)){
 
-    out = ggplot(res_df,aes_string(x = "rank",
-                                                      y = "variability")) +
-      geom_point() +
-      xlab(xlab) + ylab(ylab) +
-      scale_y_continuous(expand=c(0,0),
-                                  limits=c(0,max(res_df$variability, na.rm =TRUE)*1.05)) +
+    out = ggplot(res_df,aes_string(x = "rank", y = "variability")) +
+      geom_point() + xlab(xlab) + ylab(ylab) +
+      scale_y_continuous(expand=c(0,0),  limits=c(0,max(res_df$variability, na.rm =TRUE)*1.05)) +
       chromVAR_theme()
-  } else{
+    
+  } else {
 
-    out = ggplot(res_df, aes_string(x = "rank",
-                                                    y = "variability",
-                                                    min = "bootstrap_lower_bound",
-                                                    max = "bootstrap_upper_bound",
-                                                    label = "annotation")) +
-    geom_point()+ geom_errorbar() +
-    xlab(xlab) + ylab(ylab) +
-    scale_y_continuous(expand=c(0,0),
-                                limits=c(0,max(res_df$bootstrap_upper_bound, na.rm =TRUE)*1.05)) +
-    chromVAR_theme()
+    out = ggplot(res_df, aes_string(x = "rank", y = "variability",
+            min = "bootstrap_lower_bound",max = "bootstrap_upper_bound",
+            label = "annotation")) + geom_point()+ geom_errorbar() +
+            xlab(xlab) + ylab(ylab) + chromVAR_theme() +
+            scale_y_continuous(expand=c(0,0),limits=c(0,max(res_df$bootstrap_upper_bound, na.rm =TRUE)*1.05))
   }
-
 
   if (interactive){
     return(ggplotly(out))
@@ -63,7 +54,7 @@ plot_variability <- function(variability, xlab = "Sorted TFs",
 #' @return ggplot2 theme
 #' @export 
 #'
-#' @examples
+
 chromVAR_theme <- function(base_size = 12, base_family="Helvetica"){
   theme_bw(base_size = base_size, base_family = base_family)  %+replace%
     theme(panel.border = element_blank(),
@@ -92,7 +83,7 @@ cor_dist <- function(x){
 #' plot_deviations
 #'
 #' plot heatmap of deviations
-#' @param object
+#' @param object chromVAR backend object
 #' @param what "z" or "deviations"
 #' @param cluster_rows cluster rows?
 #' @param cluster_cols cluster columns?
@@ -147,8 +138,6 @@ variability_table <- function(var_df){
 #'
 #' @return shiny widget
 #' @export
-#'
-#' @examples
 plot_deviations_tsne <- function(object,
                                  tsne,
                                  var_df = NULL,
@@ -265,12 +254,4 @@ plot_deviations_tsne_shiny <- function(object,
 
   shinyApp(ui, server, options = list(width = 750))
 }
-
-
-
-
-
-
-
-
 

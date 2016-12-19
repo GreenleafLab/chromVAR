@@ -26,8 +26,6 @@ remove_correlated_helper <- function(mat, val, cutoff = 0.9){
 #' @return list with three elements: threshold used, perplexity used, tsne results
 #' from \code{\link[Rtsne]{Rtsne}}
 #' @export
-#'
-#' @examples
 deviations_tsne <- function(object,
                             threshold = 1.5,
                             perplexity = 30,
@@ -217,8 +215,6 @@ deviations_tsne_shiny <- function(object, threshold = 1.5, perplexity = 30){
 #' @return list with three elements: threshold used, perplexity used, tsne results
 #' from \code{\link[Rtsne]{Rtsne}}
 #' @export
-#'
-#' @examples
 deviations_tsne_motifs <- function(motifs = NULL,
                                    kmers = NULL,
                                    threshold = 1.5,

@@ -10,7 +10,7 @@ Authors@R: c(
 Description: Determine variation in chromatin accessibility across sets of
     annotations or peaks. Designed primarily for single-cell or sparse chromatin
     accessibility data, e.g. from scATAC-seq or sparse bulk ATAC or DNAse-seq experiments.
-License: GPL-3 + file
+License: GPL-3 + file LICENSE
 Imports:
     IRanges,
     GenomeInfoDb,
@@ -24,6 +24,7 @@ Imports:
     Rsamtools,
     S4Vectors,
     plyr,
+    pheatmap,
     methods,
     Rcpp,
     RcppArmadillo,
@@ -31,10 +32,14 @@ Imports:
     grid,
     plotly,
     shiny,
-    miniUI
+    miniUI,
+    stats,
+    utils, 
+    graphics
 Depends:
     Matrix,
-    SummarizedExperiment
+    SummarizedExperiment,
+    R (>= 3.0.1)
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     JASPAR2016,

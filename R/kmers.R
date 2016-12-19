@@ -34,8 +34,6 @@ seq_to_pwm <- function(in_seq, mismatch = 0){
 #' is defined as covariance between Z-scores divided by variance of Z-scores for
 #' one motif/kmer/peakset (the row).
 #' @export
-#'
-#' @examples
 deviations_covariability <- function(object){
   covs <- cov(t(assays(object)$z))
   vars <- chromVAR:::row_sds(assays(object)$z)
@@ -236,10 +234,8 @@ kmer_group_to_pwm <- function(kgroup, p = 0.01, threshold = 0.25){
 #' @param cov_mat 
 #' @param pval 
 #'
-#' @return
+#' @return A plot
 #' @export
-#'
-#' @examples
 plot_kmer_mismatch <- function(kmer, cov_mat, pval = 0.01){
 
   kgroup <- get_covariable_kmers(kmer, cov_mat, max_extend = 0)
@@ -270,8 +266,6 @@ plot_kmer_mismatch <- function(kmer, cov_mat, pval = 0.01){
 #' @details function for assembling de novo kmers from kmer deviations
 #' @return list with (1) motifs: de novo motif matrices, (2) seed: seed kmer for de novo motif 
 #' @export
-#'
-#' @examples
 assemble_kmers <- function(object, threshold = 1.5, p = 0.01){
   devco = deviations_covariability(object)
   vars = row_sds(assays(object)$z)
