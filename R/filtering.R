@@ -130,49 +130,54 @@ filter_samples_gadget <- function(depths, fragments_per_sample,  min_in_peaks, m
 # Filter samples based on biases  ----------------------------------------------
 
 
-bias_skew <- function(counts_mat,
-                      bias,
+bias_skew <- function(object,
                       nbins = 10,
-                      expectation = NULL){
+                      expectation = NULL,
+                      what = c("bias","counts")){
   
-  if (inherits(counts_mat,"matrix")){
-    counts_mat <- Matrix(counts_mat)
+  stopifnot(inherits(object, "SummarizedExperiment"))
+  
+  if (is.null(assays(object)$counts)) stop("No counts slot")
+  
+  if (inherits(assays(object)$counts,"matrix")){
+    assays(object)$counts = Matrix(assays(object)$counts)
   }
-  stopifnot(inherits(counts_mat,"Matrix"))
+  stopifnot(inherits(assays(object)$counts,"Matrix"))
+
+  what <- match.arg(what)
   
-  if (inherits(bias, "GenomicRanges")){
-    bias <- mcols(bias)$gc
+  fragments_per_sample <- get_fragments_per_sample(object)
+  
+  if (what == "bias"){
+    bias = rowRanges(object)$bias
+  } else{
+    bias = get_fragments_per_peak(object) 
   }
   
-  keep  <- which(rowSums(counts_mat) > 0)
-  counts_mat <- counts_mat[keep,]
-  bias <- bias[keep]
-  
-  counts_info <- counts_summary(counts_mat)
-  
+  if (min(get_fragments_per_peak(object)) <= 0) stop("All peaks must have at least one fragment in one sample")
+
   bias = bias + runif(length(bias),0,0.001)
   bias_quantiles = quantile(bias, seq(0,1,1/nbins))
   bias_cut = cut(bias, breaks = bias_quantiles)
 
-  bias_bins = split(1:counts_info$npeak, bias_cut)
+  bias_bins = split(1:nrow(object), bias_cut)
   
   if (is.null(expectation)){
-    expectation <- compute_expectations(counts_mat)
+    expectation <- compute_expectations(object)
   } else{
-    stopifnot(length(expectation) == nrow(counts_mat))
+    stopifnot(length(expectation) == nrow(object))
   }
   
-  sample_names <- colnames(counts_mat)
-  
+  sample_names <- colnames(object)
   
   bias_mat <- sparseMatrix(j = unlist(bias_bins), 
                            i = unlist(lapply(1:nbins,function(x) rep(x, length(bias_bins[[x]])))),
                            x = 1,
-                           dims = c(nbins, counts_info$npeak))
+                           dims = c(nbins, nrow(object)))
   
-  observed <- as.matrix(bias_mat %*% counts_mat)
+  observed <- as.matrix(bias_mat %*% assays(object)$counts)
   
-  expected <- as.vector(bias_mat %*% expectation %*% counts_info$fragments_per_sample)
+  expected <- as.vector(bias_mat %*% expectation %*% fragments_per_sample)
   
   
   out <- (observed - expected) / expected
