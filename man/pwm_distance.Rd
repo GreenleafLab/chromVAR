@@ -7,11 +7,14 @@
 pwm_distance(x, y = NULL, min_overlap = 5)
 }
 \arguments{
-\item{x}{}
+\item{x}{Feature 1}
 
-\item{y}{}
+\item{y}{Feature 2}
 
 \item{min_overlap}{}
+}
+\value{
+A distance metric between the PWM
 }
 \description{
 pwm_distance

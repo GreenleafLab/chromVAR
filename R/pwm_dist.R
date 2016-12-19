@@ -36,14 +36,12 @@ pwm_to_prob <- function(pwms){
 
 #' pwm_distance
 #'
-#' @param x 
-#' @param y 
+#' @param x Feature 1
+#' @param y Feature 2
 #' @param min_overlap 
 #'
-#' @return
+#' @return A distance metric between the PWM
 #' @export
-#'
-#' @examples
 pwm_distance <- function(x, y = NULL, min_overlap = 5){
   if (is.null(y)){
     mats <- pwm_to_prob(x)

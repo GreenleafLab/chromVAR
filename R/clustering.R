@@ -13,8 +13,6 @@
 #' exceeds initial_dims.  Then  the supplied distance_function will be use.  
 #' @return dist object for distance between samples
 #' @export
-#'
-#' @examples
 get_sample_distance <- function(object, threshold = 1.5, initial_dims = 50, distance_function = dist){
   vars <- chromVAR:::row_sds(assays(object)$z)
   ix <- which(vars >= threshold)
@@ -39,8 +37,6 @@ get_sample_distance <- function(object, threshold = 1.5, initial_dims = 50, dist
 #' the pearson correlation coefficient will be computed and returned.
 #' @return correlation matrix between samples
 #' @export
-#'
-#' @examples
 get_sample_correlation <- function(object, threshold = 1.5){
   vars <- chromVAR:::row_sds(assays(object)$z)
   ix <- which(vars >= threshold)

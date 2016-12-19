@@ -10,6 +10,8 @@ plot_deviations_heatmap(object, top = 100, what = c("z", "deviations"),
   show_colnames = FALSE, ...)
 }
 \arguments{
+\item{object}{chromVAR backend object}
+
 \item{what}{"z" or "deviations"}
 
 \item{cluster_rows}{cluster rows?}
