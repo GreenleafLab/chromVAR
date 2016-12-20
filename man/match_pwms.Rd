@@ -69,7 +69,7 @@ match_pwms(pwms, subject, ...)
 
 \item{w}{parameter controlling size of window for filtration; default is 7}
 
-\item{if}{subject is not GenomicRanges, ranges to use when out is positions}
+\item{ranges}{if subject is not GenomicRanges, ranges to use when out is positions}
 }
 \description{
 Find pwm matches

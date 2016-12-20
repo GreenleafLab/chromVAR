@@ -36,13 +36,13 @@ seq_to_pwm <- function(in_seq, mismatch = 0){
 #' @export
 deviations_covariability <- function(object){
   covs <- cov(t(assays(object)$z))
-  vars <- chromVAR:::row_sds(assays(object)$z)
+  vars <- row_sds(assays(object)$z)
   normed_covs <- covs / matrix(vars**2, nrow = nrow(covs), ncol = ncol(covs), byrow = FALSE)
   return(normed_covs)
 }
 
 get_kmer_dist <- function(kmers){
-  stopifnot(chromVAR:::all_equal(nchar(kmers)))
+  stopifnot(all_equal(nchar(kmers)))
   out <- as.matrix(Biostrings::stringDist(kmers, method = "substitutionMatrix", type="overlap",
                          gapOpening = Inf,
                          substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix(match = 1,
@@ -230,9 +230,9 @@ kmer_group_to_pwm <- function(kgroup, p = 0.01, threshold = 0.25){
 
 #' plot_kmer_mismatch
 #'
-#' @param kmer 
-#' @param cov_mat 
-#' @param pval 
+#' @param kmer kmer, e.g. "AAAAAAA"
+#' @param cov_mat result from \code{\link{deviations_covaraibility}}
+#' @param pval p value threshold
 #'
 #' @return A plot
 #' @export
@@ -249,7 +249,7 @@ plot_kmer_mismatch <- function(kmer, cov_mat, pval = 0.01){
     geom_point( aes(x = pos, y = val, col = Nucleotide), position = position_jitter(height = 0, width = 0.2))  +
      ylab("Relative Nucleotide\nVariability Score") +
     xlab("Position") + scale_x_continuous(breaks = c(1:max(mm_df$pos)))+ scale_y_continuous(breaks = c(0,0.5,1))+
-    chromVAR:::chromVAR_theme() + scale_color_manual(name="Nucleotide",
+    chromVAR_theme() + scale_color_manual(name="Nucleotide",
                                           breaks = c("A","C","G","T"),
                                           values = RColorBrewer::brewer.pal(4,"Dark2")) +
     ggmotif(kmer, x.pos = 0, y.pos = max(c(1.1, max(mm_df$val) + 0.1)), ht = 0.15, wt = 1) + ggmotif_scale()
@@ -370,7 +370,7 @@ motif_explorer <- function(motifs,
                     aes(x = x, y = y, col = color, text = text, size = Variability, shape = type))  +
           geom_point(size = 2) + chromVAR_theme(12) + scale_size(range=c(0.5,2.5)) + scale_shape_manual(values = c(1,16)) +
           labs(col = "Max Deviations:\n") +
-          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid::unit(0.5,"lines"))
       }
       ggplotly(p1)
     })

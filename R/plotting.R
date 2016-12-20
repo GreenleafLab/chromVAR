@@ -7,6 +7,7 @@
 #' @param xlab label for x-axis (default is "Sorted TFs")
 #' @param n  number of toppoints to label?
 #' @param labels names of sets. if not given, uses rownames of variability
+#' @param interactive make plot interactive (using plotly)
 #' @import ggplot2 plotly
 #' @export
 plot_variability <- function(variability, xlab = "Sorted TFs",
@@ -160,7 +161,7 @@ plot_deviations_tsne <- function(object,
              aes(x = x, y = y, col = color, text = text))  +
         geom_point(size = 2) + chromVAR_theme(12) +
         scale_color_brewer(palette = "Dark2", name = i) +
-        xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+        xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid::unit(0.5,"lines"))
     }
   }
   if (!is.null(motif)){
@@ -178,11 +179,12 @@ plot_deviations_tsne <- function(object,
       out[[i]] <- ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = assays(object)[["deviations"]][ix,], text = colnames(object)),
                          aes(x = x, y = y, col = color, text = text)) + geom_point(size= 2) +
         scale_color_gradient2(name = rowData(object)[ix,"name"],mid = "lightgray", low = "blue", high = "red") + chromVAR_theme(12) +
-        xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+        xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid::unit(0.5,"lines"))
     }
   }
   return(out)
 }
+
 
 #' @import plotly shiny
 plot_deviations_tsne_shiny <- function(object,
@@ -229,13 +231,13 @@ plot_deviations_tsne_shiny <- function(object,
         p1 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], text = colnames(object)),
                     aes(x = x, y = y, text = text))  +
           geom_point(size = 2) + chromVAR_theme(12) +
-          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid::unit(0.5,"lines"))
       } else{
         p1 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = colData(object)[,input$color], text = colnames(object)),
                   aes(x = x, y = y, col = color, text = text))  +
           geom_point(size = 2) + chromVAR_theme(12) +
           labs(col = input$color)  +
-          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid::unit(0.5,"lines"))
       }
       ggplotly(p1)
     })
@@ -246,7 +248,7 @@ plot_deviations_tsne_shiny <- function(object,
       p2 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = assays(object)[["deviations"]][s,], text = colnames(object)),
                   aes(x = x, y = y, col = color, text = text)) + geom_point(size= 2) +
         scale_color_gradient2(name = rowData(object)[s,"name"],mid = "lightgray", low = "blue", high = "red") + chromVAR_theme(12) +
-        xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+        xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid::unit(0.5,"lines"))
       ggplotly(p2)
     })
 

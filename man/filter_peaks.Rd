@@ -9,7 +9,7 @@ filter_peaks(counts_mat, min_fragments_per_peak = 1, non_overlapping = TRUE,
 }
 \arguments{
 \item{counts_mat}{SummarizedExperiment with matrix of fragment counts per peak per sample, as computed 
-by \code{\link{getFragmentCounts}}
+by \code{\link{get_counts}}
 \code{\link{read_peaks}}}
 
 \item{min_fragments_per_peak}{minimum number of fragmints in peaks across all samples}
@@ -26,7 +26,7 @@ function to get indices of peaks that pass filters
 if non_overlapping is set to true, when peaks overlap the overlapping peak with lower counts is removed
 }
 \seealso{
-\code{\link{get_peaks}},  \code{\link{get_inputs}}, \code{\link{filter_samples}},
+\code{\link{get_peaks}},  \code{\link{get_peaks}}, \code{\link{filter_samples}},
 \code{\link{get_counts}}
 }
 

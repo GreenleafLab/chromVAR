@@ -15,6 +15,8 @@ plot_variability(variability, xlab = "Sorted TFs", n = 3,
 \item{n}{number of toppoints to label?}
 
 \item{labels}{names of sets. if not given, uses rownames of variability}
+
+\item{interactive}{make plot interactive (using plotly)}
 }
 \description{
 plot variability of motifs/etc

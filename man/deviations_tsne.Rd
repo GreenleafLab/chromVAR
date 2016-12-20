@@ -5,7 +5,7 @@
 \title{deviations_tsne}
 \usage{
 deviations_tsne(object, threshold = 1.5, perplexity = 30,
-  shiny = interactive(), ...)
+  shiny = interactive())
 }
 \arguments{
 \item{object}{deviations result}
@@ -15,8 +15,6 @@ deviations_tsne(object, threshold = 1.5, perplexity = 30,
 \item{perplexity}{perplexity parameter for tsne}
 
 \item{shiny}{output shiny gadget for choosing parameters & visualizing results}
-
-\item{...}{}
 }
 \value{
 list with three elements: threshold used, perplexity used, tsne results

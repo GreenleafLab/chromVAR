@@ -38,7 +38,7 @@ pwm_to_prob <- function(pwms){
 #'
 #' @param x Feature 1
 #' @param y Feature 2
-#' @param min_overlap 
+#' @param min_overlap minimum number of basepairs overlapping between motifs
 #'
 #' @return A distance metric between the PWM
 #' @export

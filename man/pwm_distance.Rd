@@ -11,7 +11,7 @@ pwm_distance(x, y = NULL, min_overlap = 5)
 
 \item{y}{Feature 2}
 
-\item{min_overlap}{}
+\item{min_overlap}{minimum number of basepairs overlapping between motifs}
 }
 \value{
 A distance metric between the PWM

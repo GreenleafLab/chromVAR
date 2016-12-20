@@ -14,7 +14,7 @@
 #' @return dist object for distance between samples
 #' @export
 get_sample_distance <- function(object, threshold = 1.5, initial_dims = 50, distance_function = dist){
-  vars <- chromVAR:::row_sds(assays(object)$z)
+  vars <- row_sds(assays(object)$z)
   ix <- which(vars >= threshold)
   ix2 <- ix[remove_correlated_helper(assays(object)$deviations[ix,], vars[ix])]
   if (initial_dims < length(ix2)){
@@ -38,7 +38,7 @@ get_sample_distance <- function(object, threshold = 1.5, initial_dims = 50, dist
 #' @return correlation matrix between samples
 #' @export
 get_sample_correlation <- function(object, threshold = 1.5){
-  vars <- chromVAR:::row_sds(assays(object)$z)
+  vars <- row_sds(assays(object)$z)
   ix <- which(vars >= threshold)
   ix2 <- ix[remove_correlated_helper(assays(object)$deviations[ix,], vars[ix])]
   cormat <- cor(assays(object)$deviations[ix2,], use = "pairwise.complete.obs")

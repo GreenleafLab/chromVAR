@@ -8,17 +8,18 @@ variability_synergy(object, annotations, background_peaks = NULL,
   variabilities = NULL, expectation = NULL, nbg = 25)
 }
 \arguments{
-\item{object}{}
+\item{object}{result from compute_deviations}
 
-\item{annotations}{}
+\item{annotations}{SummarizedExperiment of annotation matches}
 
-\item{background_peaks}{}
+\item{background_peaks}{optional, matrix of background peaks}
 
-\item{variabilities}{}
+\item{variabilities}{optional, variabilities computed from compute_variability}
 
-\item{expectation}{}
+\item{expectation}{optional, expected fraction of reads per peak, as computed
+by compute_expectations}
 
-\item{nbg}{}
+\item{nbg}{number of background iterations}
 }
 \value{
 synergy matrix

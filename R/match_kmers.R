@@ -71,7 +71,7 @@ match_kmers_helper <- function(seqs, kmers, out, ranges){
 #' @param k k 
 #' @param genome BSgenome object, only used if subect is \code{\link[GenomicRanges]{GenomicRanges}}
 #' @param out what to return? see details
-#' @param if subject is not GenomicRanges, ranges to use when out is positions
+#' @param ranges if subject is not GenomicRanges, ranges to use when out is positions
 #' @details  Can either return a SummarizedExperiment with just sparse matrix with values set to 1 for a match (if return == "matches"),  or
 #' a GenomicRanges  object with all the positions of matches   
 #' @import Biostrings
@@ -85,9 +85,7 @@ setMethod("match_kmers", signature(k = "character", subject = "DNAStringSet"),
           function(k, subject, genome = NULL, out = c("matches","positions"), ranges = NULL){
             out = match.arg(out)
             
-            seqs <- subject
-            
-            match_kmers_helper(seqs, k, out, ranges)
+            match_kmers_helper(subject, k, out, ranges)
           })
 
 #' @describeIn match_kmers For character strings
@@ -96,7 +94,7 @@ setMethod("match_kmers", signature(k = "character", subject = "character"),
           function(k, subject, out = c("matches","positions"), ranges = NULL ){
             out = match.arg(out)
             
-            match_kmers_helper(DNAStringSet(seqs), k, out, ranges)
+            match_kmers_helper(subject, k, out, ranges)
           })
 
 #' @describeIn match_kmers For DNA String objects

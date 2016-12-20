@@ -7,13 +7,13 @@
 get_permuted_data(object, niterations = 10, w = 0.1, bs = 50)
 }
 \arguments{
+\item{object}{SummarizedExperiment}
+
 \item{niterations}{number of background peaks to sample}
 
 \item{w}{parameter controlling similarity of background peaks}
 
 \item{bs}{bin size parameter}
-
-\item{counts_mat}{SummarizedExperiment}
 }
 \value{
 matrix with one row per peak and one column per iteration.  values in a row

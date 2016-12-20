@@ -40,10 +40,10 @@ compute_expectations <- function(object,
       stop("annotation must be vector of length of columns of object, or a character vector referring to name of column in colData of object")
     }
     n_anno = length(levels(anno))
-    mat = matrix(nrow = counts_info$npeak, ncol = n_anno)
+    mat = matrix(nrow = nrow(object), ncol = n_anno)
     if (norm){
       for (i in 1:n_anno){
-        ix = which(anno = levels(anno)[i])
+        ix = which(anno == levels(anno)[i])
         mat[,i] = rowSums(assays(object)$counts[,ix] /
                             matrix(get_fragments_per_sample(object)[ix],
                                    nrow = nrow(object),
@@ -273,7 +273,7 @@ compute_deviations_no_bg <- function(object,
   if (is.null(assays(object)$counts)) stop("No counts slot")
 
   if (inherits(assays(object)$counts,"matrix")){
-    assays(object)$counts = Matrix(counts_mat)
+    assays(object)$counts = Matrix(assays(object)$counts)
   }
   stopifnot(inherits(assays(object)$counts,"Matrix"))
 

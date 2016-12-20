@@ -67,7 +67,7 @@ match_pwms_helper <- function(pwms, seqs, bg, p.cutoff, w, out, ranges){
 #' @param out what to return? see details
 #' @param p.cutoff p-value cutoff for returning motifs
 #' @param w parameter controlling size of window for filtration; default is 7
-#' @param if subject is not GenomicRanges, ranges to use when out is positions
+#' @param ranges if subject is not GenomicRanges, ranges to use when out is positions
 #' @details Can either return a SummarizedExperiment with just sparse matrix with values set to 1 for a match (if return == "matches"), 
 #' a SummarizedExperiment with a matches matrix as well as matrices with the maximum motif score and total motif counts (if return == "scores"), or
 #' a GenomicRanges or IRanges object with all the positions of matches   
@@ -107,7 +107,7 @@ setMethod("match_pwms", signature(pwms = "PWMatrixList", subject = "character"),
             } else{
               stopifnot(length(bg)==4 && is.numeric(bg))
             }
-            match_pwms_helper(pwms, seqs, bg, p.cutoff, w, out, ranges)
+            match_pwms_helper(pwms, subject, bg, p.cutoff, w, out, ranges)
           })
 
 #' @describeIn match_pwms PWMatrixList/DNAString

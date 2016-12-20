@@ -54,7 +54,7 @@ match_kmers(k, subject, ...)
 
 \item{out}{what to return? see details}
 
-\item{if}{subject is not GenomicRanges, ranges to use when out is positions}
+\item{ranges}{if subject is not GenomicRanges, ranges to use when out is positions}
 }
 \description{
 Find kmer matches in the DNA string-based subject

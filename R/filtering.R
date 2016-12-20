@@ -14,7 +14,7 @@
 #' min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  min_depth is 
 #' set to the maximum of 500 or 10% of the median library size.
 #' @return indices of samples to keep
-#' @seealso \code{\link{get_counts}},  \code{\link{get_inputs}}, \code{\link{filter_peaks}}
+#' @seealso \code{\link{get_counts}},  \code{\link{get_peaks}}, \code{\link{filter_peaks}}
 #' @import miniUI ggplot2 plotly shiny
 #' @export          
 filter_samples <- function(object,  min_in_peaks = NULL, min_depth = NULL, shiny = TRUE, ix_return = FALSE){
@@ -44,7 +44,7 @@ filter_samples <- function(object,  min_in_peaks = NULL, min_depth = NULL, shiny
 #' 
 #' plot filtering of samples
 #' @param object SummarizedExperiment with matrix of fragment counts per peak per sample, as computed 
-#' by \code{\link{getFragmentCounts}}
+#' by \code{\link{get_counts}}
 #' @param min_in_peaks minimum fraction of samples within peaks 
 #' @param min_depth minimum library size
 #' @param interactive make interactive plot?
@@ -52,7 +52,7 @@ filter_samples <- function(object,  min_in_peaks = NULL, min_depth = NULL, shiny
 #' min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  min_depth is 
 #' set to the maximum of 500 or 10% of the median library size.
 #' @return indices of samples to keep
-#' @seealso \code{\link{get_counts}},  \code{\link{get_inputs}}, \code{\link{filter_peaks}}
+#' @seealso \code{\link{get_counts}},  \code{\link{get_peaks}}, \code{\link{filter_peaks}}
 #' @import miniUI ggplot2 plotly shiny
 #' @export          
 filter_samples_plot <- function(object,  min_in_peaks = NULL, min_depth = NULL, interactive = TRUE){
@@ -196,13 +196,13 @@ upper_bias_limit_helper <- function(x, k){
 #' 
 #' function to get indices of peaks that pass filters
 #' @param counts_mat SummarizedExperiment with matrix of fragment counts per peak per sample, as computed 
-#' by \code{\link{getFragmentCounts}}
+#' by \code{\link{get_counts}}
 #' \code{\link{read_peaks}}
 #' @param min_fragments_per_peak minimum number of fragmints in peaks across all samples 
 #' @param non_overlapping reduce peak set to non-overlapping peaks, see details
 #' @details if non_overlapping is set to true, when peaks overlap the overlapping peak with lower counts is removed
 #' @return vector of indices, representing peaks that should be kept
-#' @seealso \code{\link{get_peaks}},  \code{\link{get_inputs}}, \code{\link{filter_samples}},
+#' @seealso \code{\link{get_peaks}},  \code{\link{get_peaks}}, \code{\link{filter_samples}},
 #' \code{\link{get_counts}}
 #' @export          
 filter_peaks <- function(counts_mat, min_fragments_per_peak = 1, non_overlapping = TRUE, ix_return = FALSE){

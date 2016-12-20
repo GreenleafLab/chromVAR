@@ -21,7 +21,6 @@ remove_correlated_helper <- function(mat, val, cutoff = 0.9){
 #' @param threshold variability threshold -- use only deviations with variability greater than threshold
 #' @param perplexity perplexity parameter for tsne
 #' @param shiny output shiny gadget for choosing parameters & visualizing results
-#' @param ...
 #'
 #' @return list with three elements: threshold used, perplexity used, tsne results
 #' from \code{\link[Rtsne]{Rtsne}}
@@ -29,8 +28,7 @@ remove_correlated_helper <- function(mat, val, cutoff = 0.9){
 deviations_tsne <- function(object,
                             threshold = 1.5,
                             perplexity = 30,
-                            shiny = interactive(),
-                            ...){
+                            shiny = interactive()){
 
   if (shiny){
     return(deviations_tsne_shiny(object, threshold, perplexity))
@@ -95,12 +93,12 @@ deviations_tsne_shiny <- function(object, threshold = 1.5, perplexity = 30){
                     aes(x = x, y = y, col = color, text = text))  +
           geom_point(size = 2) + chromVAR_theme(12) +
           labs(col = input$color) +
-          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid::unit(0.5,"lines"))
       } else{
         p1 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = assays(object[input$color,])[["deviations"]][1,], text = colnames(object)),
                     aes(x = x, y = y, col = color, text = text)) + geom_point(size= 2) +
           scale_color_gradient2(name = rowData(object[input$color,])[,"name"],mid = "lightgray", low = "blue", high = "red") + chromVAR_theme(12) +
-          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid::unit(0.5,"lines"))
       }
       ggplotly(p1)
     })
@@ -183,12 +181,12 @@ deviations_tsne_shiny <- function(object, threshold = 1.5, perplexity = 30){
 #                     aes(x = x, y = y, col = color, text = text))  +
 #           geom_point(size = 2) + chromVAR_theme(12) +
 #           labs(col = input$color) +
-#           xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+#           xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid::unit(0.5,"lines"))
 #       } else{
 #         p1 = ggplot(data.frame(x = tsne$Y[,1], y = tsne$Y[,2], color = assays(object[input$color,])[["deviations"]][1,], text = colnames(object)),
 #                     aes(x = x, y = y, col = color, text = text)) + geom_point(size= 2) +
 #           scale_color_gradient2(name = rowData(object[input$color,])[,"name"],mid = "lightgray", low = "blue", high = "red") + chromVAR_theme(12) +
-#           xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+#           xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid::unit(0.5,"lines"))
 #       }
 #       ggplotly(p1)
 #     })
@@ -210,7 +208,6 @@ deviations_tsne_shiny <- function(object, threshold = 1.5, perplexity = 30){
 #' @param threshold variability threshold -- use only deviations with variability greater than threshold
 #' @param perplexity perplexity parameter for tsne
 #' @param shiny output shiny gadget for choosing parameters & visualizing results
-#' @param ...
 #'
 #' @return list with three elements: threshold used, perplexity used, tsne results
 #' from \code{\link[Rtsne]{Rtsne}}
@@ -219,8 +216,7 @@ deviations_tsne_motifs <- function(motifs = NULL,
                                    kmers = NULL,
                                    threshold = 1.5,
                                    perplexity = 10,
-                                   shiny = interactive(),
-                                   ...){
+                                   shiny = interactive()){
   stopifnot(!is.null(motifs) || !is.null(kmers))
   if (shiny){
     return(deviations_tsne_motifs_shiny(motifs = motifs, kmers =kmers, threshold = threshold, perplexity = perplexity))
@@ -298,7 +294,7 @@ deviations_tsne_motifs_shiny <- function(motifs = NULL, kmers = NULL, threshold 
                     aes(x = x, y = y, col = color, text = text, size = Variability, shape = type))  +
           geom_point(size = 2) + chromVAR_theme(12) + scale_size(range=c(0.5,2.5)) + scale_shape_manual(values = c(1,16)) +
           labs(col = "Max Deviations:\n") +
-          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid:::unit(0.5,"lines"))
+          xlab("tSNE dim 1") + ylab("tSNE dim 2") + theme(legend.key.size = grid::unit(0.5,"lines"))
       }
       ggplotly(p1)
     })

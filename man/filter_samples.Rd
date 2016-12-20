@@ -29,6 +29,6 @@ min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  m
 set to the maximum of 500 or 10% of the median library size.
 }
 \seealso{
-\code{\link{get_counts}},  \code{\link{get_inputs}}, \code{\link{filter_peaks}}
+\code{\link{get_counts}},  \code{\link{get_peaks}}, \code{\link{filter_peaks}}
 }
 

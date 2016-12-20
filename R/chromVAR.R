@@ -13,6 +13,8 @@
 #' @importFrom stats na.omit oneway.test p.adjust pchisq pnorm prcomp quantile runif sd t.test var wilcox.test
 #' @importFrom utils installed.packages read.delim setTxtProgressBar txtProgressBar
 #' @importFrom Rcpp sourceCpp
+#' @importFrom S4Vectors queryHits subjectHits DataFrame elementLengths
+#' @importFrom GenomeInfoDb seqlevels seqlevels<-
 #' @useDynLib chromVAR
 #' @docType package
 #' @name chromVAR

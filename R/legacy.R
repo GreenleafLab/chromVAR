@@ -1,4 +1,4 @@
-
+#' @importFrom S4Vectors DataFrame
 compute_deviations_legacy <- function(object,
                                       annotations = NULL,
                                       background_peaks = NULL,
@@ -10,7 +10,7 @@ compute_deviations_legacy <- function(object,
   if (is.null(assays(object)$counts)) stop("No counts slot")
 
   if (inherits(assays(object)$counts,"matrix")){
-    assays(object)$counts = Matrix(counts_mat)
+    assays(object)$counts = Matrix(assays(object)$counts)
   }
   stopifnot(inherits(assays(object)$counts,"Matrix"))
 
@@ -110,7 +110,7 @@ compute_deviations_single_legacy <- function(peak_set,
   normvar <- sqrt(sum(observed_deviation**2)/mean(rowSums(sampled_deviation**2)))
   if (intermediate_results){
       out = list(deviations = normdev, variability = normvar, observed = observed,
-                 sampled = sampled, expected = expected, expected_sampled = expected_sampled_counts)
+                 sampled = sampled_counts, expected = expected, expected_sampled = expected_sampled_counts)
   } else{
     out = list(deviations = normdev, variability = normvar)
   }

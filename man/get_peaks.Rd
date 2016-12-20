@@ -4,12 +4,14 @@
 \alias{get_peaks}
 \title{get_peaks}
 \usage{
-get_peaks(filename, extra_cols = c(), sort_peaks = TRUE)
+get_peaks(filename, extra_cols = c(), sort_peaks = FALSE)
 }
 \arguments{
 \item{filename}{filename of bed file}
 
 \item{extra_cols}{extra columns to read in beyond first three}
+
+\item{sort_peaks}{sort the peaks?}
 }
 \value{
 \code{\link[GenomicRanges]{GenomicRanges}} containing peaks in bed file
@@ -25,6 +27,6 @@ Extra columns can be added as metadata or strand information if provided, but th
 indicate column index and name using named vector for extra_cols.
 }
 \seealso{
-\code{\link{get_counts}}, \code{\link{get_inputs}}, \code{\link{filter_peaks}}
+\code{\link{get_counts}}, \code{\link{get_inputs}}, \code{\link{filter_peaks}},  \code{\link{read_macs2_narrowpeak}}
 }
 

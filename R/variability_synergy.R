@@ -1,12 +1,13 @@
 
 #' variability_synergy
 #' 
-#' @param object 
-#' @param annotations 
-#' @param background_peaks 
-#' @param variabilities 
-#' @param expectation 
-#' @param nbg 
+#' @param object result from compute_deviations
+#' @param annotations SummarizedExperiment of annotation matches
+#' @param background_peaks optional, matrix of background peaks 
+#' @param variabilities optional, variabilities computed from compute_variability
+#' @param expectation optional, expected fraction of reads per peak, as computed
+#' by compute_expectations
+#' @param nbg number of background iterations
 #' @details should only be run on small number of motifs/kmers/peaksets (very slow!)
 #' 
 #' @return synergy matrix
@@ -25,7 +26,7 @@ variability_synergy <- function(object,
   if (is.null(assays(object)$counts)) stop("No counts slot")
   
   if (inherits(assays(object)$counts,"matrix")){
-    assays(object)$counts = Matrix(counts_mat)
+    assays(object)$counts = Matrix(assays(object)$counts)
   }
   stopifnot(inherits(assays(object)$counts,"Matrix"))
   

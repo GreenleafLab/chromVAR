@@ -7,15 +7,16 @@
 #' Read in peaks from a bed file.
 #' @param filename filename of bed file
 #' @param extra_cols extra columns to read in beyond first three
+#' @param sort_peaks sort the peaks?
 #' @return \code{\link[GenomicRanges]{GenomicRanges}} containing peaks in bed file
 #' @details As in standard definition of bed file, first column is assumed to be chromosome,
 #' second is assumed to be start of peak (0-based), and third is assumed to be end of peak (1-based).
 #' Note that in output GenomicRanges output, start and end indices are both 1-based.
 #' Extra columns can be added as metadata or strand information if provided, but the user must
 #' indicate column index and name using named vector for extra_cols.
-#' @seealso \code{\link{get_counts}}, \code{\link{get_inputs}}, \code{\link{filter_peaks}}
+#' @seealso \code{\link{get_counts}}, \code{\link{get_inputs}}, \code{\link{filter_peaks}},  \code{\link{read_macs2_narrowpeak}}
 #' @export
-get_peaks <- function(filename, extra_cols = c(), sort_peaks = TRUE){
+get_peaks <- function(filename, extra_cols = c(), sort_peaks = FALSE){
   if (is.installed('readr')){
     bed <- as.data.frame(suppressMessages(readr::read_tsv(file = filename, col_names = FALSE)[, c(1:3, extra_cols)]))
   } else{
@@ -49,6 +50,16 @@ get_peaks <- function(filename, extra_cols = c(), sort_peaks = TRUE){
   }
 }
 
+#' read_macs2_narrowpeaks
+#' 
+#' Reads in peaks in narrowpeaks format, as output by macs2. Uses summit as 
+#' center of peak, and makes peak the given "width". By default removes 
+#' overlapping peaks to get set of peaks with no overlaps
+#' @param filename filename
+#' @param width desired width of peaks
+#' @param non_overlapping remove overlapping peaks
+#' @return \code{\link[GenomicRanges]{GenomicRanges}}
+#' 
 #'@export
 read_macs2_narrowpeaks <- function(filename, width = 500, non_overlapping = TRUE){
   if (is.installed('readr')){
@@ -275,6 +286,7 @@ bamToFragments <- function(bamfile, paired){
   return(out)
 
 }
+
 
 getFragmentCountsByRG <- function(bam, peaks, paired){
   message(paste("Reading in file: ",bam, sep="",collapse=""))

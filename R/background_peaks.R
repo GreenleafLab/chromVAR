@@ -71,7 +71,7 @@ get_background_peaks <- function(object, niterations = 50, w = 0.1, bs = 50){
 #' get_permuted_data
 #'
 #' Function to get permuted data while maintaining biases
-#' @param counts_mat SummarizedExperiment
+#' @param object SummarizedExperiment
 #' @param niterations number of background peaks to sample
 #' @param w parameter controlling similarity of background peaks
 #' @param bs bin size parameter

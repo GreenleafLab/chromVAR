@@ -5,7 +5,7 @@
 \title{deviations_tsne_motifs}
 \usage{
 deviations_tsne_motifs(motifs = NULL, kmers = NULL, threshold = 1.5,
-  perplexity = 10, shiny = interactive(), ...)
+  perplexity = 10, shiny = interactive())
 }
 \arguments{
 \item{threshold}{variability threshold -- use only deviations with variability greater than threshold}
@@ -13,8 +13,6 @@ deviations_tsne_motifs(motifs = NULL, kmers = NULL, threshold = 1.5,
 \item{perplexity}{perplexity parameter for tsne}
 
 \item{shiny}{output shiny gadget for choosing parameters & visualizing results}
-
-\item{...}{}
 
 \item{object}{deviations result}
 }

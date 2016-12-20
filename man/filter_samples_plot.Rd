@@ -9,7 +9,7 @@ filter_samples_plot(object, min_in_peaks = NULL, min_depth = NULL,
 }
 \arguments{
 \item{object}{SummarizedExperiment with matrix of fragment counts per peak per sample, as computed 
-by \code{\link{getFragmentCounts}}}
+by \code{\link{get_counts}}}
 
 \item{min_in_peaks}{minimum fraction of samples within peaks}
 
@@ -29,6 +29,6 @@ min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  m
 set to the maximum of 500 or 10% of the median library size.
 }
 \seealso{
-\code{\link{get_counts}},  \code{\link{get_inputs}}, \code{\link{filter_peaks}}
+\code{\link{get_counts}},  \code{\link{get_peaks}}, \code{\link{filter_peaks}}
 }
 
