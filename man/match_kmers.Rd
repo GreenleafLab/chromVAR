@@ -29,39 +29,45 @@ match_kmers(k, subject, ...)
   out = c("matches", "positions"), ranges = NULL)
 
 \S4method{match_kmers}{character,RangedSummarizedExperiment}(k, subject,
-  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
-  out = c("matches", "counts", "positions"), ranges = NULL)
+  genome = BSgenome.Hsapiens.UCSC.hg19, out = c("matches", "counts",
+  "positions"), ranges = NULL)
 
 \S4method{match_kmers}{numeric,ANY}(k, subject,
-  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
-  out = c("matches", "counts", "positions"), ranges = NULL)
+  genome = BSgenome.Hsapiens.UCSC.hg19, out = c("matches", "counts",
+  "positions"), ranges = NULL)
 
 \S4method{match_kmers}{DNAStringSet,ANY}(k, subject,
-  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
-  out = c("matches", "counts", "positions"), ranges = NULL)
+  genome = BSgenome.Hsapiens.UCSC.hg19, out = c("matches", "counts",
+  "positions"), ranges = NULL)
 
 \S4method{match_kmers}{DNAString,ANY}(k, subject,
-  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
-  out = c("matches", "counts", "positions"), ranges = NULL)
+  genome = BSgenome.Hsapiens.UCSC.hg19, out = c("matches", "counts",
+  "positions"), ranges = NULL)
 }
 \arguments{
 \item{k}{k}
 
-\item{subject}{either \code{\link[GenomicRanges]{GenomicRanges}}, \code{\link[Biostrings]{DNAStringSet}},
-\code{\link[Biostrings]{DNAString}}, or character vector}
+\item{subject}{either \code{\link[GenomicRanges]{GenomicRanges}},
+\code{\link[Biostrings]{DNAStringSet}}, \code{\link[Biostrings]{DNAString}},
+or character vector}
 
-\item{genome}{BSgenome object, only used if subect is \code{\link[GenomicRanges]{GenomicRanges}}}
+\item{...}{additional arguments}
+
+\item{genome}{BSgenome object, only used if subect is
+\code{\link[GenomicRanges]{GenomicRanges}}}
 
 \item{out}{what to return? see details}
 
-\item{ranges}{if subject is not GenomicRanges, ranges to use when out is positions}
+\item{ranges}{if subject is not GenomicRanges, ranges to use when out is
+positions}
 }
 \description{
 Find kmer matches in the DNA string-based subject
 }
 \details{
-Can either return a SummarizedExperiment with just sparse matrix with values set to 1 for a match (if return == "matches"),  or
-a GenomicRanges  object with all the positions of matches
+Can either return a SummarizedExperiment with just sparse matrix
+with values set to 1 for a match (if return == 'matches'),  or a
+GenomicRanges  object with all the positions of matches
 }
 \section{Methods (by class)}{
 \itemize{

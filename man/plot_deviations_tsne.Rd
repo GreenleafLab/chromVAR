@@ -4,8 +4,8 @@
 \alias{plot_deviations_tsne}
 \title{plot_deviations_tsne}
 \usage{
-plot_deviations_tsne(object, tsne, var_df = NULL, annotation_column = NULL,
-  motif = NULL, shiny = interactive())
+plot_deviations_tsne(object, tsne, var_df = NULL, sample_column = NULL,
+  annotation_name = NULL, shiny = interactive())
 }
 \arguments{
 \item{object}{deviations result object}
@@ -14,13 +14,17 @@ plot_deviations_tsne(object, tsne, var_df = NULL, annotation_column = NULL,
 
 \item{var_df}{variability result}
 
-\item{annotation_column}{column name for colData(object) of annotation to be used
-for coloring samples}
+\item{sample_column}{column name for sample data -- colData(object) -- to be used
+for coloring points}
+
+\item{annotation_name}{name of chromVAR annotation for coloring points}
+
+\item{shiny}{return shiny app?  otherwise return static plots}
 }
 \value{
-shiny widget
+shiny app or plots
 }
 \description{
-plot_deviations_tsne
+plots sample similarity tsne
 }
 

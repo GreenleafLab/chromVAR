@@ -5,18 +5,18 @@
 \title{plot_variability}
 \usage{
 plot_variability(variability, xlab = "Sorted TFs", n = 3,
-  labels = variability$name, interactive = TRUE)
+  labels = variability$name, use_plotly = interactive())
 }
 \arguments{
 \item{variability}{output from \code{\link{compute_variability}}}
 
-\item{xlab}{label for x-axis (default is "Sorted TFs")}
+\item{xlab}{label for x-axis (default is 'Sorted TFs')}
 
 \item{n}{number of toppoints to label?}
 
 \item{labels}{names of sets. if not given, uses rownames of variability}
 
-\item{interactive}{make plot interactive (using plotly)}
+\item{use_plotly}{make plot interactive (using plotly)}
 }
 \description{
 plot variability of motifs/etc

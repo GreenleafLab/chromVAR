@@ -23,6 +23,6 @@ numeric vector
 makes vector of read depths in bam files or RG groups within bam files
 }
 \seealso{
-\code{\link{get_counts}},  \code{\link{get_inputs}}, \code{\link{filter_samples}}
+\code{\link{get_counts}},  \code{\link{filter_samples}}
 }
 

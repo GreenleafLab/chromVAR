@@ -1,4 +1,4 @@
-context('fragmentCounts')
+context('get_counts')
 
 # Read in data needed for tests ------------------------------------------------
 
@@ -7,7 +7,7 @@ test_bam1 <- system.file("extdata", "test_single1.bam", package = "chromVAR")
 test_bam2 <- system.file("extdata", "test_single2.bam", package = "chromVAR")
 test_bam3 <- system.file("extdata", "test_single3.bam", package = "chromVAR")
 peaks_file <- system.file("extdata", "test_bed.txt", package = "chromVAR")
-test_peaks <- get_peaks(peaks_file)
+test_peaks <- get_peaks(peaks_file, sort = TRUE)
 test_bed <- system.file("extdata", "test_reads.bed", package = "chromVAR")
 
 # Test fragment counts with RG ___________--------------------------------------

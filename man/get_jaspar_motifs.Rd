@@ -7,9 +7,10 @@
 get_jaspar_motifs(species = "Homo sapiens", collection = "CORE", ...)
 }
 \arguments{
-\item{species}{Which species?  use eithe jaspar code or latin name. default is "Homo sapiens"}
+\item{species}{Which species?  use eithe jaspar code or latin name. 
+default is 'Homo sapiens'}
 
-\item{collection}{Which collection to use?  default is "CORE"}
+\item{collection}{Which collection to use?  default is 'CORE'}
 
 \item{...}{additional arguments to opts for \code{\link[TFBSTools]{getMatrixSet}}}
 }
@@ -20,7 +21,7 @@ get_jaspar_motifs(species = "Homo sapiens", collection = "CORE", ...)
 Function to get motifs from JASPAR database
 }
 \details{
-Simply a wrapper function for \code{\link[TFBSTools]{getMatrixSet}} that calls
-JASPAR2016 database using \code{\link[JASPAR2016]{JASPAR2016}}
+Simply a wrapper function for \code{\link[TFBSTools]{getMatrixSet}}
+ that calls JASPAR2016 database using \code{\link[JASPAR2016]{JASPAR2016}}
 }
 

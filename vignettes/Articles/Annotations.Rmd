@@ -1,0 +1,149 @@
+---
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Annotations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Annotations
+
+The main compute_deviations function from chromVAR requires an object storing what peaks overlap what motifs or other annotations.  The package includes functions for creating such an object from a set of motifs or kmers, or for converting an existing matrix, data.frame, list, GenomicRangesList, or list of bed files of annotations into the appropriate object.
+
+```{r, message = FALSE}
+library(chromVAR)
+library(motifmatchr)
+library(SummarizedExperiment)
+library(Matrix)
+library(BiocParallel)
+register(MulticoreParam(8))
+```
+
+## Motifs or kmers
+
+The most common type of annotations to use for chromVAR are motifs.  
+
+### Motifs included in package
+
+chromVAR includes a collection of human and mouse motifs, as well as a function for reading in motifs from JASPAR.
+
+```{r}
+data("human_pwms_v1") # human collection
+
+data("mouse_pwms_v1") # mouse collection
+
+jaspar_motifs <- get_jaspar_motifs() # default species is human
+
+```
+
+If using your own motifs, they need to be formatted as either a PWMatrixList or a PFMatrixList from the TFBSTools package. See documentation from TFBStools for those two objects.  
+
+### Finding motif matches
+
+The package motifmatchr can be used to find motifs within peaks.  The `match_motifs` method takes as inputs the motif lists described above, or your own list of motifs, and returns a (Ranged)SummarizedExperiment with a matrix indicating what peaks (rows) contain what motifs (columns). 
+
+```{r}
+# First get filtered counts
+data(example_counts, package = "chromVAR")
+example_counts <- add_gc_bias(example_counts)
+counts_filtered <- filter_samples(example_counts, min_depth = 1500, min_in_peaks = 0.15, shiny = FALSE)
+counts_filtered <- filter_peaks(counts_filtered)
+
+# get motif matches
+motif_ix <- match_motifs(jaspar_motifs, counts_filtered)
+```
+
+match_motifs can accept as the second argument either a RangedSummarizedExperiment, GenomicRanges, DNAStringSet, or character vector.  If the argument is not a sequence object, then a genome argument is also required, which should be a BSgenome object -- the default is BSgenome.Hsapiens.UCSC.hg19. For more information on motifmatchr see the vignette from that package. 
+
+### Using kmers 
+
+The `match_kmers` function in chromVAR can be used to make an annotation matrix for all kmers of a given length:
+
+```{r}
+kmer_ix <- match_kmers(6, counts_filtered)
+```
+
+Alternatively, if you only want an annotation matrix for a set of pre-determined kmers, you can pass match_kmers a list of those kmers:
+
+```{r}
+my_kmers_ix <- match_kmers(c("AGATAA","GATAAG"), counts_filtered)
+```
+
+### Cis groups
+
+Instead of getting groups of peaks based on shared motif or kmer, chromVAR can also use peak groups defined based on location.  The fuction get_cis_groups will annotate peaks based on chromosomal location. With default parameters, the function will take the first 25 peaks in a chromosome and consider those a group, then move 10 peaks down and group the 25 peaks together, and so on, to create overlapping sets of 25 peaks. The group size and step size can both be adjusted through the paremeters grpsize and stepsize. 
+
+```{r}
+cis_ix <- get_cis_groups(counts_filtered, grpsize = 25, stepsize = 10) 
+```
+
+
+## Alternative annotations
+
+### Reading in annotations from bed files
+
+If your have a set of genomic annotations (e.g. genomic motif matches, GWAS hits) in bed files that you want to use, then the function get_annotations can be used to read those annotations into the appropriate SummarizedExperiment with matrix.  
+
+```{r, eval = FALSE}
+# Not evaluated
+my_annotation_files <- c('anno1.bed','anno2.bed') # Fake files
+anno_ix <- get_annotations(my_annotation_files, rowRanges = rowRanges(counts_filtered))
+```
+
+### Reading in annotations from single bed file with column indicating specific annotation.  
+
+Use the get_annotations with a single file and the column argument to get an annotation matrix based on the groups indicated in that column (1-based indexing).  
+
+```{r, eval=FALSE}
+# Not evaluated
+my_annotation_file <- "anno.bed" # Fake file
+anno_ix <- get_annotations(my_annotation_files, rowRanges = rowRanges(counts_filtered), column = 5)
+```
+
+### Other annotation formats
+
+If you have already read in your annotations into R, you can also use the get_annotations function to get them into the right format.  
+
+#### Annotations GenomicRangesList:
+
+If your annotations are stored as a GenomicRangesList, with each element of the list a GenomicRanges corresponding to the locations of the annotation, then the `get_annotations` method can determine what peaks overlap with what annotations and create the appropriate matrix stored within the `matches` assay of a SummarizedExperiment.  
+
+```{r}
+library(GenomicRanges)
+my_annotation_granges <- GRangesList(GRanges("chr1", ranges = IRanges(start = c(566763,805090), width = 8)),
+                                        GRanges("chr1", ranges = IRanges(start = c(566792,895798), width = 8)))
+anno_ix <- get_annotations(my_annotation_granges, rowRanges = rowRanges(counts_filtered))
+```
+
+#### Annotations as a matrix, Matrix, data.frame, or DataFrame
+
+If your annotations already exist as a matrix-like object indicating what peak contains what annotation, then the get_annotations method is simply a wrapper around SummarizedExperiment that ensures that the annotation gets stored in the `matches` assay.  
+
+```{r}
+my_annotation_df <- data.frame(first100 = c(rep(TRUE, 100),rep(FALSE,nrow(counts_filtered) - 100)),
+                             last100 = c(rep(FALSE,nrow(counts_filtered) - 100),rep(TRUE, 100)))
+
+anno_ix <- get_annotations(my_annotation_df, rowRanges = rowRanges(counts_filtered))
+```
+
+#### Annotations as a list of peak indices
+
+If your annotations are stored as a list of peak indices, with each element of the list a vector of which peaks contain the annotation, then the get_annotations function can be used to convert that list into a boolean matrix of peak and annotation overlaps stored within the `matches` assay of a SummarizedExperiment.  
+
+```{r}
+my_annotation_list <- list(first100 = rep(1, 100), last100 = c(rep(nrow(counts_filtered) - 100, nrow(counts_filtered))))
+anno_ix <- get_annotations(my_annotation_list, rowRanges = rowRanges(counts_filtered))
+```
+
+Alternatively, the list of peak indices can also be used as input directly into `compute_deviations`.
+
+## Session Info
+
+```{r}
+Sys.Date()
+```
+
+```{r}
+sessionInfo()
+```
+

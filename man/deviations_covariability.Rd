@@ -10,14 +10,14 @@ deviations_covariability(object)
 \item{object}{deviations result}
 }
 \value{
-"covariability" matrix
+'covariability' matrix
 }
 \description{
 deviations_covariability
 }
 \details{
-Returns the "covariability" between motifs/kmers/peaksets.  "Covariability"
-is defined as covariance between Z-scores divided by variance of Z-scores for
-one motif/kmer/peakset (the row).
+Returns the 'covariability' between motifs/kmers/peaksets. 
+Covariability' is defined as covariance between Z-scores divided by variance 
+of Z-scores for one motif/kmer/peakset (the row).
 }
 

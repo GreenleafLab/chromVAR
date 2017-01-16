@@ -4,17 +4,19 @@
 \alias{filter_peaks}
 \title{filter_peaks}
 \usage{
-filter_peaks(counts_mat, min_fragments_per_peak = 1, non_overlapping = TRUE,
+filter_peaks(object, min_fragments_per_peak = 1, non_overlapping = TRUE,
   ix_return = FALSE)
 }
 \arguments{
-\item{counts_mat}{SummarizedExperiment with matrix of fragment counts per peak per sample, as computed 
-by \code{\link{get_counts}}
-\code{\link{read_peaks}}}
+\item{object}{SummarizedExperiment with matrix of fragment counts per peak 
+per sample, as computed by \code{\link{get_counts}}}
 
-\item{min_fragments_per_peak}{minimum number of fragmints in peaks across all samples}
+\item{min_fragments_per_peak}{minimum number of fragmints in peaks across all 
+samples}
 
 \item{non_overlapping}{reduce peak set to non-overlapping peaks, see details}
+
+\item{ix_return}{return indices of peaks to keep instead of subsetted counts object}
 }
 \value{
 vector of indices, representing peaks that should be kept
@@ -23,10 +25,11 @@ vector of indices, representing peaks that should be kept
 function to get indices of peaks that pass filters
 }
 \details{
-if non_overlapping is set to true, when peaks overlap the overlapping peak with lower counts is removed
+if non_overlapping is set to true, when peaks overlap the overlapping
+peak with lower counts is removed
 }
 \seealso{
-\code{\link{get_peaks}},  \code{\link{get_peaks}}, \code{\link{filter_samples}},
+\code{\link{get_peaks}},  \code{\link{filter_samples}},
 \code{\link{get_counts}}
 }
 

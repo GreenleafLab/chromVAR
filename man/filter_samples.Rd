@@ -5,17 +5,19 @@
 \title{filter_samples}
 \usage{
 filter_samples(object, min_in_peaks = NULL, min_depth = NULL,
-  shiny = TRUE, ix_return = FALSE)
+  shiny = interactive(), ix_return = FALSE)
 }
 \arguments{
 \item{object}{SummarizedExperiment with matrix of fragment counts per peak per sample, as computed 
-by \code{\link{getFragmentCounts}}}
+by \code{\link{get_counts}}}
 
 \item{min_in_peaks}{minimum fraction of samples within peaks}
 
 \item{min_depth}{minimum library size}
 
 \item{shiny}{make shiny gadget?}
+
+\item{ix_return}{return indices of sample to keep instead of subsetted counts object}
 }
 \value{
 indices of samples to keep

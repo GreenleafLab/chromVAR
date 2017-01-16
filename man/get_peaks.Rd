@@ -14,19 +14,21 @@ get_peaks(filename, extra_cols = c(), sort_peaks = FALSE)
 \item{sort_peaks}{sort the peaks?}
 }
 \value{
-\code{\link[GenomicRanges]{GenomicRanges}} containing peaks in bed file
+\code{\link[GenomicRanges]{GenomicRanges}} containing peaks from file
 }
 \description{
 Read in peaks from a bed file.
 }
 \details{
-As in standard definition of bed file, first column is assumed to be chromosome,
-second is assumed to be start of peak (0-based), and third is assumed to be end of peak (1-based).
-Note that in output GenomicRanges output, start and end indices are both 1-based.
-Extra columns can be added as metadata or strand information if provided, but the user must
-indicate column index and name using named vector for extra_cols.
+As in standard definition of bed file, first column is assumed to be 
+chromosome, second is assumed to be start of peak (0-based), and third is 
+assumed to be end of peak (1-based). Note that in output GenomicRanges 
+output, start and end indices are both 1-based. Extra columns can be added as
+metadata or strand information if provided, but the user must indicate column
+index and name using named vector for extra_cols.
 }
 \seealso{
-\code{\link{get_counts}}, \code{\link{get_inputs}}, \code{\link{filter_peaks}},  \code{\link{read_macs2_narrowpeak}}
+\code{\link{get_counts}}, \code{\link{filter_peaks}}, 
+\code{\link{read_macs2_narrowpeaks}}
 }
 

@@ -1,9 +1,10 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^R/experimental.R
-^R/motif_crap.R
-^R/kmer_experimental.R
 ^README.md
-^README.rmd
-^README_files
-^README_*
+^docs$
+^_pkgdown.yml$
+^vignettes/Articles$
+^data-raw$
+^.Rhistory$
+^.RData$
+^.gitignore$

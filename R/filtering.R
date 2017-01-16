@@ -6,118 +6,164 @@
 #' 
 #' function to get indices of samples that pass filtters
 #' @param object SummarizedExperiment with matrix of fragment counts per peak per sample, as computed 
-#' by \code{\link{getFragmentCounts}}
+#' by \code{\link{get_counts}}
 #' @param min_in_peaks minimum fraction of samples within peaks 
 #' @param min_depth minimum library size
 #' @param shiny make shiny gadget?
+#' @param ix_return return indices of sample to keep instead of subsetted counts object
 #' @details If unspecified, min_in_peaks and min_depth cutoffs will be estimated based on data.
 #' min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  min_depth is 
 #' set to the maximum of 500 or 10% of the median library size.
 #' @return indices of samples to keep
 #' @seealso \code{\link{get_counts}},  \code{\link{get_peaks}}, \code{\link{filter_peaks}}
-#' @import miniUI ggplot2 plotly shiny
 #' @export          
-filter_samples <- function(object,  min_in_peaks = NULL, min_depth = NULL, shiny = TRUE, ix_return = FALSE){
+filter_samples <- function(object, min_in_peaks = NULL, min_depth = NULL, shiny = interactive(), 
+  ix_return = FALSE) {
+  object <- counts_check(object)
+  if ("depth" %ni% colnames(colData(object))) 
+    stop("colData for object must have column named depth with total reads per sample")
+  if (shiny && !interactive()) 
+    shiny <- FALSE
   depths <- colData(object)$depth
-  fragments_per_sample = get_fragments_per_sample(object)
-  if (is.null(min_in_peaks)){
-    min_in_peaks = round(median(fragments_per_sample/depths)*0.5, digits = 3)
-    if (!shiny) message(paste("min_in_peaks set to ",min_in_peaks,sep="",collapse=""))
-  } 
-  if (is.null(min_depth)){
-    min_depth = max(500,median(depths)*0.1)
-    if (!shiny) message(paste("min_depth set to ",min_depth,sep="",collapse=""))
+  fragments_per_sample <- get_fragments_per_sample(object)
+  if (is.null(min_in_peaks)) {
+    min_in_peaks <- round(median(fragments_per_sample/depths) * 0.5, digits = 3)
+    if (!shiny) 
+      message(paste("min_in_peaks set to ", min_in_peaks, sep = "", collapse = ""))
   }
-  if (shiny){
-    shiny_returned <- filter_samples_gadget(depths, fragments_per_sample, min_in_peaks, min_depth, colnames(object))
-    message(paste("min_in_peaks set to ", shiny_returned$min_in_peaks,sep="",collapse=""))
-    message(paste("min_depth set to ", shiny_returned$min_depth,sep="",collapse=""))
+  if (is.null(min_depth)) {
+    min_depth <- max(500, median(depths) * 0.1)
+    if (!shiny) 
+      message(paste("min_depth set to ", min_depth, sep = "", collapse = ""))
+  }
+  if (shiny) {
+    shiny_returned <- filter_samples_gadget(depths, fragments_per_sample, min_in_peaks, 
+      min_depth, colnames(object))
+    message(paste("min_in_peaks set to ", shiny_returned$min_in_peaks, sep = "", 
+      collapse = ""))
+    message(paste("min_depth set to ", shiny_returned$min_depth, sep = "", collapse = ""))
     keep_samples <- shiny_returned$keep
-  } else{
-    keep_samples <- intersect(which(depths >= min_depth), 
-                            which(fragments_per_sample/depths >= min_in_peaks))   
+  } else {
+    keep_samples <- intersect(which(depths >= min_depth), which(fragments_per_sample/depths >= 
+      min_in_peaks))
   }
-  if (ix_return) return(keep_samples) else return(object[,keep_samples])    
+  if (ix_return) 
+    return(keep_samples) else return(object[, keep_samples])
 }
 
 #' filter_samples_plot
 #' 
 #' plot filtering of samples
-#' @param object SummarizedExperiment with matrix of fragment counts per peak per sample, as computed 
-#' by \code{\link{get_counts}}
+#' @param object SummarizedExperiment with matrix of fragment counts per peak 
+#' per sample, as computed by \code{\link{get_counts}}
 #' @param min_in_peaks minimum fraction of samples within peaks 
 #' @param min_depth minimum library size
-#' @param interactive make interactive plot?
-#' @details If unspecified, min_in_peaks and min_depth cutoffs will be estimated based on data.
-#' min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  min_depth is 
-#' set to the maximum of 500 or 10% of the median library size.
+#' @param use_plotly make interactive plot?
+#' @details If unspecified, min_in_peaks and min_depth cutoffs will be estimated
+#' based on data. min_in_peaks is set to 0.5 times the median proportion of 
+#' fragments in peaks.  min_depth is set to the maximum of 500 or 10% of the 
+#' median library size.
 #' @return indices of samples to keep
-#' @seealso \code{\link{get_counts}},  \code{\link{get_peaks}}, \code{\link{filter_peaks}}
-#' @import miniUI ggplot2 plotly shiny
+#' @seealso \code{\link{get_counts}},  \code{\link{get_peaks}}, 
+#' \code{\link{filter_peaks}}
 #' @export          
-filter_samples_plot <- function(object,  min_in_peaks = NULL, min_depth = NULL, interactive = TRUE){
+filter_samples_plot <- function(object, min_in_peaks = NULL, min_depth = NULL, 
+                                use_plotly = interactive()) {
+  object <- counts_check(object)
+  if ("depth" %ni% colnames(colData(object))) 
+    stop("colData for object must have column named depth with total reads per sample")
+  if (use_plotly && !interactive()) 
+    use_plotly <- FALSE
   depths <- colData(object)$depth
-  fragments_per_sample = get_fragments_per_sample(object)
-  if (is.null(min_in_peaks)){
-    min_in_peaks = round(median(fragments_per_sample/depths)*0.5, digits = 3)
-    message(paste("min_in_peaks set to ",min_in_peaks,sep="",collapse=""))
-  } 
-  if (is.null(min_depth)){
-    min_depth = max(500,median(depths)*0.1)
-    message(paste("min_depth set to ",min_depth,sep="",collapse=""))
+  fragments_per_sample <- get_fragments_per_sample(object)
+  if (is.null(min_in_peaks)) {
+    min_in_peaks <- round(median(fragments_per_sample/depths) * 0.5, digits = 3)
+    message(paste("min_in_peaks set to ", min_in_peaks, sep = "", collapse = ""))
   }
-  keep_samples <- intersect(which(depths >= min_depth), 
-                            which(fragments_per_sample/depths >= min_in_peaks))   
-  tmp_df = data.frame(x = depths, y= fragments_per_sample/depths, z = ((1:length(fragments_per_sample)) %in% keep_samples),
-                      name = colnames(object))
-  p = ggplot(tmp_df, aes_string(x="x", y="y",col="z", text = "name")) + geom_point() +
-    xlab("Number of fragments") + ylab("Proportion of fragments in peaks") + scale_x_log10() + 
-    scale_y_continuous(expand =c(0,0), limits =c(0, min(1,max(tmp_df$y)*1.2)))+
-    scale_color_manual(name = "Pass?",values = c("gray","black"),breaks = c(TRUE,FALSE), labels = c("Yes","No")) +
-    chromVAR_theme()
-  p = p + geom_hline(yintercept = min_in_peaks, col="red", lty = 2) + geom_vline(xintercept = min_depth, col="red", lty=2)
-  if (interactive){
+  if (is.null(min_depth)) {
+    min_depth <- max(500, median(depths) * 0.1)
+    message(paste("min_depth set to ", min_depth, sep = "", collapse = ""))
+  }
+  keep_samples <- intersect(which(depths >= min_depth), which(fragments_per_sample/depths >= 
+    min_in_peaks))
+  tmp_df <- data.frame(x = depths,
+                       y = fragments_per_sample/depths, 
+                       z = ((seq_along(fragments_per_sample)) %in% 
+    keep_samples), name = colnames(object))
+  p <- ggplot(tmp_df, aes_string(x = "x", y = "y", col = "z", text = "name")) + 
+    geom_point() + 
+    xlab("Number of fragments") + 
+    ylab("Proportion of fragments in peaks") + 
+    scale_x_log10() +
+    scale_y_continuous(expand = c(0, 0), 
+                       limits = c(0, min(1, 
+                                         max(tmp_df$y) * 1.2))) + 
+    scale_color_manual(name = "Pass?", values = c("gray", 
+                                                  "black"), 
+                       breaks = c(TRUE, FALSE), labels = c("Yes", "No")) + 
+    chromVAR_theme() +
+    geom_hline(yintercept = min_in_peaks, col = "red", lty = 2) + 
+    geom_vline(xintercept = min_depth, 
+               col = "red", lty = 2)
+  if (use_plotly) {
     return(ggplotly(p))
-  } else{
-    return(p+ annotation_logticks(sides="b"))
+  } else {
+    return(p + annotation_logticks(sides = "b"))
   }
 }
 
 
-filter_samples_gadget <- function(depths, fragments_per_sample,  min_in_peaks, min_depth, sample_names) {
+filter_samples_gadget <- function(depths, 
+                                  fragments_per_sample, 
+                                  min_in_peaks, 
+                                  min_depth, 
+                                  sample_names) {
   
-  ui <- miniPage(
-    gadgetTitleBar("Adjust parameters to change filtering"),
-    fillCol(flex = c(1,3),
-           fillRow(flex = c(1,1), sliderInput("min_in_peaks", "Minimum fraction of fragments in peaks:", 
-                                min=0, max=1, value=min_in_peaks),
-             numericInput("min_depth", "Minimum total reads:", 
-                                 min=0, max=max(depths), value=min_depth)),
-            plotlyOutput("plot", height = "100%")
-    )
-  )
+  ui <- miniPage(gadgetTitleBar("Adjust parameters to change filtering"), 
+                 fillCol(flex = c(1,3), 
+                         fillRow(flex = c(1, 1), 
+                                 sliderInput("min_in_peaks", 
+                                             "Minimum fraction of fragments in peaks:", 
+                                             min = 0,
+                                             max = 1, 
+                                             value = min_in_peaks), 
+                                 numericInput("min_depth", 
+                                              "Minimum total reads:", 
+                                              min = 0, 
+                                              max = max(depths), 
+                                              value = min_depth)), 
+                         plotlyOutput("plot", height = "100%")))
   
   server <- function(input, output, session) {
     
-    keep_samples <- reactive(intersect(which(depths >= input$min_depth), 
+    keep_samples <- reactive(intersect(which(depths >= input$min_depth),
                                        which(fragments_per_sample/depths >= input$min_in_peaks)))
     
     # Render the plot
     output$plot <- renderPlotly({
-      tmp_df = data.frame(x = depths, y= fragments_per_sample/depths, pass_filter = ((1:length(fragments_per_sample)) %in% keep_samples()),
-                          name = sample_names)
-      p = ggplot(tmp_df, aes_string(x="x", y="y",col="pass_filter", text = "name")) + geom_point() +
-        xlab("Number of fragments") + ylab("Proportion of fragments in peaks") + scale_x_log10() + 
-        scale_y_continuous(expand =c(0,0), limits =c(0, min(1,max(tmp_df$y)*1.2)))+
-        scale_color_manual(name = "Pass?",values = c("gray","black"),breaks = c(TRUE,FALSE), labels = c("Yes","No")) +
-        chromVAR_theme()
-      p = p + geom_hline(yintercept = input$min_in_peaks, col="red", lty = 2) + geom_vline(xintercept = input$min_depth, col="red", lty=2)
+      tmp_df <- data.frame(x = depths, y = fragments_per_sample/depths,
+                           pass_filter = (seq_along(fragments_per_sample) %in% 
+                                            keep_samples()), name = sample_names)
+      p <- ggplot(tmp_df, aes_string(x = "x", y = "y", col = "pass_filter", 
+                                     text = "name")) + 
+        geom_point() + 
+        xlab("Number of fragments") + 
+        ylab("Proportion of fragments in peaks") + 
+        scale_x_log10() +
+        scale_y_continuous(expand = c(0, 0), limits = c(0, min(1, max(tmp_df$y) * 1.2))) +
+        scale_color_manual(name = "Pass?", 
+                           values = c("gray", "black"), breaks = c(TRUE, FALSE), 
+                           labels = c("Yes","No")) + chromVAR_theme()
+      p <- p + geom_hline(yintercept = input$min_in_peaks, col = "red", lty = 2) + 
+        geom_vline(xintercept = input$min_depth, col = "red", lty = 2)
       ggplotly(p)
+      p
     })
     
     # Handle the Done button being pressed.
     observeEvent(input$done, {
-      stopApp(list(keep = keep_samples(), min_in_peaks = input$min_in_peaks, min_depth = input$min_depth))
+      stopApp(list(keep = keep_samples(), min_in_peaks = input$min_in_peaks, 
+        min_depth = input$min_depth))
     })
   }
   
@@ -127,52 +173,46 @@ filter_samples_gadget <- function(depths, fragments_per_sample,  min_in_peaks, m
 
 
 
-# Filter samples based on biases  ----------------------------------------------
+# Filter samples based on biases ----------------------------------------------
 
 
-bias_skew <- function(object,
-                      nbins = 10,
-                      expectation = NULL,
-                      what = c("bias","counts")){
+bias_skew <- function(object, nbins = 10, expectation = NULL, 
+                      what = c("bias", "counts")) {
   
-  stopifnot(inherits(object, "SummarizedExperiment"))
+  object <- counts_check(object)
   
-  if (is.null(assays(object)$counts)) stop("No counts slot")
-  
-  if (inherits(assays(object)$counts,"matrix")){
-    assays(object)$counts = Matrix(assays(object)$counts)
-  }
-  stopifnot(inherits(assays(object)$counts,"Matrix"))
-
   what <- match.arg(what)
   
   fragments_per_sample <- get_fragments_per_sample(object)
   
-  if (what == "bias"){
-    bias = rowRanges(object)$bias
-  } else{
-    bias = get_fragments_per_peak(object) 
+  if (what == "bias") {
+    bias <- rowRanges(object)$bias
+  } else {
+    bias <- get_fragments_per_peak(object)
   }
   
-  if (min(get_fragments_per_peak(object)) <= 0) stop("All peaks must have at least one fragment in one sample")
-
-  bias = bias + runif(length(bias),0,0.001)
-  bias_quantiles = quantile(bias, seq(0,1,1/nbins))
-  bias_cut = cut(bias, breaks = bias_quantiles)
-
-  bias_bins = split(1:nrow(object), bias_cut)
+  if (min(get_fragments_per_peak(object)) <= 0) 
+    stop("All peaks must have at least one fragment in one sample")
   
-  if (is.null(expectation)){
+  bias <- bias + runif(length(bias), 0, 0.001)
+  bias_quantiles <- quantile(bias, seq(0, 1, 1/nbins))
+  bias_cut <- cut(bias, breaks = bias_quantiles)
+  
+  bias_bins <- split(1:nrow(object), bias_cut)
+  
+  if (is.null(expectation)) {
     expectation <- compute_expectations(object)
-  } else{
+  } else {
     stopifnot(length(expectation) == nrow(object))
   }
   
   sample_names <- colnames(object)
   
   bias_mat <- sparseMatrix(j = unlist(bias_bins), 
-                           i = unlist(lapply(1:nbins,function(x) rep(x, length(bias_bins[[x]])))),
-                           x = 1,
+                           i = unlist(lapply(1:nbins,
+                                             function(x) 
+                                               rep(x, length(bias_bins[[x]])))), 
+                           x = 1, 
                            dims = c(nbins, nrow(object)))
   
   observed <- as.matrix(bias_mat %*% assays(object)$counts)
@@ -180,11 +220,11 @@ bias_skew <- function(object,
   expected <- as.vector(bias_mat %*% expectation %*% fragments_per_sample)
   
   
-  out <- (observed - expected) / expected
+  out <- (observed - expected)/expected
   return(out)
 }
 
-upper_bias_limit_helper <- function(x, k){
+upper_bias_limit_helper <- function(x, k) {
   q <- quantile(x, c(0.25, 0.75), na.rm = TRUE)
   return(q[2] + k * (q[2] - q[1]))
 }
@@ -195,36 +235,48 @@ upper_bias_limit_helper <- function(x, k){
 #' filter_peaks
 #' 
 #' function to get indices of peaks that pass filters
-#' @param counts_mat SummarizedExperiment with matrix of fragment counts per peak per sample, as computed 
-#' by \code{\link{get_counts}}
-#' \code{\link{read_peaks}}
-#' @param min_fragments_per_peak minimum number of fragmints in peaks across all samples 
+#' @param object SummarizedExperiment with matrix of fragment counts per peak 
+#' per sample, as computed by \code{\link{get_counts}}
+#' @param min_fragments_per_peak minimum number of fragmints in peaks across all 
+#' samples 
 #' @param non_overlapping reduce peak set to non-overlapping peaks, see details
-#' @details if non_overlapping is set to true, when peaks overlap the overlapping peak with lower counts is removed
+#' @param ix_return return indices of peaks to keep instead of subsetted counts object
+#' @details if non_overlapping is set to true, when peaks overlap the overlapping
+#' peak with lower counts is removed
 #' @return vector of indices, representing peaks that should be kept
-#' @seealso \code{\link{get_peaks}},  \code{\link{get_peaks}}, \code{\link{filter_samples}},
+#' @seealso \code{\link{get_peaks}},  \code{\link{filter_samples}},
 #' \code{\link{get_counts}}
 #' @export          
-filter_peaks <- function(counts_mat, min_fragments_per_peak = 1, non_overlapping = TRUE, ix_return = FALSE){
-  fragments_per_peak = get_fragments_per_peak(counts_mat)
-  peaks <- rowRanges(counts_mat)
+filter_peaks <- function(object, 
+                         min_fragments_per_peak = 1, 
+                         non_overlapping = TRUE, 
+                         ix_return = FALSE) {
+  object <- counts_check(object)
+  fragments_per_peak <- get_fragments_per_peak(object)
+  peaks <- rowRanges(object)
   keep_peaks <- which(fragments_per_peak >= min_fragments_per_peak)
-  if (non_overlapping){
-    strand(peaks) <- "*"    
-    if (!isTRUE(all.equal(peaks, sort(peaks)))){
-      stop("peaks must be sorted to be able to filter non-overlapping peaks!")
+  if (non_overlapping) {
+    strand(peaks) <- "*"
+    if (!isDisjoint(peaks) && !isSorted(peaks)) {
+      stop(paste("Peaks must be sorted to be able to filter overlapping peaks!",
+                 "Please use 'sort' function to filter peaks",sep="\n"))
     }
-    while (!(isDisjoint(peaks[keep_peaks]))){
-      chr_names = as.character(seqnames(peaks[keep_peaks]))
-      starts = start(peaks[keep_peaks])
-      ends = end(peaks[keep_peaks])      
-      overlap_next = intersect(which(chr_names[1:(length(keep_peaks) -1)] == chr_names[2:(length(keep_peaks))]),
-                               which(ends[1:(length(keep_peaks) -1)] >= starts[2:(length(keep_peaks))]))
-      overlap_previous = overlap_next + 1
-      overlap_comparison = fragments_per_peak[keep_peaks[overlap_previous]] > fragments_per_peak[keep_peaks[overlap_next]]
-      discard = keep_peaks[c(overlap_previous[!overlap_comparison], overlap_next[overlap_comparison])]
-      keep_peaks = keep_peaks[keep_peaks %ni% discard]
-    }   
+    while (!(isDisjoint(peaks[keep_peaks]))) {
+      chr_names <- as.character(seqnames(peaks[keep_peaks]))
+      starts <- start(peaks[keep_peaks])
+      ends <- end(peaks[keep_peaks])
+      overlap_next <- intersect(which(chr_names[1:(length(keep_peaks) - 1)] == 
+                                        chr_names[2:(length(keep_peaks))]), 
+                                which(ends[1:(length(keep_peaks) - 1)] >= 
+                                        starts[2:(length(keep_peaks))]))
+      overlap_previous <- overlap_next + 1
+      overlap_comparison <- fragments_per_peak[keep_peaks[overlap_previous]] > 
+        fragments_per_peak[keep_peaks[overlap_next]]
+      discard <- keep_peaks[c(overlap_previous[!overlap_comparison], 
+                              overlap_next[overlap_comparison])]
+      keep_peaks <- keep_peaks[keep_peaks %ni% discard]
+    }
   }
-  if (ix_return) return(keep_peaks) else return(counts_mat[keep_peaks,])
+  if (ix_return) 
+    return(keep_peaks) else return(object[keep_peaks, ])
 }

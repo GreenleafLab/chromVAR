@@ -4,23 +4,32 @@
 \alias{deviations_tsne}
 \title{deviations_tsne}
 \usage{
-deviations_tsne(object, threshold = 1.5, perplexity = 30,
-  shiny = interactive())
+deviations_tsne(object, threshold = 1.5, perplexity = if (what == "samples")
+  30 else 8, max_iter = 1000, theta = 0.5, what = c("samples",
+  "annotations"), shiny = FALSE)
 }
 \arguments{
 \item{object}{deviations result}
 
-\item{threshold}{variability threshold -- use only deviations with variability greater than threshold}
+\item{threshold}{variability threshold -- use only deviations with 
+variability greater than threshold}
 
 \item{perplexity}{perplexity parameter for tsne}
 
-\item{shiny}{output shiny gadget for choosing parameters & visualizing results}
+\item{max_iter}{max iterations parameter for tsne}
+
+\item{theta}{theta parameter for tsne}
+
+\item{what}{tsne for similarity of samples or annotations?}
+
+\item{shiny}{load a shiny widget that enable you to explore perplexity and 
+variability threshold parameter?}
 }
 \value{
-list with three elements: threshold used, perplexity used, tsne results
-from \code{\link[Rtsne]{Rtsne}}
+data.frame with two columns for the two dimensions of tSNE output
 }
 \description{
-deviations_tsne
+Perform tsne using bias corrected deviations to visualize either cell/sample
+similarity or motif/kmer/annotation similarity
 }
 

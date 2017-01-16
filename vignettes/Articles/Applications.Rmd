@@ -1,0 +1,176 @@
+---
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Applications}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Applications
+
+This vignettes covers some of the various applications of chromVAR's bias corrected deviations and Z-scores for motifs or other annotations. First, we will compute those deviations:
+
+```{r, message = FALSE}
+library(chromVAR)
+library(motifmatchr)
+library(SummarizedExperiment)
+library(Matrix)
+library(ggplot2)
+library(BiocParallel)
+register(MulticoreParam(8))
+data(example_counts, package = "chromVAR")
+set.seed(2017)
+example_counts <- add_gc_bias(example_counts)
+counts_filtered <- filter_samples(example_counts, min_depth = 1500, min_in_peaks = 0.15, shiny = FALSE)
+counts_filtered <- filter_peaks(counts_filtered)
+motifs <- get_jaspar_motifs()
+motif_ix <- match_motifs(motifs, counts_filtered)
+dev <- compute_deviations(object = counts_filtered, 
+                                 annotations = motif_ix)
+```
+
+## Variability
+
+The first application is simply to compute the variability of each motif or annotation across the cells or samples of interest.  The function `plot_variability` 
+
+```{r}
+variability <- compute_variability(dev)
+plot_variability(variability, use_plotly = FALSE)
+```
+
+## Clustering
+
+We can also use the bias corrected deviations to cluster the samples. The function get_sample_correlation first removes highly correlated annotations and low variability annotations and then computes the correlation between the cells for the remaining annotations.
+
+```{r, fig.width=5}
+sample_cor <- get_sample_correlation(dev)
+
+library(pheatmap)
+pheatmap(as.dist(sample_cor), 
+         annotation_row = colData(dev), 
+         clustering_distance_rows = as.dist(1-sample_cor), 
+         clustering_distance_cols = as.dist(1-sample_cor))
+```
+
+## Cell / sample similarity
+
+We can also use tSNE for looking at cell similarity.  The function `deviations_tsne` performs tsne and results a data.frame with the results. If running in an interactive session, shiny can be set to TRUE to load up a shiny gadget for exploring parameters. In general, with 100's of cells a perplexity of around 30-50 might make sense. In this example, we have few cells so we are bounded in how high the perplexity can be set-- we will use 10 here. 
+
+```{r}
+tsne_results <- deviations_tsne(dev, threshold = 1.5, perplexity = 10, shiny = FALSE)
+```
+
+To plot the results, `plot_deviations_tsne` can be used.  If running in an interactive session or an interactive Rmarkdown document, shiny can be set to TRUE to generate a shiny widget.  Here we will show static results.
+
+```{r}
+tsne_plots <- plot_deviations_tsne(dev, tsne_results, annotation = "TEAD3", 
+                                   sample_column = "Cell_Type", shiny = FALSE)
+tsne_plots[[1]]
+tsne_plots[[2]]
+```
+
+## Differential accessibility and variability
+
+The `differential_deviations` function determines whether there is a significant difference between the bias corrected deviations for a given annotation between different groups.  The groups can be specified by giving the column name of a column in the colData of the dev object or a vector of group assignments.
+
+
+```{r}
+diff_acc <- differential_deviations(dev, "Cell_Type")
+
+head(diff_acc)
+
+```
+
+The `differential_variability` function determines whether there is a significant difference between the variability of any of the annotations between different groups.
+
+```{r}
+diff_var <- differential_variability(dev, "Cell_Type")
+
+head(diff_var)
+
+```
+
+
+## Motif / kmer similarity
+
+We can also perform tsne for motif similarity rather than cell similarity, by specifying `what = "annotations"` to the `deviations_tsne` function.  
+
+```{r}
+inv_tsne_results <- deviations_tsne(dev, threshold = 1.5, perplexity = 8, 
+                                    what = "annotations", shiny = FALSE)
+
+ggplot(inv_tsne_results, aes(x = Dim1, y = Dim2)) + geom_point() + 
+  chromVAR_theme()
+
+```
+
+## Kmers and sequence specificity of variation
+
+By using kmers as the annnotation, we can use the kmers to identify the precise nucleotides necessary for chromatin accessibility variability.  The `deviations_covariability` function returns a normalized covariance between the bias corrected deviations of any pair of annotations. We will use 6mers here in the interest of computational time, but in general 7mers yield higher variability and are better starting points for assembling de novo motifs (see next section).  
+
+```{r}
+kmer_ix <- match_kmers(6, counts_filtered)
+kmer_dev <- compute_deviations(counts_filtered, kmer_ix)
+
+kmer_cov <- deviations_covariability(kmer_dev)
+
+plot_kmer_mismatch("CATTCC",kmer_cov)
+```
+
+
+## De novo kmer assembly
+
+We can use the `assemble_kmers` function to build de novo motifs using the kmer deviation results.  The function goes iteratively through the most variable kmers and uses the normalized covariance of the bias corrected deviations for closely related kmers to weight each nucleotide in the motif.  
+
+```{r}
+de_novos <- assemble_kmers(kmer_dev, progress = FALSE) #no progress bar
+de_novos
+```
+
+We can use the `pwm_distance` function to see how close our de novo motifs match known motifs.  `pwm_distance` returns a list with three matrices- 'dist' has the distance between each pair of motifs, 'strand' the strand of the motif for the match, and 'offset' the offset between the motifs. 
+
+```{r}
+dist_to_known <- pwm_distance(de_novos, motifs)
+
+closest_match1 <- which.min(dist_to_known$dist[1,])
+dist_to_known$strand[1,closest_match1]
+
+library(ggmotif) # Package on github at AliciaSchep/ggmotif. Can use seqLogo alternatively
+library(TFBSTools)
+ggmotif_plot(toPWM(reverseComplement(motifs[[closest_match1]]),type = "prob"))
+ggmotif_plot(de_novos[[1]])
+
+```
+
+In this case, it looks like the first five base pairs of the de novo motif match well with the last five of the known motif. To get a better sense of whether these might represent the same motif, one can compute the deviations for the de novo motif and see if they are correlated with the known. 
+
+## Synergy between motifs
+
+chromVAR includes a function for computing the "synergy" between pairs of annotations/motifs, where synergy is defined as the excess variability of chromatin accessibility for peaks sharing both motifs compared to a random sub-sample of the same size of peaks with one motif (the one with greater variability). 
+
+## Function for computing synergy
+
+```{r}
+data(example_ix, package = "chromVAR")
+get_annotation_synergy(counts_filtered, motif_ix[,c(83,24,20)])
+```
+
+The result is a matrix with Z-scores for the variability synergy of each possible pairing.  Note that this function is pretty slow and should only be performed with a limited selection of motifs and not the full collection!  
+
+## Correlation
+
+An extreme synergy score suggests the possibility of cooperative or competitive binding between the factors that bind the motif. However, if the two factors simply tend to be co-expressed or oppositely expressed, then the synergy score could also be extreme.  It can thus be helpful to look at the correlation between the deviations for the two motifs, in particular the correlation between the deviations for the peak sets that only have one or only the other motif.  There is a function to compute this correlation:
+
+```{r}
+get_annotation_correlation(counts_filtered, motif_ix[,c(83,24,20)])
+```
+
+## Session Info
+
+```{r}
+Sys.Date()
+```
+
+```{r}
+sessionInfo()
+```

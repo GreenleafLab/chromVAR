@@ -5,17 +5,17 @@
 \title{filter_samples_plot}
 \usage{
 filter_samples_plot(object, min_in_peaks = NULL, min_depth = NULL,
-  interactive = TRUE)
+  use_plotly = interactive())
 }
 \arguments{
-\item{object}{SummarizedExperiment with matrix of fragment counts per peak per sample, as computed 
-by \code{\link{get_counts}}}
+\item{object}{SummarizedExperiment with matrix of fragment counts per peak 
+per sample, as computed by \code{\link{get_counts}}}
 
 \item{min_in_peaks}{minimum fraction of samples within peaks}
 
 \item{min_depth}{minimum library size}
 
-\item{interactive}{make interactive plot?}
+\item{use_plotly}{make interactive plot?}
 }
 \value{
 indices of samples to keep
@@ -24,11 +24,13 @@ indices of samples to keep
 plot filtering of samples
 }
 \details{
-If unspecified, min_in_peaks and min_depth cutoffs will be estimated based on data.
-min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  min_depth is 
-set to the maximum of 500 or 10% of the median library size.
+If unspecified, min_in_peaks and min_depth cutoffs will be estimated
+based on data. min_in_peaks is set to 0.5 times the median proportion of 
+fragments in peaks.  min_depth is set to the maximum of 500 or 10% of the 
+median library size.
 }
 \seealso{
-\code{\link{get_counts}},  \code{\link{get_peaks}}, \code{\link{filter_peaks}}
+\code{\link{get_counts}},  \code{\link{get_peaks}}, 
+\code{\link{filter_peaks}}
 }
 

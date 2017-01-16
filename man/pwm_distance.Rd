@@ -7,16 +7,24 @@
 pwm_distance(x, y = NULL, min_overlap = 5)
 }
 \arguments{
-\item{x}{Feature 1}
+\item{x}{list of pwms or pfms, see Details}
 
-\item{y}{Feature 2}
+\item{y}{list of pwms or pfms, see Details}
 
 \item{min_overlap}{minimum number of basepairs overlapping between motifs}
 }
 \value{
-A distance metric between the PWM
+a list with three matrices- 'dist' has the distance between each pair 
+of motifs, 'strand' the strand of the motif for the match, and 'offset' the 
+offset between the motifs.
 }
 \description{
-pwm_distance
+computes distance between every pwm in a list or between pwms in one list
+with pwms in another
+}
+\details{
+The format of x and y should be a \code{\link[TFBSTools]{PWMatrixList}} 
+or \code{\link[TFBSTools]{PFMatrixList}} or a list of matrices with rows 
+corresponding to "A","C","G","T" and columns summing to 1.
 }
 

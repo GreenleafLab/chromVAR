@@ -7,9 +7,9 @@
 plot_kmer_mismatch(kmer, cov_mat, pval = 0.01)
 }
 \arguments{
-\item{kmer}{kmer, e.g. "AAAAAAA"}
+\item{kmer}{kmer, e.g. 'AAAAAAA'}
 
-\item{cov_mat}{result from \code{\link{deviations_covaraibility}}}
+\item{cov_mat}{result from \code{\link{deviations_covariability}}}
 
 \item{pval}{p value threshold}
 }

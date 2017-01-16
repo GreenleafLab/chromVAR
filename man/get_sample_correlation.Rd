@@ -18,8 +18,8 @@ correlation matrix between samples
 get_sample_correlation
 }
 \details{
-This function will compute the correlation between samples based on the 
-normalized deviations.  It will first remove correlated motifs / peak sets. Then
-the pearson correlation coefficient will be computed and returned.
+This function will compute the correlation between samples based on 
+the normalized deviations. It will first remove correlated motifs/peak sets. 
+Then the pearson correlation coefficient will be computed and returned.
 }
 

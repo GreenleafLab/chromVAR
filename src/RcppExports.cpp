@@ -6,67 +6,6 @@
 
 using namespace Rcpp;
 
-// ProbSampleReplace
-arma::urowvec ProbSampleReplace(int size, arma::vec prob);
-RcppExport SEXP chromVAR_ProbSampleReplace(SEXP sizeSEXP, SEXP probSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type prob(probSEXP);
-    rcpp_result_gen = Rcpp::wrap(ProbSampleReplace(size, prob));
-    return rcpp_result_gen;
-END_RCPP
-}
-// bg_sample_helper
-arma::umat bg_sample_helper(arma::uvec bin_membership, arma::mat bin_p, arma::vec bin_density, arma::uword niterations);
-RcppExport SEXP chromVAR_bg_sample_helper(SEXP bin_membershipSEXP, SEXP bin_pSEXP, SEXP bin_densitySEXP, SEXP niterationsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::uvec >::type bin_membership(bin_membershipSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type bin_p(bin_pSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type bin_density(bin_densitySEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type niterations(niterationsSEXP);
-    rcpp_result_gen = Rcpp::wrap(bg_sample_helper(bin_membership, bin_p, bin_density, niterations));
-    return rcpp_result_gen;
-END_RCPP
-}
-// euc_dist
-arma::mat euc_dist(arma::mat x);
-RcppExport SEXP chromVAR_euc_dist(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(euc_dist(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// downsample_dense
-NumericMatrix downsample_dense(NumericMatrix X, double p);
-RcppExport SEXP chromVAR_downsample_dense(SEXP XSEXP, SEXP pSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< double >::type p(pSEXP);
-    rcpp_result_gen = Rcpp::wrap(downsample_dense(X, p));
-    return rcpp_result_gen;
-END_RCPP
-}
-// downsample_dense2
-NumericMatrix downsample_dense2(NumericMatrix X, NumericVector p);
-RcppExport SEXP chromVAR_downsample_dense2(SEXP XSEXP, SEXP pSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
-    rcpp_result_gen = Rcpp::wrap(downsample_dense2(X, p));
-    return rcpp_result_gen;
-END_RCPP
-}
 // pwm_euclidean
 double pwm_euclidean(arma::mat mat1, arma::mat mat2);
 RcppExport SEXP chromVAR_pwm_euclidean(SEXP mat1SEXP, SEXP mat2SEXP) {
@@ -117,64 +56,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// get_thresholds
-std::vector<double> get_thresholds(List mats, const std::vector<double> nuc_freqs, const double p);
-RcppExport SEXP chromVAR_get_thresholds(SEXP matsSEXP, SEXP nuc_freqsSEXP, SEXP pSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type mats(matsSEXP);
-    Rcpp::traits::input_parameter< const std::vector<double> >::type nuc_freqs(nuc_freqsSEXP);
-    Rcpp::traits::input_parameter< const double >::type p(pSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_thresholds(mats, nuc_freqs, p));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_motif_ix
-arma::sp_mat get_motif_ix(List mats, const std::vector<std::string> x, const std::vector<double> nuc_freqs, const double p, const size_t w);
-RcppExport SEXP chromVAR_get_motif_ix(SEXP matsSEXP, SEXP xSEXP, SEXP nuc_freqsSEXP, SEXP pSEXP, SEXP wSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type mats(matsSEXP);
-    Rcpp::traits::input_parameter< const std::vector<std::string> >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const std::vector<double> >::type nuc_freqs(nuc_freqsSEXP);
-    Rcpp::traits::input_parameter< const double >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const size_t >::type w(wSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_motif_ix(mats, x, nuc_freqs, p, w));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_motif_ix_plus
-List get_motif_ix_plus(List& mats, const std::vector<std::string> x, const std::vector<double> nuc_freqs, const double p, const size_t w);
-RcppExport SEXP chromVAR_get_motif_ix_plus(SEXP matsSEXP, SEXP xSEXP, SEXP nuc_freqsSEXP, SEXP pSEXP, SEXP wSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List& >::type mats(matsSEXP);
-    Rcpp::traits::input_parameter< const std::vector<std::string> >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const std::vector<double> >::type nuc_freqs(nuc_freqsSEXP);
-    Rcpp::traits::input_parameter< const double >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const size_t >::type w(wSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_motif_ix_plus(mats, x, nuc_freqs, p, w));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_motif_positions
-List get_motif_positions(List& mats, const std::vector<std::string> x, const std::vector<double> nuc_freqs, const double p, const size_t w);
-RcppExport SEXP chromVAR_get_motif_positions(SEXP matsSEXP, SEXP xSEXP, SEXP nuc_freqsSEXP, SEXP pSEXP, SEXP wSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List& >::type mats(matsSEXP);
-    Rcpp::traits::input_parameter< const std::vector<std::string> >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const std::vector<double> >::type nuc_freqs(nuc_freqsSEXP);
-    Rcpp::traits::input_parameter< const double >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const size_t >::type w(wSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_motif_positions(mats, x, nuc_freqs, p, w));
-    return rcpp_result_gen;
-END_RCPP
-}
 // col_sds
 NumericVector col_sds(arma::mat& X, bool na_rm);
 RcppExport SEXP chromVAR_col_sds(SEXP XSEXP, SEXP na_rmSEXP) {
@@ -208,6 +89,43 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat& >::type X(XSEXP);
     Rcpp::traits::input_parameter< bool >::type na_rm(na_rmSEXP);
     rcpp_result_gen = Rcpp::wrap(row_sds_perm(X, na_rm));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ProbSampleReplace
+arma::urowvec ProbSampleReplace(int size, arma::vec prob);
+RcppExport SEXP chromVAR_ProbSampleReplace(SEXP sizeSEXP, SEXP probSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type prob(probSEXP);
+    rcpp_result_gen = Rcpp::wrap(ProbSampleReplace(size, prob));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bg_sample_helper
+arma::umat bg_sample_helper(arma::uvec bin_membership, arma::mat bin_p, arma::vec bin_density, arma::uword niterations);
+RcppExport SEXP chromVAR_bg_sample_helper(SEXP bin_membershipSEXP, SEXP bin_pSEXP, SEXP bin_densitySEXP, SEXP niterationsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::uvec >::type bin_membership(bin_membershipSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type bin_p(bin_pSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type bin_density(bin_densitySEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type niterations(niterationsSEXP);
+    rcpp_result_gen = Rcpp::wrap(bg_sample_helper(bin_membership, bin_p, bin_density, niterations));
+    return rcpp_result_gen;
+END_RCPP
+}
+// euc_dist
+arma::mat euc_dist(arma::mat x);
+RcppExport SEXP chromVAR_euc_dist(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(euc_dist(x));
     return rcpp_result_gen;
 END_RCPP
 }

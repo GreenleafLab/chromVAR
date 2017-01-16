@@ -17,6 +17,8 @@ get_counts(alignment_files, peaks, paired, by_rg = FALSE, format = c("bam",
 \item{by_rg}{use RG tags in bam to separate groups?}
 
 \item{format}{bam or bed?  default is bam}
+
+\item{colData}{sample annotation DataFrame}
 }
 \value{
 \code{\link[Matrix]{Matrix}} object
@@ -25,6 +27,7 @@ get_counts(alignment_files, peaks, paired, by_rg = FALSE, format = c("bam",
 makes matrix of fragment counts in peaks using one or multiple bam or bed files
 }
 \seealso{
-\code{\link{get_sample_depths}},  \code{\link{get_inputs}}, \code{\link{filter_samples}}
+\code{\link{get_sample_depths}},  \code{\link{get_peaks}}, 
+\code{\link{filter_samples}}
 }
 

@@ -4,20 +4,22 @@
 \alias{assemble_kmers}
 \title{assemble_kmers}
 \usage{
-assemble_kmers(object, threshold = 1.5, p = 0.01)
+assemble_kmers(object, threshold = 1.5, p = 0.01, progress = TRUE)
 }
 \arguments{
-\item{object}{kmer deviations object}
+\item{object}{kmer chromVARDeviations object}
 
 \item{threshold}{variability threshold}
 
 \item{p}{p value threshold for inclusion of kmer}
+
+\item{progress}{show progress bar?}
 }
 \value{
 list with (1) motifs: de novo motif matrices, (2) seed: seed kmer for de novo motif
 }
 \description{
-assemble_kmers
+function to create de novo motifs from kmers based on deviations
 }
 \details{
 function for assembling de novo kmers from kmer deviations
