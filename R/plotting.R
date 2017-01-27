@@ -58,8 +58,7 @@ plot_variability <- function(variability, xlab = "Sorted TFs",
 
 chromVAR_theme <- function(base_size = 12, base_family="Helvetica"){
   theme_bw(base_size = base_size, base_family = base_family)  %+replace%
-    theme(panel.border = element_blank(),
-          axis.line.x = element_line(colour = "black", size = 0.5, linetype = 1,
+    theme(axis.line.x = element_line(colour = "black", size = 0.5, linetype = 1,
                                    lineend = "butt"),
           axis.line.y = element_line(colour = "black", size = 0.5, linetype = 1,
                                      lineend = "butt"),
