@@ -92,12 +92,13 @@ setMethod(get_background_peaks, c(object = "MatrixOrmatrix"),
           })
 
 get_background_peaks_core <- function(object, 
-                                      bias = rowData(object)$bias, 
+                                      bias, 
                                       niterations = 50, 
                                       w = 0.1, 
                                       bs = 50) {
   
   fragments_per_peak <- get_fragments_per_peak(object)
+  stopifnot(length(bias) == length(fragments_per_peak))
   if (min(fragments_per_peak) <= 0) 
     stop("All peaks must have at least one fragment in one sample")
   
