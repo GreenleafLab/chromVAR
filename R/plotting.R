@@ -141,10 +141,14 @@ plot_deviations_tsne <- function(object,
                                     text = colnames(object)), aes_string(x = "x", y = "y", 
                                                                          col = "color", text = "text")) + 
         geom_point(size = 2) + chromVAR_theme(12) + 
-        scale_color_brewer(palette = "Dark2", 
-                           name = i) + xlab("tSNE dim 1") + ylab("tSNE dim 2") +
+        xlab("tSNE dim 1") + ylab("tSNE dim 2") +
         theme(legend.key.size = grid::unit(0.5, 
                                            "lines"))
+      if (nlevels(as.factor(anno)) <= 8){
+        out[[i]] <- out[[i]] + scale_color_brewer(palette = "Dark2", name = i)
+      } else{
+        out[[i]] <- out[[i]] + guides(colour = guide_legend(title = i))
+      }
     }
   }
   if (!is.null(annotation_name)) {
