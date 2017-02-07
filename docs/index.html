@@ -73,18 +73,29 @@
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(chromVAR)
 <span class="kw">library</span>(motifmatchr)
 
-<span class="co"># Example of how to read in counts (fake files-- replace with real files as appropriate)</span>
+### Example of how to read in counts -------------------------------------------
+
+<span class="co"># Caution: FAKE FILENAMES -- Replace with real as appropriate! If you want to </span>
+run on example data in package, start at next wection with <span class="st">"example_counts"</span> data
+
 peakfile &lt;-<span class="st"> "mypeaks.bed"</span>
 peaks &lt;-<span class="st"> </span><span class="kw"><a href="reference/get_peaks.html">get_peaks</a></span>(peakfile)
 
 bamfiles &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"mybam1.bam"</span>,<span class="st">"mybam2.bam"</span>)
-fragment_counts &lt;-<span class="st"> </span><span class="kw"><a href="reference/get_counts.html">get_counts</a></span>(bamfiles, peaks, <span class="dt">paired =</span>  <span class="ot">TRUE</span>, <span class="dt">by_rg =</span> <span class="ot">TRUE</span>, <span class="dt">format =</span> <span class="st">"bam"</span>, 
+fragment_counts &lt;-<span class="st"> </span><span class="kw"><a href="reference/get_counts.html">get_counts</a></span>(bamfiles, peaks, 
+                              <span class="dt">paired =</span>  <span class="ot">TRUE</span>, 
+                              <span class="dt">by_rg =</span> <span class="ot">TRUE</span>, 
+                              <span class="dt">format =</span> <span class="st">"bam"</span>, 
                               <span class="dt">colData =</span> <span class="kw">DataFrame</span>(<span class="dt">celltype =</span> <span class="kw">c</span>(<span class="st">"GM"</span>,<span class="st">"K562"</span>)))
 
-<span class="co"># Using example counts from package</span>
+### ----------------------------------------------------------------------------
+
+### Using example counts from package ------------------------------------------
+
 <span class="kw">data</span>(example_counts, <span class="dt">package =</span> <span class="st">"chromVAR"</span>)
 example_counts &lt;-<span class="st"> </span><span class="kw"><a href="reference/add_gc_bias.html">add_gc_bias</a></span>(example_counts)
-counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="reference/filter_samples.html">filter_samples</a></span>(example_counts, <span class="dt">min_depth =</span> <span class="dv">1500</span>, <span class="dt">min_in_peaks =</span> <span class="fl">0.15</span>)
+counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="reference/filter_samples.html">filter_samples</a></span>(example_counts, <span class="dt">min_depth =</span> <span class="dv">1500</span>,
+                                  <span class="dt">min_in_peaks =</span> <span class="fl">0.15</span>)
 counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="reference/filter_peaks.html">filter_peaks</a></span>(example_counts)
 motifs &lt;-<span class="st"> </span><span class="kw"><a href="reference/get_jaspar_motifs.html">get_jaspar_motifs</a></span>()
 motif_ix &lt;-<span class="st"> </span><span class="kw">match_motifs</span>(motifs, counts_filtered)

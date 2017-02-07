@@ -25,18 +25,29 @@ Depending on your repository settings, the Bioconductor dependencies may fail to
 library(chromVAR)
 library(motifmatchr)
 
-# Example of how to read in counts (fake files-- replace with real files as appropriate)
+### Example of how to read in counts -------------------------------------------
+
+# Caution: FAKE FILENAMES -- Replace with real as appropriate! If you want to 
+run on example data in package, start at next wection with "example_counts" data
+
 peakfile <- "mypeaks.bed"
 peaks <- get_peaks(peakfile)
 
 bamfiles <- c("mybam1.bam","mybam2.bam")
-fragment_counts <- get_counts(bamfiles, peaks, paired =  TRUE, by_rg = TRUE, format = "bam", 
+fragment_counts <- get_counts(bamfiles, peaks, 
+                              paired =  TRUE, 
+                              by_rg = TRUE, 
+                              format = "bam", 
                               colData = DataFrame(celltype = c("GM","K562")))
 
-# Using example counts from package
+### ----------------------------------------------------------------------------
+
+### Using example counts from package ------------------------------------------
+
 data(example_counts, package = "chromVAR")
 example_counts <- add_gc_bias(example_counts)
-counts_filtered <- filter_samples(example_counts, min_depth = 1500, min_in_peaks = 0.15)
+counts_filtered <- filter_samples(example_counts, min_depth = 1500,
+                                  min_in_peaks = 0.15)
 counts_filtered <- filter_peaks(example_counts)
 motifs <- get_jaspar_motifs()
 motif_ix <- match_motifs(motifs, counts_filtered)
