@@ -65,23 +65,19 @@ plot_variability <- function(variability, xlab = "Sorted TFs", n = 3,
 #' @return ggplot2 theme
 #' @export 
 #'
-chromVAR_theme <- function(base_size = 12, base_family = "Helvetica") {
-  theme_bw(base_size = base_size, base_family = base_family) %+replace% 
-    theme(panel.border = element_blank(), 
-          axis.line.x = element_line(colour = "black", 
-                                     size = 0.5, 
-                                     linetype = 1, 
-                                     lineend = "butt"), 
-          axis.line.y = element_line(colour = "black", 
-                                     size = 0.5, 
-                                     linetype = 1,
-                                     lineend = "butt"), 
-          panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank(), 
-          panel.background = element_blank(), 
-          legend.background = element_blank(), 
-          legend.key = element_blank(), 
-          strip.background = element_blank(), 
+chromVAR_theme <- function(base_size = 12, base_family="Helvetica"){
+  theme_bw(base_size = base_size, base_family = base_family)  %+replace%
+    theme(axis.line.x = element_line(colour = "black", size = 0.5, linetype = 1,
+                                   lineend = "butt"),
+          axis.line.y = element_line(colour = "black", size = 0.5, linetype = 1,
+                                     lineend = "butt"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          legend.background = element_blank(),
+          legend.key = element_blank(),
+          strip.background = element_blank(),
           plot.background = element_blank())
 }
 
