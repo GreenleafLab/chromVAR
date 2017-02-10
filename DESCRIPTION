@@ -50,6 +50,7 @@ Suggests:
     rmarkdown,
     pheatmap,
     motifmatchr
+biocViews: SingleCell, Sequencing, GeneRegulation
 LazyData: TRUE
 LinkingTo: Rcpp, RcppArmadillo
 SystemRequirements: C++11
