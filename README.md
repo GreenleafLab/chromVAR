@@ -29,7 +29,7 @@ library(motifmatchr)
 ### Example of how to read in counts -------------------------------------------
 
 # Caution: FAKE FILENAMES -- Replace with real as appropriate! If you want to 
-run on example data in package, start at next wection with "example_counts" data
+# run on example data in package, start at next section with example_counts data
 
 peakfile <- "mypeaks.bed"
 peaks <- get_peaks(peakfile)
