@@ -39,14 +39,14 @@ get_kmer_positions <- function(kmer, peaks, seqs) {
   rc_matches <- vmatchPattern(reverseComplement(DNAString(kmer)),
                               seqs, fixed = FALSE)
 
-  tmp1 <- elementLengths(matches)
+  tmp1 <- elementNROWS(matches)
   tmp2 <- unlist(sapply(1:length(peaks), function(x) rep(x, tmp1[x])),
                  use.names = FALSE)
   f_pos <- resize(shift(peaks[tmp2], shift = start(unlist(matches))) + 1,
                   width = 1)
   BiocGenerics::strand(f_pos) <- "+"
 
-  tmp1 <- elementLengths(rc_matches)
+  tmp1 <- elementNROWS(rc_matches)
   tmp2 <- unlist(sapply(1:length(peaks), function(x) rep(x, tmp1[x])),
                  use.names = FALSE)
   r_pos <- resize(shift(peaks[tmp2], shift = start(unlist(rc_matches)) - 1),

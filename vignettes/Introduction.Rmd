@@ -26,7 +26,7 @@ set.seed(2017)
 
 ##Setting multiprocessing options
 The package uses BiocParallel to do the multiprocessing.  Check the documentation for BiocParallel to see available options.  The settings can be set using the register function.  For example, to use MulticoreParam with 8 cores:
-```{r}
+```{r, eval = FALSE}
 library(BiocParallel)
 register(MulticoreParam(8))
 ```
