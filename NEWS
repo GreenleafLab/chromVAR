@@ -1,0 +1,6 @@
+# chromVAR v0.4.2 package
+
+ChromVAR is a package for determining variation in chromatin accessibility 
+across sets of peaks sharing a common genomic annotations. Designed primarily 
+for single-cell or sparse chromatin accessibility data, e.g. from scATAC-seq or
+sparse bulk ATAC or DNAse-seq experiments.
