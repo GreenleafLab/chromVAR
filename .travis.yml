@@ -12,3 +12,6 @@ addons:
     packages:
       - libgsl0ldbl
       - libgsl0-dev
+      
+r_build_args: --no-build-vignettes
+r_check_args: --no-vignettes
