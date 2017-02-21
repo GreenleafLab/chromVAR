@@ -12,8 +12,16 @@
 
 \item{deparse.level}{See ?base::rbind for a description of this argument.}
 }
+\value{
+chromVARDeviations object
+}
 \description{
 cbind returns an error when applied to chromVARDeviations because results for
 all cells or samples should originate from same compute_deviations computation
 }
-
+\seealso{
+\code{\link{chromVARDeviations-class}}
+}
+\author{
+Alicia Schep
+}

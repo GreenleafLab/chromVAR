@@ -3,8 +3,8 @@
 \docType{methods}
 \name{get_fragments_per_peak}
 \alias{get_fragments_per_peak}
-\alias{get_fragments_per_peak,MatrixOrmatrix-method}
 \alias{get_fragments_per_peak,SummarizedExperiment-method}
+\alias{get_fragments_per_peak,MatrixOrmatrix-method}
 \title{get_fragments_per_peak}
 \usage{
 get_fragments_per_peak(object)
@@ -30,3 +30,13 @@ with counts assay
 \item \code{MatrixOrmatrix}: method for Matrix or matrix object
 }}
 
+\examples{
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+
+frags_per_peak <- get_fragments_per_peak(mini_counts)
+}
+\seealso{
+\code{\link{get_fragments_per_sample}},
+\code{\link{get_total_fragments}}
+}

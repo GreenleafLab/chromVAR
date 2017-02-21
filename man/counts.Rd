@@ -16,7 +16,13 @@
 
 \item{value}{matrix of counts}
 }
+\value{
+Matrix of counts
+}
 \description{
 Accessors for the 'counts' slot of a SummarizedExperiment
 }
-
+\examples{
+data(mini_counts, package = "chromVAR")
+fragment_counts <- counts(mini_counts)
+}

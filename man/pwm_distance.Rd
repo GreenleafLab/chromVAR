@@ -27,4 +27,9 @@ The format of x and y should be a \code{\link[TFBSTools]{PWMatrixList}}
 or \code{\link[TFBSTools]{PFMatrixList}} or a list of matrices with rows 
 corresponding to "A","C","G","T" and columns summing to 1.
 }
+\examples{
 
+motifs <- get_jaspar_motifs()
+library(TFBSTools)
+pwm_distance(toPWM(motifs[[1]]), toPWM(motifs[[2]]))
+}

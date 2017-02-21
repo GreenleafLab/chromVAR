@@ -19,4 +19,3 @@ A plot
 \description{
 plot_kmer_mismatch
 }
-

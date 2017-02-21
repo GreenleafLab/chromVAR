@@ -3,12 +3,12 @@
 \docType{methods}
 \name{get_annotation_correlation}
 \alias{get_annotation_correlation}
-\alias{get_annotation_correlation,MatrixOrmatrix,MatrixOrmatrix-method}
-\alias{get_annotation_correlation,MatrixOrmatrix,SummarizedExperiment-method}
-\alias{get_annotation_correlation,MatrixOrmatrix,list-method}
-\alias{get_annotation_correlation,SummarizedExperiment,MatrixOrmatrix-method}
 \alias{get_annotation_correlation,SummarizedExperiment,SummarizedExperiment-method}
+\alias{get_annotation_correlation,SummarizedExperiment,MatrixOrmatrix-method}
 \alias{get_annotation_correlation,SummarizedExperiment,list-method}
+\alias{get_annotation_correlation,MatrixOrmatrix,SummarizedExperiment-method}
+\alias{get_annotation_correlation,MatrixOrmatrix,MatrixOrmatrix-method}
+\alias{get_annotation_correlation,MatrixOrmatrix,list-method}
 \title{get_annotation_correlation}
 \usage{
 get_annotation_correlation(object, annotations, ...)

@@ -24,4 +24,3 @@ function to create de novo motifs from kmers based on deviations
 \details{
 function for assembling de novo kmers from kmer deviations
 }
-

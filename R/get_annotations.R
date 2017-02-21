@@ -5,13 +5,37 @@
 #' @param ... additional arguments
 #' @return SummarizedExperiment object with 'matches' assay
 #' @export
+#' @author Alicia Schep
+#' @examples
+#' 
+#' # First get example counts
+#' data(mini_counts, package = "chromVAR")
+#' 
+#' # Get annotations from genomic ranges list
+#' library(GenomicRanges)
+#' library(SummarizedExperiment)
+#' my_annotation_granges <- GRangesList(GRanges("chr1", 
+#'                                              ranges = IRanges(start = 
+#'                                              c(566763,805090), width = 8)),
+#'                                      GRanges("chr1", ranges = IRanges(start = 
+#'                                                c(566792,895798), width = 8)))
+#' anno_ix <- get_annotations(my_annotation_granges, 
+#'                            rowRanges = rowRanges(mini_counts))
 setGeneric("get_annotations", 
            function(annotations, ...) standardGeneric("get_annotations"))
 
 #' annotation_matches
 #' 
 #' @param object SummarizedExperiment with matches slot
+#' @return logical matrix of annotation matches
 #' @export
+#' @author Alicia Schep
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+#' library(motifmatchr)
+#' motif_ix <- match_motifs(motifs, mini_counts)
+#' matches <- annotation_matches(motif_ix)
 setGeneric("annotation_matches", 
            function(object) standardGeneric("annotation_matches"))
 
@@ -87,10 +111,14 @@ setMethod(get_annotations, c(annotations = "character"),
                    column = NULL, colData = NULL) {
             if (length(annotations) == 1 && !is.null(column)) {
               if (is.installed("readr")) {
-                bed <- as.data.frame(suppressMessages(readr::read_tsv(file = annotations,
-                                                                      col_names = FALSE)[, c(1:3, column)]))
+                bed <- 
+                  as.data.frame(suppressMessages(
+                    readr::read_tsv(file = 
+                                      annotations,
+                                    col_names = FALSE)[, c(1:3, column)]))
               } else {
-                bed <- read.delim(file = annotations, header = FALSE, sep = "\t", 
+                bed <- read.delim(file = annotations, header = FALSE, 
+                                  sep = "\t", 
                                   stringsAsFactors = FALSE)[, c(1:3, column)]
               }
               if (!is.null(column)) {
@@ -103,10 +131,12 @@ setMethod(get_annotations, c(annotations = "character"),
                 grl <- GRangesList(makeGRangesFromDataFrame(bed))
               }
             } else {
-              grl <- do.call(GRangesList, lapply(annotations, function(filename) {
+              grl <- do.call(GRangesList, lapply(annotations, 
+                                                 function(filename) {
                 if (is.installed("readr")) {
-                  bed <- as.data.frame(suppressMessages(readr::read_tsv(file = filename, 
-                                                                        col_names = FALSE)[, c(1:3, column)]))
+                  bed <- as.data.frame(suppressMessages(
+                    readr::read_tsv(file = filename, 
+                                    col_names = FALSE)[, c(1:3, column)]))
                 } else {
                   bed <- read.delim(file = filename, header = FALSE, sep = "\t", 
                                     stringsAsFactors = FALSE)[,  c(1:3, column)]

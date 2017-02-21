@@ -32,6 +32,7 @@ remove_correlated_helper <- function(mat, val, cutoff = 0.9) {
 #'
 #' @return data.frame with two columns for the two dimensions of tSNE output
 #' @export
+#' @author Alicia Schep
 deviations_tsne <- function(object, 
                             threshold = 1.5, 
                             perplexity = if (what == "samples") 30 else 8, 

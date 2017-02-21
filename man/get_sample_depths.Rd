@@ -22,7 +22,23 @@ numeric vector
 \description{
 makes vector of read depths in bam files or RG groups within bam files
 }
+\examples{
+
+# With single bam with RG tags (can also give multiple bams with RG)
+test_rg <- system.file("extdata", "test_RG.bam", package = "chromVAR")
+test_counts <- get_sample_depths(test_rg,  by_rg = TRUE, 
+                          paired = TRUE)
+                          
+
+# Multiple bams without RG tags
+test_bam1 <- system.file("extdata", "test_single1.bam", package = "chromVAR")
+test_bam2 <- system.file("extdata", "test_single2.bam", package = "chromVAR")
+test_bam3 <- system.file("extdata", "test_single3.bam", package = "chromVAR")
+test_counts2 <- get_sample_depths(c(test_bam1, test_bam2,test_bam3), 
+                           by_rg = FALSE, 
+                           paired = TRUE) 
+                           
+}
 \seealso{
 \code{\link{get_counts}},  \code{\link{filter_samples}}
 }
-

@@ -20,4 +20,17 @@ Returns the 'covariability' between motifs/kmers/peaksets.
 Covariability' is defined as covariance between Z-scores divided by variance 
 of Z-scores for one motif/kmer/peakset (the row).
 }
+\examples{
+# load very small example data
+data(mini_counts, package = "chromVAR")
+motifs <- get_jaspar_motifs()
+library(motifmatchr)
+motif_ix <- match_motifs(motifs, mini_counts)
 
+# computing deviations
+dev <- compute_deviations(object = mini_counts, 
+                         annotations = motif_ix)
+                         
+# get covariability for just first three motifs                         
+devcov <- deviations_covariability(dev[1:3,])                         
+}

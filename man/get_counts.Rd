@@ -21,13 +21,41 @@ get_counts(alignment_files, peaks, paired, by_rg = FALSE, format = c("bam",
 \item{colData}{sample annotation DataFrame}
 }
 \value{
-\code{\link[Matrix]{Matrix}} object
+\code{\link[SummarizedExperiment]{RangedSummarizedExperiment-class}} object
 }
 \description{
 makes matrix of fragment counts in peaks using one or multiple bam or bed files
+}
+\examples{
+
+# First we'll read in some peaks
+peaks_file <- system.file("extdata", "test_bed.txt", package = "chromVAR")
+test_peaks <- get_peaks(peaks_file, sort = TRUE)
+
+# With single bam with RG tags (can also give multiple bams with RG)
+test_rg <- system.file("extdata", "test_RG.bam", package = "chromVAR")
+test_counts <- get_counts(test_rg, peaks = test_peaks, by_rg = TRUE, 
+                          paired = TRUE, 
+                          colData = S4Vectors::DataFrame(condition ="A"))
+                          
+
+# Multiple bams without RG tags
+test_bam1 <- system.file("extdata", "test_single1.bam", package = "chromVAR")
+test_bam2 <- system.file("extdata", "test_single2.bam", package = "chromVAR")
+test_bam3 <- system.file("extdata", "test_single3.bam", package = "chromVAR")
+test_counts2 <- get_counts(c(test_bam1, test_bam2,test_bam3), 
+                           peaks = test_peaks, by_rg = FALSE, 
+                           paired = TRUE, 
+                           colData = S4Vectors::DataFrame(celltype = 
+                                                          c("A","B","C"))) 
+                           
+# Bed file with reads (can give multiple bed files, here we will just read 1)
+test_bed <- system.file("extdata", "test_reads.bed", package = "chromVAR")
+test_counts3 <- get_counts(test_bed, test_peaks, by_rg = FALSE, 
+                           paired = FALSE, 
+                           format = "bed")                           
 }
 \seealso{
 \code{\link{get_sample_depths}},  \code{\link{get_peaks}}, 
 \code{\link{filter_samples}}
 }
-

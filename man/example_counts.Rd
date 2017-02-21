@@ -4,12 +4,16 @@
 \name{example_counts}
 \alias{example_counts}
 \title{example_counts}
-\format{\code{\link[SummarizedExperiment]{RangedSummarizedExperiment}}}
 \usage{
 data(example_counts)
+}
+\value{
+\code{\link[SummarizedExperiment]{RangedSummarizedExperiment}}
 }
 \description{
 Very small sample data set for trying out chromVAR
 }
+\examples{
+data(example_counts)
+}
 \keyword{datasets}
-

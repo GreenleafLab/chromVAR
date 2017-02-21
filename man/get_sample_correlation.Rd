@@ -15,11 +15,13 @@ get_sample_correlation(object, threshold = 1.5)
 correlation matrix between samples
 }
 \description{
-get_sample_correlation
+Get correlation between samples based on bias corrected deviations
 }
 \details{
 This function will compute the correlation between samples based on 
 the normalized deviations. It will first remove correlated motifs/peak sets. 
 Then the pearson correlation coefficient will be computed and returned.
 }
-
+\author{
+Alicia Schep
+}

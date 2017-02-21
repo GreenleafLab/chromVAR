@@ -5,9 +5,9 @@
 \alias{get_annotations}
 \alias{get_annotations,GRangesList-method}
 \alias{get_annotations,MatrixOrmatrix-method}
-\alias{get_annotations,character-method}
 \alias{get_annotations,data.frame-method}
 \alias{get_annotations,list-method}
+\alias{get_annotations,character-method}
 \title{get_annotations}
 \usage{
 get_annotations(annotations, ...)
@@ -57,3 +57,22 @@ get_annotations
 \item \code{character}: get annotations from bed files
 }}
 
+\examples{
+
+# First get example counts
+data(mini_counts, package = "chromVAR")
+
+# Get annotations from genomic ranges list
+library(GenomicRanges)
+library(SummarizedExperiment)
+my_annotation_granges <- GRangesList(GRanges("chr1", 
+                                             ranges = IRanges(start = 
+                                             c(566763,805090), width = 8)),
+                                     GRanges("chr1", ranges = IRanges(start = 
+                                               c(566792,895798), width = 8)))
+anno_ix <- get_annotations(my_annotation_granges, 
+                           rowRanges = rowRanges(mini_counts))
+}
+\author{
+Alicia Schep
+}

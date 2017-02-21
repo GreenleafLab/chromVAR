@@ -12,7 +12,29 @@
 
 \item{deparse.level}{See ?base::rbind for a description of this argument.}
 }
+\value{
+chromVARDeviations object
+}
 \description{
 Concatenates chromVARDeviations results for different sets of annotations
 }
+\examples{
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+library(motifmatchr)
+motif_ix <- match_motifs(motifs, mini_counts)
 
+# computing deviations
+dev1 <- compute_deviations(object = mini_counts, 
+                         annotations = motif_ix[1:2,])
+dev2 <- compute_deviations(object = mini_counts, 
+                         annotations = motif_ix[3:4,])      
+dev <- rbind(dev1, dev2)                                          
+}
+\seealso{
+\code{\link{chromVARDeviations-class}}
+}
+\author{
+Alicia Schep
+}

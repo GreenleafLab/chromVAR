@@ -1,9 +1,18 @@
 #' add_gc_bias
 #'
 #' Computes GC content for peaks
-#' @param object SummarizedExperiment
+#' @param object (Ranged)SummarizedExperiment
 #' @param ... additional arguments
+#' @return (Ranged)SummarizedExperiment object with new column in row metadata
+#' with the gc content of the peak in question
 #' @export
+#' @examples 
+#' 
+#' data(example_counts, package = "chromVAR")
+#' # show example on small part of data 
+#' subset_counts <- example_counts[1:500,]
+#' example_counts <- add_gc_bias(subset_counts)
+#' 
 setGeneric("add_gc_bias", function(object, ...) standardGeneric("add_gc_bias"))
 
 #' @describeIn add_gc_bias method for RangedSummarizedExperiment
@@ -20,8 +29,8 @@ setMethod(add_gc_bias, c(object = "RangedSummarizedExperiment"),
             return(object)
           })
 
-#' @param peaks GenomicRanges with peaks, needed if object is SummarizedExperiment
-#' and not RangedSummarizedExperiment
+#' @param peaks GenomicRanges with peaks, needed if object is 
+#' SummarizedExperiment and not RangedSummarizedExperiment
 #' @describeIn add_gc_bias method for SummarizedExperiment
 #' @export
 setMethod(add_gc_bias, c(object = "SummarizedExperiment"), 
@@ -45,14 +54,23 @@ setMethod(add_gc_bias, c(object = "SummarizedExperiment"),
 #' @param w parameter controlling similarity of background peaks
 #' @param bs bin size parameter
 #' @param ... addtional arguments
-#' @return matrix with one row per peak and one column per iteration.  values in a row
-#' represent indices of background peaks for the peak with that index
+#' @return matrix with one row per peak and one column per iteration.  values in
+#'  a row represent indices of background peaks for the peak with that index
 #' @details Background peaks are chosen by sampling peaks based on similarity in
 #' GC content and # of fragments across samples using the Mahalanobis distance.
-#' The w paramter controls how similar background peaks should be. The bs parameter
-#' controls the precision with which the similarity is computed; increasing bs will
-#' make the function run slower. Sensible default parameters are chosen for both.
+#' The w paramter controls how similar background peaks should be. The bs 
+#' parameter controls the precision with which the similarity is computed;
+#'  increasing bs will make the function run slower. Sensible default parameters 
+#'  are chosen for both.
 #' @export
+#' @examples
+#' 
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' 
+#' # get background peaks
+#' bgpeaks <- get_background_peaks(mini_counts)
+#' 
 setGeneric("get_background_peaks", 
            function(object, ...) standardGeneric("get_background_peaks"))
 
@@ -140,19 +158,25 @@ get_background_peaks_core <- function(object,
 #' @param niterations number of background peaks to sample
 #' @param w parameter controlling similarity of background peaks
 #' @param bs bin size parameter
-#' @return matrix with one row per peak and one column per iteration.  values in a row
-#' represent indices of background peaks for the peak with that index
-#' @details Background peaks are chosen by sampling peaks based on similarity in
-#' GC content and # of fragments across samples using the Mahalanobis distance.
-#' The w paramter controls how similar background peaks should be.  The bs parameter
-#' controls the precision with which the similarity is computed; increasing bs will
-#' make the function run slower. Sensible default parameters are chosen for both.
+#' @return new SummarizedExperiment with addition assays representing permuted
+#' version of counts
+#' @details Replaces the counts at a given peak with the count from another peak
+#' with similar GC content and average accessibility
 #' @export
+#' @examples 
+#' 
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' 
+#' # get background peaks
+#' perm_counts <- get_permuted_data(mini_counts, niterations = 2)
+#' 
 get_permuted_data <- function(object, niterations = 10, w = 0.1, bs = 50) {
   
   out <- BiocParallel::bplapply(1:niterations, 
                                 function(x) get_permuted_data_helper(object, 
-                                                                     w, bs))
+                                                                     w = w, 
+                                                                     bs = bs))
   names(out) <- paste("perm", 1:niterations, sep = "_")
   
   assays(object) <- c(assays(object), out)
@@ -162,7 +186,8 @@ get_permuted_data <- function(object, niterations = 10, w = 0.1, bs = 50) {
 
 
 get_permuted_data_helper <- function(object, w, bs) {
-  bgpeaks <- get_background_peaks(object, ncol(object), w, bs)
+  bgpeaks <- get_background_peaks(object, niterations = ncol(object), 
+                                  w = w, bs = bs)
   reorder_columns(assays(object)$counts, bgpeaks)
 }
 

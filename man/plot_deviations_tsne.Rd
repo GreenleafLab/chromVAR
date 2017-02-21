@@ -14,8 +14,8 @@ plot_deviations_tsne(object, tsne, var_df = NULL, sample_column = NULL,
 
 \item{var_df}{variability result}
 
-\item{sample_column}{column name for sample data -- colData(object) -- to be used
-for coloring points}
+\item{sample_column}{column name for sample data -- colData(object) -- to be
+used for coloring points}
 
 \item{annotation_name}{name of chromVAR annotation for coloring points}
 
@@ -27,4 +27,6 @@ shiny app or plots
 \description{
 plots sample similarity tsne
 }
-
+\author{
+Alicia Schep
+}

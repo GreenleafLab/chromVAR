@@ -32,4 +32,6 @@ data.frame with two columns for the two dimensions of tSNE output
 Perform tsne using bias corrected deviations to visualize either cell/sample
 similarity or motif/kmer/annotation similarity
 }
-
+\author{
+Alicia Schep
+}

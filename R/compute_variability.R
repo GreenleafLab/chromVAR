@@ -20,7 +20,20 @@ quantile_helper <- function(values, quantiles, na.rm) {
 #'@param bootstrap_samples number of bootstrap samples to take
 #'@param bootstrap_quantiles quantiles for bootstrap 
 #'@param na.rm remove NAs? default is true
+#'@return data.frame with columns for name, variability, bootstrap lower bound,
+#'bootstrap upper bound, raw p value, adjust p value.
 #'@export
+#'@examples
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+#' library(motifmatchr)
+#' motif_ix <- match_motifs(motifs, mini_counts)
+#'
+#' # computing deviations
+#' dev <- compute_deviations(object = mini_counts, 
+#'                          annotations = motif_ix)
+#' variability <- compute_variability(dev)                        
 compute_variability <- function(object, 
                                 bootstrap_error = TRUE, 
                                 bootstrap_samples = 1000, 

@@ -11,21 +11,42 @@
 #' @import ggplot2 
 #' @importFrom plotly ggplotly
 #' @export
+#' @return ggplot or plotly object, depending on whether use_plotly is TRUE
+#' @author Alicia Schep
+#' @examples
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+#' library(motifmatchr)
+#' motif_ix <- match_motifs(motifs, mini_counts)
+#'
+#' # computing deviations
+#' dev <- compute_deviations(object = mini_counts, 
+#'                          annotations = motif_ix)
+
+#' variability <- compute_variability(dev)
+#' var_plot <- plot_variability(variability, use_plotly = FALSE)                        
 plot_variability <- function(variability, xlab = "Sorted TFs", n = 3, 
                              labels = variability$name, 
   use_plotly = interactive()) {
 
   
-  res_df <- cbind(variability, rank = rank(-1 * variability$variability, ties.method = "random"), 
+  res_df <- cbind(variability, rank = rank(-1 * variability$variability, 
+                                           ties.method = "random"), 
     annotation = labels)
   
   ylab <- "Variability"
   
   if ("bootstrap_lower_bound" %ni% colnames(variability)) {
     
-    out <- ggplot(res_df, aes_string(x = "rank", y = "variability")) + geom_point() + 
-      xlab(xlab) + ylab(ylab) + scale_y_continuous(expand = c(0, 0), limits = c(0, 
-      max(res_df$variability, na.rm = TRUE) * 1.05)) + chromVAR_theme()
+    out <- ggplot(res_df, aes_string(x = "rank", y = "variability")) + 
+      geom_point() + 
+      xlab(xlab) + ylab(ylab) + 
+      scale_y_continuous(expand = c(0, 0),
+                         limits = 
+                           c(0, 
+                             max(res_df$variability, na.rm = TRUE) * 1.05)) + 
+      chromVAR_theme()
     
   } else {
     
@@ -64,21 +85,21 @@ plot_variability <- function(variability, xlab = "Sorted TFs", n = 3,
 #'
 #' @return ggplot2 theme
 #' @export 
-#'
+#' @author Alicia Schep
+#' @examples
+#' p <- ggplot2::qplot(1:3,1:3) + chromVAR_theme(18)
 chromVAR_theme <- function(base_size = 12, base_family="Helvetica"){
-  theme_bw(base_size = base_size, base_family = base_family)  %+replace%
-    theme(axis.line.x = element_line(colour = "black", size = 0.5, linetype = 1,
-                                   lineend = "butt"),
-          axis.line.y = element_line(colour = "black", size = 0.5, linetype = 1,
-                                     lineend = "butt"),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
+  theme_bw(base_size, base_family) %+replace%
+    theme(axis.line = element_line(colour = "black"),
           panel.background = element_blank(),
           panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.background = element_blank(),
+          strip.background = element_blank() ,
           legend.background = element_blank(),
-          legend.key = element_blank(),
-          strip.background = element_blank(),
-          plot.background = element_blank())
+          legend.key = element_blank()
+    )
 }
 
 
@@ -99,12 +120,13 @@ variability_table <- function(var_df) {
 #' @param object deviations result object
 #' @param tsne result from \code{\link{deviations_tsne}}
 #' @param var_df variability result
-#' @param sample_column column name for sample data -- colData(object) -- to be used
-#' for coloring points
+#' @param sample_column column name for sample data -- colData(object) -- to be
+#'  used for coloring points
 #' @param annotation_name name of chromVAR annotation for coloring points
 #' @param shiny return shiny app?  otherwise return static plots
 #' @return shiny app or plots
 #' @export
+#' @author Alicia Schep
 plot_deviations_tsne <- function(object, 
                                  tsne, 
                                  var_df = NULL, 
@@ -138,9 +160,10 @@ plot_deviations_tsne <- function(object,
       anno <- colData(object)[, i]
       out[[i]] <- ggplot(data.frame(x = tsne[, 1],
                                     y = tsne[, 2], color = anno, 
-                                    text = colnames(object)), aes_string(x = "x", y = "y", 
-                                                                         col = "color", text = "text")) + 
-        geom_point(size = 2) + chromVAR_theme(12) + 
+                                    text = colnames(object)), 
+                         aes_string(x = "x", y = "y", 
+                                    col = "color", text = "text")) + 
+        geom_point(size = 2) + chromVAR_theme() + 
         xlab("tSNE dim 1") + ylab("tSNE dim 2") +
         theme(legend.key.size = grid::unit(0.5, 
                                            "lines"))
@@ -167,11 +190,12 @@ plot_deviations_tsne <- function(object,
       out[[i]] <- ggplot(data.frame(x = tsne[, 1], y = tsne[, 2], 
                                     color = deviation_scores(object)[ix,], 
                                     text = colnames(object)), 
-                         aes_string(x = "x", y = "y", col = "color", text = "text")) + 
+                         aes_string(x = "x", y = "y", col = "color", 
+                                    text = "text")) + 
         geom_point(size = 2) + 
         scale_color_gradient2(name = rowData(object)[ix, "name"],
                               mid = "lightgray", low = "blue", high = "red") +
-        chromVAR_theme(12) + 
+        chromVAR_theme() + 
         xlab("tSNE dim 1") + ylab("tSNE dim 2") + 
         theme(legend.key.size = grid::unit(0.5, 
                                            "lines"))
@@ -180,7 +204,8 @@ plot_deviations_tsne <- function(object,
   return(out)
 }
 
-plot_deviations_tsne_shiny <- function(object, tsne, var_df, annotation_column) {
+plot_deviations_tsne_shiny <- function(object, tsne, var_df, 
+                                       annotation_column) {
   
   if (is.null(var_df)) 
     var_df <- compute_variability(object)
@@ -194,17 +219,18 @@ plot_deviations_tsne_shiny <- function(object, tsne, var_df, annotation_column) 
   }
   
   
-  ui <- fluidPage(fluidRow(column(3, h4("Select options for coloring plots:"), 
-                                  br(), 
-                                  selectInput("color", "Color first plot by:", 
-                                              choices = c("none", 
-                                                          colnames(colData(object))), 
-                                              selected = annotation_column), 
-                                  br(), 
-                                  p(strong("Color second plot by selecting from table:"))), 
-                           column(9, DT::dataTableOutput("tbl", width = 350))),
-                  fluidRow(column(6, plotlyOutput("plot1")), 
-                           column(6, plotlyOutput("plot2"))))
+  ui <- fluidPage(
+    fluidRow(column(3, h4("Select options for coloring plots:"), 
+                    br(), 
+                    selectInput("color", "Color first plot by:", 
+                                choices = c("none", 
+                                            colnames(colData(object))), 
+                                selected = annotation_column), 
+                    br(), 
+                    p(strong("Color second plot by selecting from table:"))), 
+             column(9, DT::dataTableOutput("tbl", width = 350))),
+    fluidRow(column(6, plotlyOutput("plot1")), 
+             column(6, plotlyOutput("plot2"))))
   
   var_tab <- variability_table(var_df)
   

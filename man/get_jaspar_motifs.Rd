@@ -24,4 +24,9 @@ Function to get motifs from JASPAR database
 Simply a wrapper function for \code{\link[TFBSTools]{getMatrixSet}}
  that calls JASPAR2016 database using \code{\link[JASPAR2016]{JASPAR2016}}
 }
+\examples{
 
+motifs <- get_jaspar_motifs()
+
+
+}

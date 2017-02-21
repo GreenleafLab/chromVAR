@@ -3,8 +3,8 @@
 \docType{methods}
 \name{get_cis_groups}
 \alias{get_cis_groups}
-\alias{get_cis_groups,GenomicRanges-method}
 \alias{get_cis_groups,RangedSummarizedExperiment-method}
+\alias{get_cis_groups,GenomicRanges-method}
 \title{get_cis_groups}
 \usage{
 get_cis_groups(object, ...)
@@ -24,8 +24,12 @@ get_cis_groups(object, ...)
 
 \item{stepsize}{number of peaks between each new set of groups}
 }
+\value{
+SummarizedExperiment with matches assay storing which peaks belong
+to which groups
+}
 \description{
-get_cis_groups
+Function for grouping peaks based on proximity along chromosomes
 }
 \section{Methods (by class)}{
 \itemize{
@@ -34,3 +38,13 @@ get_cis_groups
 \item \code{GenomicRanges}: method for GenomicRanges
 }}
 
+\examples{
+
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+mini_counts <- sort(mini_counts)
+cisg <- get_cis_groups(mini_counts)
+}
+\author{
+Alicia Schep
+}

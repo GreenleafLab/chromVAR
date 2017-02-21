@@ -1,10 +1,20 @@
 #' get_cis_groups
 #' 
+#' Function for grouping peaks based on proximity along chromosomes
 #' @param object GenomicRanges or RangedSummarizedExperiment
 #' @param grpsize number of peaks to include in each grouop
 #' @param stepsize number of peaks between each new set of groups
 #' @param ... additional arguments
 #' @export
+#' @author Alicia Schep
+#' @return SummarizedExperiment with matches assay storing which peaks belong
+#' to which groups
+#' @examples 
+#' 
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' mini_counts <- sort(mini_counts)
+#' cisg <- get_cis_groups(mini_counts)
 setGeneric("get_cis_groups", 
            function(object, ...) standardGeneric("get_cis_groups"))
 

@@ -21,4 +21,3 @@ Reads in peaks in narrowpeaks format, as output by macs2. Uses summit as
 center of peak, and makes peak the given 'width'. By default removes 
 overlapping peaks to get set of peaks with no overlaps
 }
-

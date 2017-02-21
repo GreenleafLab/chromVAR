@@ -27,8 +27,11 @@ output, start and end indices are both 1-based. Extra columns can be added as
 metadata or strand information if provided, but the user must indicate column
 index and name using named vector for extra_cols.
 }
+\examples{
+peaks_file <- system.file("extdata", "test_bed.txt", package = "chromVAR")
+peaks <- get_peaks(peaks_file, sort = TRUE)
+}
 \seealso{
 \code{\link{get_counts}}, \code{\link{filter_peaks}}, 
 \code{\link{read_macs2_narrowpeaks}}
 }
-

@@ -51,3 +51,15 @@ reads per peak within the sample divided by the total reads within each sample.
 slot
 }}
 
+\examples{
+
+# First get some data
+data(mini_counts, package = "chromVAR")
+
+# Compute expectations
+expectations <- compute_expectations(mini_counts)
+
+}
+\author{
+Alicia Schep
+}

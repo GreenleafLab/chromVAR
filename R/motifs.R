@@ -9,6 +9,11 @@
 #'  that calls JASPAR2016 database using \code{\link[JASPAR2016]{JASPAR2016}}
 #' @return \code{\link[TFBSTools]{PFMatrixList}}
 #' @export
+#' @examples 
+#' 
+#' motifs <- get_jaspar_motifs()
+#' 
+#' 
 get_jaspar_motifs <- function(species = "Homo sapiens", 
                               collection = "CORE", ...) {
   opts <- list()

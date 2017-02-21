@@ -18,6 +18,9 @@
 #' @seealso \code{\link{get_counts}}, \code{\link{filter_peaks}}, 
 #' \code{\link{read_macs2_narrowpeaks}}
 #' @export
+#' @examples 
+#' peaks_file <- system.file("extdata", "test_bed.txt", package = "chromVAR")
+#' peaks <- get_peaks(peaks_file, sort = TRUE)
 get_peaks <- function(filename, extra_cols = c(), sort_peaks = FALSE) {
   if (is.installed("readr")) {
     bed <- as.data.frame(suppressMessages(readr::read_tsv(file = filename, col_names = FALSE)[, 
@@ -65,7 +68,7 @@ get_peaks <- function(filename, extra_cols = c(), sort_peaks = FALSE) {
 #' @param width desired width of peaks
 #' @param non_overlapping remove overlapping peaks
 #' @return \code{\link[GenomicRanges]{GRanges-class}}
-#'@export
+#' @export
 read_macs2_narrowpeaks <- function(filename, 
                                    width = 500, 
                                    non_overlapping = TRUE) {
@@ -121,6 +124,10 @@ read_macs2_narrowpeaks <- function(filename,
 #' @aliases counts,SummarizedExperiment-method
 #' @importMethodsFrom BiocGenerics counts
 #' @export
+#' @return Matrix of counts
+#' @examples 
+#' data(mini_counts, package = "chromVAR")
+#' fragment_counts <- counts(mini_counts)
 setMethod("counts", signature(object = "SummarizedExperiment"), function(object) {
   stopifnot("counts" %in% assayNames(object))
   assays(object)$counts
@@ -151,10 +158,38 @@ setReplaceMethod("counts", signature(object = "SummarizedExperiment",
 #' @param paired paired end data?
 #' @param format bam or bed?  default is bam
 #' @param colData sample annotation DataFrame
-#' @return \code{\link[Matrix]{Matrix}} object
+#' @return \code{\link[SummarizedExperiment]{RangedSummarizedExperiment-class}} object
 #' @seealso \code{\link{get_sample_depths}},  \code{\link{get_peaks}}, 
 #' \code{\link{filter_samples}}
 #' @export
+#' @examples 
+#' 
+#' # First we'll read in some peaks
+#' peaks_file <- system.file("extdata", "test_bed.txt", package = "chromVAR")
+#' test_peaks <- get_peaks(peaks_file, sort = TRUE)
+#' 
+#' # With single bam with RG tags (can also give multiple bams with RG)
+#' test_rg <- system.file("extdata", "test_RG.bam", package = "chromVAR")
+#' test_counts <- get_counts(test_rg, peaks = test_peaks, by_rg = TRUE, 
+#'                           paired = TRUE, 
+#'                           colData = S4Vectors::DataFrame(condition ="A"))
+#'                           
+#' 
+#' # Multiple bams without RG tags
+#' test_bam1 <- system.file("extdata", "test_single1.bam", package = "chromVAR")
+#' test_bam2 <- system.file("extdata", "test_single2.bam", package = "chromVAR")
+#' test_bam3 <- system.file("extdata", "test_single3.bam", package = "chromVAR")
+#' test_counts2 <- get_counts(c(test_bam1, test_bam2,test_bam3), 
+#'                            peaks = test_peaks, by_rg = FALSE, 
+#'                            paired = TRUE, 
+#'                            colData = S4Vectors::DataFrame(celltype = 
+#'                                                           c("A","B","C"))) 
+#'                            
+#' # Bed file with reads (can give multiple bed files, here we will just read 1)
+#' test_bed <- system.file("extdata", "test_reads.bed", package = "chromVAR")
+#' test_counts3 <- get_counts(test_bed, test_peaks, by_rg = FALSE, 
+#'                            paired = FALSE, 
+#'                            format = "bed")                           
 get_counts <- function(alignment_files, peaks, paired, by_rg = FALSE, 
                        format = c("bam", "bed"), colData = NULL) {
   
@@ -191,7 +226,7 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE,
       fragments <- bamToFragments(bams[i], paired = paired)
       depths[i] <- length(fragments)
       mat[, i] <- countOverlaps(peaks, fragments, type = "any", 
-                                ignore.strand = T)
+                                ignore.strand = TRUE)
     }
     colnames(mat) <- basename(bams)
     counts_mat <- Matrix::Matrix(mat)
@@ -401,6 +436,22 @@ getFragmentCountsByRG <- function(bam, peaks, paired) {
 #' @return numeric vector
 #' @seealso \code{\link{get_counts}},  \code{\link{filter_samples}}
 #' @export
+#' @examples 
+#' 
+#' # With single bam with RG tags (can also give multiple bams with RG)
+#' test_rg <- system.file("extdata", "test_RG.bam", package = "chromVAR")
+#' test_counts <- get_sample_depths(test_rg,  by_rg = TRUE, 
+#'                           paired = TRUE)
+#'                           
+#' 
+#' # Multiple bams without RG tags
+#' test_bam1 <- system.file("extdata", "test_single1.bam", package = "chromVAR")
+#' test_bam2 <- system.file("extdata", "test_single2.bam", package = "chromVAR")
+#' test_bam3 <- system.file("extdata", "test_single3.bam", package = "chromVAR")
+#' test_counts2 <- get_sample_depths(c(test_bam1, test_bam2,test_bam3), 
+#'                            by_rg = FALSE, 
+#'                            paired = TRUE) 
+#'                            
 get_sample_depths <- function(alignment_files, 
                               paired = TRUE, 
                               by_rg = FALSE, 

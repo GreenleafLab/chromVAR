@@ -83,6 +83,11 @@ pwm_to_prob <- function(pwms) {
 #' of motifs, 'strand' the strand of the motif for the match, and 'offset' the 
 #' offset between the motifs. 
 #' @export
+#' @examples 
+#' 
+#' motifs <- get_jaspar_motifs()
+#' library(TFBSTools)
+#' pwm_distance(toPWM(motifs[[1]]), toPWM(motifs[[2]]))
 pwm_distance <- function(x, y = NULL, min_overlap = 5) {
   if (is.null(y)) {
     mats <- pwm_to_prob(x)

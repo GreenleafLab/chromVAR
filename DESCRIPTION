@@ -1,11 +1,11 @@
 Package: chromVAR
 Type: Package
 Title: Chromatin Variation Across Regions
-Version: 0.4.1
+Version: 0.4.3
 Date: 2016-12-20
 Authors@R: c(
-    person("Alicia", "Schep", email = "aschep@stanford.edu", role = c("aut","cre")),
-    person("Jason", "Buenrostro", email = "jbuenros@stanford.edu", role = "ctb"),
+    person("Alicia", "Schep", email = "aschep@gmail.com", role = c("aut","cre")),
+    person("Jason", "Buenrostro", role = "ctb"),
     person("Caleb", "Lareau", role = "ctb"),
     person("Stanford University", role = "cph"))
 Description: Determine variation in chromatin accessibility across sets of
@@ -41,7 +41,7 @@ Imports:
     SummarizedExperiment,
     RColorBrewer
 Depends:
-    R (>= 3.0.1)
+    R (>= 3.3)
 Suggests:
     JASPAR2016,
     readr,
@@ -50,9 +50,11 @@ Suggests:
     rmarkdown,
     pheatmap,
     motifmatchr
+Remotes:
+    GreenleafLab/motifmatchr
 biocViews: SingleCell, Sequencing, GeneRegulation
 LazyData: TRUE
 LinkingTo: Rcpp, RcppArmadillo
 SystemRequirements: C++11
 VignetteBuilder: knitr
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

@@ -13,7 +13,7 @@
 #'
 #' @return synergy matrix
 #'
-#'@export
+#' @export
 setGeneric("get_annotation_synergy", 
            function(object, annotations, ...) standardGeneric("get_annotation_synergy"))
 
@@ -396,7 +396,7 @@ get_variability_boost_helper <- function(peak_set,
                                              function(y) sample(peak_set, 
                                                                 x, 
                                                                 replace = FALSE))), 
-                   recursive = F)
+                   recursive = FALSE)
   
   bgvar <- do.call(c, BiocParallel::bplapply(bgsets, 
                                              compute_variability_single, 

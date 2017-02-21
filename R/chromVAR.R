@@ -41,7 +41,9 @@ NULL
 #' @keywords datasets
 #' @name human_pwms_v1
 #' @usage data(human_pwms_v1)
-#' @format \code{\link[TFBSTools]{XMatrixList}} of length 1764
+#' @return \code{\link[TFBSTools]{XMatrixList}} of length 1764
+#' @examples 
+#' data(human_pwms_v1)
 NULL
 
 #' mouse_pwms_v1
@@ -51,7 +53,9 @@ NULL
 #' @keywords datasets
 #' @name mouse_pwms_v1
 #' @usage data(mouse_pwms_v1)
-#' @format \code{\link[TFBSTools]{XMatrixList}} of length 1346
+#' @return \code{\link[TFBSTools]{XMatrixList}} of length 1346
+#' @examples 
+#' data(mouse_pwms_v1)
 NULL
 
 #' example_counts
@@ -61,7 +65,21 @@ NULL
 #' @keywords datasets
 #' @name example_counts
 #' @usage data(example_counts)
-#' @format \code{\link[SummarizedExperiment]{RangedSummarizedExperiment}}
+#' @return \code{\link[SummarizedExperiment]{RangedSummarizedExperiment}}
+#' @examples 
+#' data(example_counts)
+NULL
+
+#' mini_counts
+#' 
+#' Tiny sample data set for chromVAR funtion examples
+#' @docType data
+#' @keywords datasets
+#' @name mini_counts
+#' @usage data(mini_counts)
+#' @return \code{\link[SummarizedExperiment]{RangedSummarizedExperiment}}
+#' @examples 
+#' data(mini_counts)
 NULL
 
 .onUnload <- function(libpath) {

@@ -3,6 +3,13 @@
 #' @param object SummarizedExperiment, matrix, or Matrix object
 #' @return vector with sum across rows of counts assay within chromVARCounts
 #' @export
+#' @seealso \code{\link{get_fragments_per_sample}},
+#' \code{\link{get_total_fragments}}
+#' @examples 
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' 
+#' frags_per_peak <- get_fragments_per_peak(mini_counts)
 setGeneric("get_fragments_per_peak", 
            function(object) standardGeneric("get_fragments_per_peak"))
 
@@ -11,6 +18,12 @@ setGeneric("get_fragments_per_peak",
 #' @param object SummarizedExperiment, matrix, or Matrix object
 #' @return vector with sum across columns of counts assay within chromVARCounts
 #' @export
+#' @seealso \code{\link{get_fragments_per_peak}},
+#' \code{\link{get_total_fragments}}
+#' @examples 
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' frags_per_sample <- get_fragments_per_sample(mini_counts)
 setGeneric("get_fragments_per_sample", 
            function(object) standardGeneric("get_fragments_per_sample"))
 
@@ -19,6 +32,12 @@ setGeneric("get_fragments_per_sample",
 #' @param object SummarizedExperiment, matrix, or Matrix object
 #' @return sum of all counts within object
 #' @export
+#' @seealso \code{\link{get_fragments_per_sample}}, 
+#' \code{\link{get_fragments_per_peak}}
+#' @examples 
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' total_frags <- get_total_fragments(mini_counts)
 setGeneric("get_total_fragments", 
            function(object) standardGeneric("get_total_fragments"))
 

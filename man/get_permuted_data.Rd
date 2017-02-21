@@ -16,17 +16,22 @@ get_permuted_data(object, niterations = 10, w = 0.1, bs = 50)
 \item{bs}{bin size parameter}
 }
 \value{
-matrix with one row per peak and one column per iteration.  values in a row
-represent indices of background peaks for the peak with that index
+new SummarizedExperiment with addition assays representing permuted
+version of counts
 }
 \description{
 Function to get permuted data while maintaining biases
 }
 \details{
-Background peaks are chosen by sampling peaks based on similarity in
-GC content and # of fragments across samples using the Mahalanobis distance.
-The w paramter controls how similar background peaks should be.  The bs parameter
-controls the precision with which the similarity is computed; increasing bs will
-make the function run slower. Sensible default parameters are chosen for both.
+Replaces the counts at a given peak with the count from another peak
+with similar GC content and average accessibility
 }
+\examples{
 
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+
+# get background peaks
+perm_counts <- get_permuted_data(mini_counts, niterations = 2)
+
+}

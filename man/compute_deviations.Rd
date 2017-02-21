@@ -3,14 +3,14 @@
 \docType{methods}
 \name{compute_deviations}
 \alias{compute_deviations}
-\alias{compute_deviations,MatrixOrmatrix,MatrixOrmatrix-method}
-\alias{compute_deviations,MatrixOrmatrix,SummarizedExperiment-method}
-\alias{compute_deviations,MatrixOrmatrix,list-method}
-\alias{compute_deviations,MatrixOrmatrix,missingOrNULL-method}
-\alias{compute_deviations,SummarizedExperiment,MatrixOrmatrix-method}
 \alias{compute_deviations,SummarizedExperiment,SummarizedExperiment-method}
+\alias{compute_deviations,SummarizedExperiment,MatrixOrmatrix-method}
 \alias{compute_deviations,SummarizedExperiment,list-method}
 \alias{compute_deviations,SummarizedExperiment,missingOrNULL-method}
+\alias{compute_deviations,MatrixOrmatrix,SummarizedExperiment-method}
+\alias{compute_deviations,MatrixOrmatrix,MatrixOrmatrix-method}
+\alias{compute_deviations,MatrixOrmatrix,list-method}
+\alias{compute_deviations,MatrixOrmatrix,missingOrNULL-method}
 \title{compute_deviations}
 \usage{
 compute_deviations(object, annotations, ...)
@@ -92,7 +92,21 @@ annotations are list
 \item \code{object = MatrixOrmatrix,annotations = missingOrNULL}: object is SummarizedExperiment, 
 annotations are missing
 }}
+
+\examples{
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+library(motifmatchr)
+motif_ix <- match_motifs(motifs, mini_counts)
+
+# computing deviations
+dev <- compute_deviations(object = mini_counts, 
+                         annotations = motif_ix)
+}
 \seealso{
 \code{\link{compute_variability}}, \code{\link{plot_variability}}
 }
-
+\author{
+Alicia Schep
+}

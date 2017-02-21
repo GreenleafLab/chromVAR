@@ -98,7 +98,8 @@ NumericVector row_sds_perm( arma::mat& X, bool na_rm = false) {
 
 //Helper Function for background sampler
 // [[Rcpp::export]]
-arma::umat bg_sample_helper(arma::uvec bin_membership, arma::mat bin_p, arma::vec bin_density, arma::uword niterations){
+arma::umat bg_sample_helper(arma::uvec bin_membership, arma::mat bin_p, 
+                            arma::vec bin_density, arma::uword niterations){
   arma::uword n = bin_membership.n_elem;
   arma::umat out = arma::umat(n, niterations);
   for (arma::uword i = 0; i < bin_density.n_elem; i++){
@@ -108,7 +109,8 @@ arma::umat bg_sample_helper(arma::uvec bin_membership, arma::mat bin_p, arma::ve
     p /= arma::sum(p);
     arma::urowvec sampled = ProbSampleReplace(niterations * ix.n_elem, p);
     for (arma::uword j = 0; j < ix.n_elem; j++){
-      out.row(ix(j)) = sampled(arma::span(j*niterations,((j+1)*niterations) - 1));
+      out.row(ix(j)) = sampled(arma::span(j*niterations,
+                 ((j+1)*niterations) - 1));
     }                                                             
   }
   return out;

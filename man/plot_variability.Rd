@@ -18,7 +18,25 @@ plot_variability(variability, xlab = "Sorted TFs", n = 3,
 
 \item{use_plotly}{make plot interactive (using plotly)}
 }
+\value{
+ggplot or plotly object, depending on whether use_plotly is TRUE
+}
 \description{
 plot variability of motifs/etc
 }
+\examples{
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+library(motifmatchr)
+motif_ix <- match_motifs(motifs, mini_counts)
 
+# computing deviations
+dev <- compute_deviations(object = mini_counts, 
+                         annotations = motif_ix)
+variability <- compute_variability(dev)
+var_plot <- plot_variability(variability, use_plotly = FALSE)                        
+}
+\author{
+Alicia Schep
+}

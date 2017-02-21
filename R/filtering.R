@@ -16,7 +16,12 @@
 #' set to the maximum of 500 or 10% of the median library size.
 #' @return indices of samples to keep
 #' @seealso \code{\link{get_counts}},  \code{\link{get_peaks}}, \code{\link{filter_peaks}}
-#' @export          
+#' @export 
+#' @examples         
+#' data(example_counts, package = "chromVAR")
+#' 
+#' counts_filtered <- filter_samples(example_counts, min_depth = 1500,
+#'                                   min_in_peaks = 0.15, shiny = FALSE)
 filter_samples <- function(object, min_in_peaks = NULL, min_depth = NULL, shiny = interactive(), 
   ix_return = FALSE) {
   object <- counts_check(object)
@@ -66,7 +71,16 @@ filter_samples <- function(object, min_in_peaks = NULL, min_depth = NULL, shiny 
 #' @return indices of samples to keep
 #' @seealso \code{\link{get_counts}},  \code{\link{get_peaks}}, 
 #' \code{\link{filter_peaks}}
-#' @export          
+#' @export
+#' @examples 
+#' data(example_counts, package = "chromVAR")
+#' 
+#' counts_filtered <- filter_samples(example_counts, min_depth = 1500,
+#'                                   min_in_peaks = 0.15, shiny = FALSE)
+#' counts_filtered_plot <- filter_samples_plot(counts_filtered, min_in_peaks = 0.15,
+#'                                             min_depth = 1500, 
+#'                                             use_plotly = FALSE)
+#' 
 filter_samples_plot <- function(object, min_in_peaks = NULL, min_depth = NULL, 
                                 use_plotly = interactive()) {
   object <- counts_check(object)
@@ -246,7 +260,14 @@ upper_bias_limit_helper <- function(x, k) {
 #' @return vector of indices, representing peaks that should be kept
 #' @seealso \code{\link{get_peaks}},  \code{\link{filter_samples}},
 #' \code{\link{get_counts}}
-#' @export          
+#' @export   
+#' @author Alicia Schep       
+#' @examples 
+#' data(example_counts, package = "chromVAR")
+#' 
+#' counts_filtered <- filter_samples(example_counts, min_depth = 1500,
+#'                                   min_in_peaks = 0.15, shiny = FALSE)
+#' counts_filtered <- filter_peaks(example_counts)
 filter_peaks <- function(object, 
                          min_fragments_per_peak = 1, 
                          non_overlapping = TRUE, 

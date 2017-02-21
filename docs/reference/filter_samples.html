@@ -137,6 +137,12 @@ set to the maximum of 500 or 10<!-- % of the median library size. --></p>
     <p><code><a href='get_counts.html'>get_counts</a></code>,  <code><a href='get_peaks.html'>get_peaks</a></code>, <code><a href='filter_peaks.html'>filter_peaks</a></code></p>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'>
+<span class='fu'>data</span>(<span class='no'>example_counts</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
+
+<span class='no'>counts_filtered</span> <span class='kw'>&lt;-</span> <span class='fu'>filter_samples</span>(<span class='no'>example_counts</span>, <span class='kw'>min_depth</span> <span class='kw'>=</span> <span class='fl'>1500</span>,
+                                  <span class='kw'>min_in_peaks</span> <span class='kw'>=</span> <span class='fl'>0.15</span>, <span class='kw'>shiny</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -148,7 +154,9 @@ set to the maximum of 500 or 10<!-- % of the median library size. --></p>
       <li><a href="#details">Details</a></li>
 
       <li><a href="#see-also">See also</a></li>
-          </ul>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>

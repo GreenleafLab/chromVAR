@@ -3,9 +3,9 @@
 \docType{methods}
 \name{make_bias_bins}
 \alias{make_bias_bins}
-\alias{make_bias_bins,MatrixOrmatrix-method}
-\alias{make_bias_bins,RangedSummarizedExperiment-method}
 \alias{make_bias_bins,SummarizedExperiment-method}
+\alias{make_bias_bins,RangedSummarizedExperiment-method}
+\alias{make_bias_bins,MatrixOrmatrix-method}
 \title{make_bias_bins}
 \usage{
 make_bias_bins(object, ...)
@@ -51,3 +51,11 @@ a certain fragment count, fragment count, or fragment count & bias.
 \item \code{MatrixOrmatrix}: method for Matrix or matrix
 }}
 
+\examples{
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+bb <- make_bias_bins(mini_counts)
+}
+\author{
+Alicia Schep
+}

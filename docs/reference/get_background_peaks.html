@@ -138,16 +138,17 @@ Matrix, or matrix</dd>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>matrix with one row per peak and one column per iteration.  values in a row
-represent indices of background peaks for the peak with that index</p>
+    <p>matrix with one row per peak and one column per iteration.  values in
+ a row represent indices of background peaks for the peak with that index</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>Background peaks are chosen by sampling peaks based on similarity in
 GC content and # of fragments across samples using the Mahalanobis distance.
-The w paramter controls how similar background peaks should be. The bs parameter
-controls the precision with which the similarity is computed; increasing bs will
-make the function run slower. Sensible default parameters are chosen for both.</p>
+The w paramter controls how similar background peaks should be. The bs 
+parameter controls the precision with which the similarity is computed;
+ increasing bs will make the function run slower. Sensible default parameters 
+ are chosen for both.</p>
     
     <h2 class="hasAnchor" id="methods-by-class-"><a class="anchor" href="#methods-by-class-"></a>Methods (by class)</h2>
 
@@ -161,6 +162,13 @@ make the function run slower. Sensible default parameters are chosen for both.</
 </ul></p>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'>
+<span class='co'># Load very small example counts (already filtered)</span>
+<span class='fu'>data</span>(<span class='no'>mini_counts</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
+
+<span class='co'># get background peaks</span>
+<span class='no'>bgpeaks</span> <span class='kw'>&lt;-</span> <span class='fu'>get_background_peaks</span>(<span class='no'>mini_counts</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -172,7 +180,9 @@ make the function run slower. Sensible default parameters are chosen for both.</
       <li><a href="#details">Details</a></li>
 
       <li><a href="#methods-by-class-">Methods (by class)</a></li>
-          </ul>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>

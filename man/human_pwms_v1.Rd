@@ -4,12 +4,16 @@
 \name{human_pwms_v1}
 \alias{human_pwms_v1}
 \title{human_pwms_v1}
-\format{\code{\link[TFBSTools]{XMatrixList}} of length 1764}
 \usage{
 data(human_pwms_v1)
+}
+\value{
+\code{\link[TFBSTools]{XMatrixList}} of length 1764
 }
 \description{
 Collection of human pwms
 }
+\examples{
+data(human_pwms_v1)
+}
 \keyword{datasets}
-

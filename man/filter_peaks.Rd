@@ -28,8 +28,17 @@ function to get indices of peaks that pass filters
 if non_overlapping is set to true, when peaks overlap the overlapping
 peak with lower counts is removed
 }
+\examples{
+data(example_counts, package = "chromVAR")
+
+counts_filtered <- filter_samples(example_counts, min_depth = 1500,
+                                  min_in_peaks = 0.15, shiny = FALSE)
+counts_filtered <- filter_peaks(example_counts)
+}
 \seealso{
 \code{\link{get_peaks}},  \code{\link{filter_samples}},
 \code{\link{get_counts}}
 }
-
+\author{
+Alicia Schep
+}

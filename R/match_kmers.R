@@ -91,10 +91,20 @@ match_kmers_helper <- function(seqs, kmers, out, ranges) {
 #' @param ranges if subject is not GenomicRanges, ranges to use when out is
 #' positions
 #' @param ... additional arguments
+#' @seealso \code{\link{get_annotations}}, \code{\link{compute_deviations}}
 #' @details  Can either return a SummarizedExperiment with just sparse matrix
 #' with values set to 1 for a match (if return == 'matches'),  or a
 #' GenomicRanges  object with all the positions of matches
-#'@export
+#' @return SummarizedExperiment with matches assay storing which peaks contain
+#' which kmers
+#' @export
+#' @examples 
+#' 
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' 
+#' # Get peak-kmer annotation matrix for 6mers
+#' kmer_ix <- match_kmers(6, mini_counts)
 setGeneric("match_kmers",
            function(k, subject, ...) standardGeneric("match_kmers"))
 

@@ -3,9 +3,9 @@
 \docType{methods}
 \name{get_background_peaks}
 \alias{get_background_peaks}
-\alias{get_background_peaks,MatrixOrmatrix-method}
-\alias{get_background_peaks,RangedSummarizedExperiment-method}
 \alias{get_background_peaks,SummarizedExperiment-method}
+\alias{get_background_peaks,RangedSummarizedExperiment-method}
+\alias{get_background_peaks,MatrixOrmatrix-method}
 \title{get_background_peaks}
 \usage{
 get_background_peaks(object, ...)
@@ -34,8 +34,8 @@ Matrix, or matrix}
 \item{bs}{bin size parameter}
 }
 \value{
-matrix with one row per peak and one column per iteration.  values in a row
-represent indices of background peaks for the peak with that index
+matrix with one row per peak and one column per iteration.  values in
+ a row represent indices of background peaks for the peak with that index
 }
 \description{
 Function to get a set of background peaks for each peak based on GC content 
@@ -44,9 +44,10 @@ and # of fragments across all samples
 \details{
 Background peaks are chosen by sampling peaks based on similarity in
 GC content and # of fragments across samples using the Mahalanobis distance.
-The w paramter controls how similar background peaks should be. The bs parameter
-controls the precision with which the similarity is computed; increasing bs will
-make the function run slower. Sensible default parameters are chosen for both.
+The w paramter controls how similar background peaks should be. The bs 
+parameter controls the precision with which the similarity is computed;
+ increasing bs will make the function run slower. Sensible default parameters 
+ are chosen for both.
 }
 \section{Methods (by class)}{
 \itemize{
@@ -57,3 +58,12 @@ make the function run slower. Sensible default parameters are chosen for both.
 \item \code{MatrixOrmatrix}: method for Matrix or matrix
 }}
 
+\examples{
+
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+
+# get background peaks
+bgpeaks <- get_background_peaks(mini_counts)
+
+}

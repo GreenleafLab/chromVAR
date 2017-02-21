@@ -14,16 +14,11 @@ double pwm_euclidean(arma::mat mat1, arma::mat mat2){
 
 
 // [[Rcpp::export]]
-arma::vec pwm_dist_single(arma::mat mat1, arma::mat mat2, arma::uword min_overlap){
+arma::vec pwm_dist_single(arma::mat mat1, arma::mat mat2, 
+                          arma::uword min_overlap){
 
   arma::uword n1 = mat1.n_cols;
   arma::uword n2 = mat2.n_cols;
-
-  //arma::mat pad1(4,n2-1, arma::fill::ones);
-  //arma::mat pad2(4,n1-1, arma::fill::ones);
-
-  //arma::mat mat1p = arma::join_horiz(arma::join_horiz(pad1 * 0.25, mat1),pad1 * 0.25);
-  //arma::mat mat2p = arma::join_horiz(arma::join_horiz(pad2 * 0.25, mat2),pad2 * 0.25);
 
   arma::uword m = n1 + n2 - 1;
 
@@ -50,11 +45,8 @@ arma::vec pwm_dist_single(arma::mat mat1, arma::mat mat2, arma::uword min_overla
         mat2s = mat2.cols(0, m - i - 1);
       }
     }
-    //Rcout << "i is " << i << std::endl;
-    //Rcout << "mat1s " << mat1s << std::endl;
-    //Rcout << "mat2s " << mat2s << std::endl;
+
     tmp = pwm_euclidean(mat1s,mat2s);
-    //Rcout << "score is " << tmp << std::endl;
 
     if (i == min_overlap - 1){
       out(1) = (double)i - (double)n2 + 1;
@@ -64,7 +56,6 @@ arma::vec pwm_dist_single(arma::mat mat1, arma::mat mat2, arma::uword min_overla
       out(0) = tmp;
     }
   }
-  //Rcout << "offset is " << out(1) << std::endl;
   return out;
 }
 
@@ -83,7 +74,8 @@ List compute_pwm_dist(List pwms, arma::uword min_overlap){
       arma::mat mat2 = as<arma::mat>(pwms[j]);
       res = pwm_dist_single(mat1, mat2, min_overlap);
       //rc
-      res_rc = pwm_dist_single(mat1, arma::fliplr(arma::flipud(mat2)), min_overlap);
+      res_rc = pwm_dist_single(mat1, arma::fliplr(arma::flipud(mat2)), 
+                               min_overlap);
       if (res(0) <= res_rc(0)){
         out1(i,j) = res(0);
         out1(j,i) = res(0);
@@ -101,7 +93,8 @@ List compute_pwm_dist(List pwms, arma::uword min_overlap){
       }
     }
   }
-  return List::create(Rcpp::Named("dist") = out1, Rcpp::Named("offset") = out2, Rcpp::Named("strand") = out3);
+  return List::create(Rcpp::Named("dist") = out1, Rcpp::Named("offset") = out2, 
+                      Rcpp::Named("strand") = out3);
 }
 
 
@@ -119,7 +112,8 @@ List compute_pwm_dist2(List pwms, List pwms2, arma::uword min_overlap){
       arma::mat mat2 = as<arma::mat>(pwms2[j]);
       res = pwm_dist_single(mat1, mat2, min_overlap);
       //rc
-      res_rc = pwm_dist_single(mat1, arma::fliplr(arma::flipud(mat2)), min_overlap);
+      res_rc = pwm_dist_single(mat1, arma::fliplr(arma::flipud(mat2)), 
+                               min_overlap);
       if (res(0) <= res_rc(0)){
         out1(i,j) = res(0);
         out2(i,j) = (int)res(1);
@@ -131,7 +125,8 @@ List compute_pwm_dist2(List pwms, List pwms2, arma::uword min_overlap){
       }
     }
   }
-  return List::create(Rcpp::Named("dist") = out1, Rcpp::Named("offset") = out2, Rcpp::Named("strand") = out3);
+  return List::create(Rcpp::Named("dist") = out1, Rcpp::Named("offset") = out2,
+                      Rcpp::Named("strand") = out3);
 }
 
 

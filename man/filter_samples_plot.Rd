@@ -29,8 +29,17 @@ based on data. min_in_peaks is set to 0.5 times the median proportion of
 fragments in peaks.  min_depth is set to the maximum of 500 or 10% of the 
 median library size.
 }
+\examples{
+data(example_counts, package = "chromVAR")
+
+counts_filtered <- filter_samples(example_counts, min_depth = 1500,
+                                  min_in_peaks = 0.15, shiny = FALSE)
+counts_filtered_plot <- filter_samples_plot(counts_filtered, min_in_peaks = 0.15,
+                                            min_depth = 1500, 
+                                            use_plotly = FALSE)
+
+}
 \seealso{
 \code{\link{get_counts}},  \code{\link{get_peaks}}, 
 \code{\link{filter_peaks}}
 }
-

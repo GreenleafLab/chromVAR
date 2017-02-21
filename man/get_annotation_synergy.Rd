@@ -3,12 +3,12 @@
 \docType{methods}
 \name{get_annotation_synergy}
 \alias{get_annotation_synergy}
-\alias{get_annotation_synergy,MatrixOrmatrix,MatrixOrmatrix-method}
-\alias{get_annotation_synergy,MatrixOrmatrix,SummarizedExperiment-method}
-\alias{get_annotation_synergy,MatrixOrmatrix,list-method}
-\alias{get_annotation_synergy,SummarizedExperiment,MatrixOrmatrix-method}
 \alias{get_annotation_synergy,SummarizedExperiment,SummarizedExperiment-method}
+\alias{get_annotation_synergy,SummarizedExperiment,MatrixOrmatrix-method}
 \alias{get_annotation_synergy,SummarizedExperiment,list-method}
+\alias{get_annotation_synergy,MatrixOrmatrix,SummarizedExperiment-method}
+\alias{get_annotation_synergy,MatrixOrmatrix,MatrixOrmatrix-method}
+\alias{get_annotation_synergy,MatrixOrmatrix,list-method}
 \title{get_annotation_synergy}
 \usage{
 get_annotation_synergy(object, annotations, ...)

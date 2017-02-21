@@ -3,15 +3,15 @@
 \docType{methods}
 \name{make_permuted_sets}
 \alias{make_permuted_sets}
-\alias{make_permuted_sets,MatrixOrmatrix,MatrixOrmatrix-method}
-\alias{make_permuted_sets,MatrixOrmatrix,SummarizedExperiment-method}
-\alias{make_permuted_sets,MatrixOrmatrix,list-method}
-\alias{make_permuted_sets,RangedSummarizedExperiment,MatrixOrmatrix-method}
-\alias{make_permuted_sets,RangedSummarizedExperiment,SummarizedExperiment-method}
-\alias{make_permuted_sets,RangedSummarizedExperiment,list-method}
-\alias{make_permuted_sets,SummarizedExperiment,MatrixOrmatrix-method}
 \alias{make_permuted_sets,SummarizedExperiment,SummarizedExperiment-method}
+\alias{make_permuted_sets,RangedSummarizedExperiment,SummarizedExperiment-method}
+\alias{make_permuted_sets,MatrixOrmatrix,SummarizedExperiment-method}
+\alias{make_permuted_sets,SummarizedExperiment,MatrixOrmatrix-method}
+\alias{make_permuted_sets,RangedSummarizedExperiment,MatrixOrmatrix-method}
+\alias{make_permuted_sets,MatrixOrmatrix,MatrixOrmatrix-method}
 \alias{make_permuted_sets,SummarizedExperiment,list-method}
+\alias{make_permuted_sets,RangedSummarizedExperiment,list-method}
+\alias{make_permuted_sets,MatrixOrmatrix,list-method}
 \title{make_permuted_sets}
 \usage{
 make_permuted_sets(object, annotations, ...)
@@ -90,3 +90,15 @@ a certain fragment count, fragment count, or fragment count & bias.
 \item \code{object = MatrixOrmatrix,annotations = list}: method for Matrix or matrix and list
 }}
 
+\examples{
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+library(motifmatchr)
+motif_ix <- match_motifs(motifs, mini_counts)
+
+perm_sets <- make_permuted_sets(mini_counts, motif_ix)
+}
+\author{
+Alicia Schep
+}

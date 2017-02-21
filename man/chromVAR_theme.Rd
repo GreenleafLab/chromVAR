@@ -17,4 +17,9 @@ ggplot2 theme
 \description{
 chromVAR_theme
 }
-
+\examples{
+p <- ggplot2::qplot(1:3,1:3) + chromVAR_theme(18)
+}
+\author{
+Alicia Schep
+}

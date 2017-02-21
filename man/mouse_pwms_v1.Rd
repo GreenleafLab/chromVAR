@@ -4,12 +4,16 @@
 \name{mouse_pwms_v1}
 \alias{mouse_pwms_v1}
 \title{mouse_pwms_v1}
-\format{\code{\link[TFBSTools]{XMatrixList}} of length 1346}
 \usage{
 data(mouse_pwms_v1)
+}
+\value{
+\code{\link[TFBSTools]{XMatrixList}} of length 1346
 }
 \description{
 Collection of mouse pwms
 }
+\examples{
+data(mouse_pwms_v1)
+}
 \keyword{datasets}
-

@@ -62,4 +62,23 @@ example_counts <- filter_peaks(example_counts)
 
 devtools::use_data(example_counts, overwrite = TRUE)
 
+mini_counts <- filter_samples(example_counts, min_depth = 2000,
+                              min_in_peaks = 0.15, shiny = FALSE)
+mini_counts <- filter_peaks(mini_counts)
+mini_counts <- mini_counts[sample(nrow(mini_counts), 1000),]
+mini_counts <- add_gc_bias(mini_counts)
+devtools::use_data(mini_counts, overwrite = TRUE)
+
+example_counts <- add_gc_bias(example_counts)
+counts_filtered <- filter_samples(example_counts, min_depth = 1500,
+                                  min_in_peaks = 0.15, shiny = FALSE)
+counts_filtered <- filter_peaks(example_counts)
+motifs <- get_jaspar_motifs()
+motif_ix <- match_motifs(motifs, counts_filtered)
+
+# computing deviations
+dev <- compute_deviations(object = counts_filtered, 
+                          annotations = motif_ix)
+
+
 

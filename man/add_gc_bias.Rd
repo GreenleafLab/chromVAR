@@ -16,14 +16,18 @@ add_gc_bias(object, ...)
   genome = BSgenome.Hsapiens.UCSC.hg19)
 }
 \arguments{
-\item{object}{SummarizedExperiment}
+\item{object}{(Ranged)SummarizedExperiment}
 
 \item{...}{additional arguments}
 
 \item{genome}{BSgenome object, by defualt hg19}
 
-\item{peaks}{GenomicRanges with peaks, needed if object is SummarizedExperiment
-and not RangedSummarizedExperiment}
+\item{peaks}{GenomicRanges with peaks, needed if object is 
+SummarizedExperiment and not RangedSummarizedExperiment}
+}
+\value{
+(Ranged)SummarizedExperiment object with new column in row metadata
+with the gc content of the peak in question
 }
 \description{
 Computes GC content for peaks
@@ -35,3 +39,11 @@ Computes GC content for peaks
 \item \code{SummarizedExperiment}: method for SummarizedExperiment
 }}
 
+\examples{
+
+data(example_counts, package = "chromVAR")
+# show example on small part of data 
+subset_counts <- example_counts[1:500,]
+example_counts <- add_gc_bias(subset_counts)
+
+}

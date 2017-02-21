@@ -19,7 +19,22 @@ compute_variability(object, bootstrap_error = TRUE,
 
 \item{na.rm}{remove NAs? default is true}
 }
+\value{
+data.frame with columns for name, variability, bootstrap lower bound,
+bootstrap upper bound, raw p value, adjust p value.
+}
 \description{
 function to compute overall variability of motif sets across samples
 }
+\examples{
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+library(motifmatchr)
+motif_ix <- match_motifs(motifs, mini_counts)
 
+# computing deviations
+dev <- compute_deviations(object = mini_counts, 
+                         annotations = motif_ix)
+variability <- compute_variability(dev)                        
+}

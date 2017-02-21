@@ -34,6 +34,19 @@ seq_to_pwm <- function(in_seq, mismatch = 0) {
 #' Covariability' is defined as covariance between Z-scores divided by variance 
 #' of Z-scores for one motif/kmer/peakset (the row).
 #' @export
+#' @examples
+#' # load very small example data
+#' data(mini_counts, package = "chromVAR")
+#' motifs <- get_jaspar_motifs()
+#' library(motifmatchr)
+#' motif_ix <- match_motifs(motifs, mini_counts)
+#'
+#' # computing deviations
+#' dev <- compute_deviations(object = mini_counts, 
+#'                          annotations = motif_ix)
+#'                          
+#' # get covariability for just first three motifs                         
+#' devcov <- deviations_covariability(dev[1:3,])                         
 deviations_covariability <- function(object) {
   covs <- cov(t(assays(object)$z))
   vars <- row_sds(assays(object)$z)

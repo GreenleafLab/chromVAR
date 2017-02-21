@@ -1,5 +1,6 @@
 #' get_sample_distance
 #'
+#' Get distance between samples based on bias corrected deviations
 #' @param object deviations result
 #' @param threshold threshold for variability
 #' @param initial_dims initial dimentions for preliminary dimensionality 
@@ -12,6 +13,7 @@
 #' be used.  
 #' @return dist object for distance between samples
 #' @export
+#' @author Alicia Schep
 get_sample_distance <- function(object, 
                                 threshold = 1.5, 
                                 initial_dims = 50, 
@@ -34,6 +36,7 @@ get_sample_distance <- function(object,
 
 #' get_sample_correlation
 #'
+#' Get correlation between samples based on bias corrected deviations
 #' @param object deviations result
 #' @param threshold threshold for variability
 #' @details This function will compute the correlation between samples based on 
@@ -41,6 +44,7 @@ get_sample_distance <- function(object,
 #' Then the pearson correlation coefficient will be computed and returned.
 #' @return correlation matrix between samples
 #' @export
+#' @author Alicia Schep
 get_sample_correlation <- function(object, threshold = 1.5) {
   stopifnot(is(object, "chromVARDeviations") || 
               canCoerce(object, "chromVARDeviations"))

@@ -3,14 +3,14 @@
 \docType{methods}
 \name{match_kmers}
 \alias{match_kmers}
-\alias{match_kmers,DNAString,ANY-method}
-\alias{match_kmers,DNAStringSet,ANY-method}
-\alias{match_kmers,character,DNAString-method}
 \alias{match_kmers,character,DNAStringSet-method}
+\alias{match_kmers,character,character-method}
+\alias{match_kmers,character,DNAString-method}
 \alias{match_kmers,character,GenomicRanges-method}
 \alias{match_kmers,character,RangedSummarizedExperiment-method}
-\alias{match_kmers,character,character-method}
 \alias{match_kmers,numeric,ANY-method}
+\alias{match_kmers,DNAStringSet,ANY-method}
+\alias{match_kmers,DNAString,ANY-method}
 \title{match_kmers}
 \usage{
 match_kmers(k, subject, ...)
@@ -61,6 +61,10 @@ or character vector}
 \item{ranges}{if subject is not GenomicRanges, ranges to use when out is
 positions}
 }
+\value{
+SummarizedExperiment with matches assay storing which peaks contain
+which kmers
+}
 \description{
 Find kmer matches in the DNA string-based subject
 }
@@ -88,3 +92,14 @@ GenomicRanges  object with all the positions of matches
 \item \code{k = DNAString,subject = ANY}: Catch-all for other un-documented types with DNAString
 }}
 
+\examples{
+
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+
+# Get peak-kmer annotation matrix for 6mers
+kmer_ix <- match_kmers(6, mini_counts)
+}
+\seealso{
+\code{\link{get_annotations}}, \code{\link{compute_deviations}}
+}

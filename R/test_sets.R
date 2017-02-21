@@ -12,6 +12,11 @@
 #' @details Will create nbins * 3 annotations based on sampling from peaks with 
 #' a certain fragment count, fragment count, or fragment count & bias.
 #' @export
+#' @author Alicia Schep
+#' @examples
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' bb <- make_bias_bins(mini_counts)
 setGeneric("make_bias_bins", 
            function(object, ...) standardGeneric("make_bias_bins"))
 
@@ -107,7 +112,16 @@ make_bias_bins_core <- function(object, bias, nbins = 25, frac = 0.3) {
 #' @return SummarizedExperiment storing bias bins annotation
 #' @details Will create nbins * 3 annotations based on sampling from peaks with 
 #' a certain fragment count, fragment count, or fragment count & bias.
+#' @author Alicia Schep
 #' @export
+#' @examples
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+#' library(motifmatchr)
+#' motif_ix <- match_motifs(motifs, mini_counts)
+#'
+#' perm_sets <- make_permuted_sets(mini_counts, motif_ix)
 setGeneric("make_permuted_sets", 
            function(object, annotations, ...) standardGeneric("make_permuted_sets"))
 

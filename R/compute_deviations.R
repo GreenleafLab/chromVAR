@@ -19,7 +19,15 @@
 #'reads per peak within the sample divided by the total reads within each sample.
 #' @return vector with expected fraction of reads per peak
 #' @export
-#' @export
+#' @author Alicia Schep
+#' @examples 
+#' 
+#' # First get some data
+#' data(mini_counts, package = "chromVAR")
+#' 
+#' # Compute expectations
+#' expectations <- compute_expectations(mini_counts)
+#' 
 setGeneric("compute_expectations", 
            function(object, ...) standardGeneric("compute_expectations"))
 
@@ -39,6 +47,17 @@ setGeneric("compute_expectations",
 #' SummarizedExperiment, and has two assays: deviations and deviation scores.
 #' @seealso  \code{\link{compute_variability}}, \code{\link{plot_variability}}
 #' @export
+#' @author Alicia Schep
+#' @examples
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+#' library(motifmatchr)
+#' motif_ix <- match_motifs(motifs, mini_counts)
+#'
+#' # computing deviations
+#' dev <- compute_deviations(object = mini_counts, 
+#'                          annotations = motif_ix)
 setGeneric("compute_deviations", 
            function(object, annotations, ...) standardGeneric("compute_deviations"))
 
@@ -47,28 +66,59 @@ setGeneric("compute_deviations",
 #' 
 #' Accessor for bias corrected deviations from \code{\link{chromVARDeviations-class}} object
 #' @rdname deviations
+#' @name deviations
+#' @aliases deviations,chromVARDeviations-method
 #' @param object chromVARDeviations object
+#' @return matrix of bias corrected deviations
+#' @author Alicia Schep
+#' @examples
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+#' library(motifmatchr)
+#' motif_ix <- match_motifs(motifs, mini_counts)
+#'
+#' # computing deviations
+#' dev <- compute_deviations(object = mini_counts, 
+#'                          annotations = motif_ix)
+#' bias_corrected_deviations <- deviations(dev)
 setGeneric("deviations", function(object) standardGeneric("deviations"))
 
 #' deviation_scores
 #' 
 #' Accessor for deviation Z-scores from \code{\link{chromVARDeviations-class}} object
 #' @rdname deviation_scores
+#' @name deviation_scores
+#' @aliases deviation_scores,chromVARDeviations-method
 #' @param object chromVARDeviations object
+#' @return The deviation_scores and deviations accessors both return matrices.
+#' @return matrix of deviation Z-scores
+#' @author Alicia Schep
+#' @examples
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+#' library(motifmatchr)
+#' motif_ix <- match_motifs(motifs, mini_counts)
+#'
+#' # computing deviations
+#' dev <- compute_deviations(object = mini_counts, 
+#'                          annotations = motif_ix)
+
+#' scores <- deviation_scores(dev)
 setGeneric("deviation_scores", 
            function(object) standardGeneric("deviation_scores"))
 
 # Accessors --------------------------------------------------------------------
 
-#' @describeIn chromVARDeviations access deviation Z-scores matrix
-#' @param object chromVARDeviations object
+#' @rdname deviations
 #' @export
 setMethod("deviations", c(object = "chromVARDeviations"),
           function(object) {
             assays(object)$deviations
           })
 
-#' @describeIn chromVARDeviations access deviation Z-scores matrix
+#' @rdname deviation_scores
 #' @export
 setMethod("deviation_scores", c(object = "chromVARDeviations"), 
           function(object) {
@@ -81,6 +131,22 @@ setMethod("deviation_scores", c(object = "chromVARDeviations"),
 #' @param ... chromVARDeviations object to be combined
 #' @param deparse.level See ?base::rbind for a description of this argument.
 #' @export
+#' @return chromVARDeviations object
+#' @author Alicia Schep
+#' @seealso \code{\link{chromVARDeviations-class}}
+#' @examples
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+#' library(motifmatchr)
+#' motif_ix <- match_motifs(motifs, mini_counts)
+#'
+#' # computing deviations
+#' dev1 <- compute_deviations(object = mini_counts, 
+#'                          annotations = motif_ix[1:2,])
+#' dev2 <- compute_deviations(object = mini_counts, 
+#'                          annotations = motif_ix[3:4,])      
+#' dev <- rbind(dev1, dev2)                                          
 setMethod("rbind", "chromVARDeviations",
           function(..., deparse.level=1){
             inputs = list(...)
@@ -122,7 +188,9 @@ setMethod("rbind", "chromVARDeviations",
 #' all cells or samples should originate from same compute_deviations computation
 #' @param ... chromVARDeviations object to be combined
 #' @param deparse.level See ?base::rbind for a description of this argument.
-#' @export
+#' @return chromVARDeviations object
+#' @author Alicia Schep
+#' @seealso \code{\link{chromVARDeviations-class}}
 #' @export
 setMethod("cbind", "chromVARDeviations",  
           function(..., deparse.level=1){

@@ -13,6 +13,9 @@ annotation_matches(object)
 \arguments{
 \item{object}{SummarizedExperiment with matches slot}
 }
+\value{
+logical matrix of annotation matches
+}
 \description{
 annotation_matches
 }
@@ -21,3 +24,12 @@ annotation_matches
 \item \code{SummarizedExperiment}: get matches assay from SummarizedExperiment
 }}
 
+\author{
+Alicia Schep
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+library(motifmatchr)
+motif_ix <- match_motifs(motifs, mini_counts)
+matches <- annotation_matches(motif_ix)
+}

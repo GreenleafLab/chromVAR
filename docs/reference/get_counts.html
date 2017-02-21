@@ -125,7 +125,7 @@
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p><code><a href='http://www.rdocumentation.org/packages/Matrix/topics/Matrix'>Matrix</a></code> object</p>
+    <p><code><a href='http://www.rdocumentation.org/packages/SummarizedExperiment/topics/RangedSummarizedExperiment-class'>RangedSummarizedExperiment-class</a></code> object</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
@@ -133,6 +133,31 @@
 <code><a href='filter_samples.html'>filter_samples</a></code></p>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'>
+<span class='co'># First we'll read in some peaks</span>
+<span class='no'>peaks_file</span> <span class='kw'>&lt;-</span> <span class='fu'>system.file</span>(<span class='st'>"extdata"</span>, <span class='st'>"test_bed.txt"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
+<span class='no'>test_peaks</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='get_peaks.html'>get_peaks</a></span>(<span class='no'>peaks_file</span>, <span class='kw'>sort</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div><div class='output co'>#&gt; <span class='message'>Peaks sorted</span></div><div class='input'>
+<span class='co'># With single bam with RG tags (can also give multiple bams with RG)</span>
+<span class='no'>test_rg</span> <span class='kw'>&lt;-</span> <span class='fu'>system.file</span>(<span class='st'>"extdata"</span>, <span class='st'>"test_RG.bam"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
+<span class='no'>test_counts</span> <span class='kw'>&lt;-</span> <span class='fu'>get_counts</span>(<span class='no'>test_rg</span>, <span class='kw'>peaks</span> <span class='kw'>=</span> <span class='no'>test_peaks</span>, <span class='kw'>by_rg</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+                          <span class='kw'>paired</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+                          <span class='kw'>colData</span> <span class='kw'>=</span> <span class='kw'>S4Vectors</span><span class='kw'>::</span><span class='fu'>DataFrame</span>(<span class='kw'>condition</span> <span class='kw'>=</span><span class='st'>"A"</span>))</div><div class='output co'>#&gt; <span class='message'>Reading in file: /mnt/raid1/lab/alicia/chromVAR/inst/extdata/test_RG.bam</span></div><div class='input'>
+
+<span class='co'># Multiple bams without RG tags</span>
+<span class='no'>test_bam1</span> <span class='kw'>&lt;-</span> <span class='fu'>system.file</span>(<span class='st'>"extdata"</span>, <span class='st'>"test_single1.bam"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
+<span class='no'>test_bam2</span> <span class='kw'>&lt;-</span> <span class='fu'>system.file</span>(<span class='st'>"extdata"</span>, <span class='st'>"test_single2.bam"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
+<span class='no'>test_bam3</span> <span class='kw'>&lt;-</span> <span class='fu'>system.file</span>(<span class='st'>"extdata"</span>, <span class='st'>"test_single3.bam"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
+<span class='no'>test_counts2</span> <span class='kw'>&lt;-</span> <span class='fu'>get_counts</span>(<span class='fu'>c</span>(<span class='no'>test_bam1</span>, <span class='no'>test_bam2</span>,<span class='no'>test_bam3</span>),
+                           <span class='kw'>peaks</span> <span class='kw'>=</span> <span class='no'>test_peaks</span>, <span class='kw'>by_rg</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+                           <span class='kw'>paired</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+                           <span class='kw'>colData</span> <span class='kw'>=</span> <span class='kw'>S4Vectors</span><span class='kw'>::</span><span class='fu'>DataFrame</span>(<span class='kw'>celltype</span> <span class='kw'>=</span>
+                                                          <span class='fu'>c</span>(<span class='st'>"A"</span>,<span class='st'>"B"</span>,<span class='st'>"C"</span>)))</div><div class='output co'>#&gt; <span class='message'>Reading in file: /mnt/raid1/lab/alicia/chromVAR/inst/extdata/test_single1.bam</span></div><div class='output co'>#&gt; <span class='message'>Reading in file: /mnt/raid1/lab/alicia/chromVAR/inst/extdata/test_single2.bam</span></div><div class='output co'>#&gt; <span class='message'>Reading in file: /mnt/raid1/lab/alicia/chromVAR/inst/extdata/test_single3.bam</span></div><div class='input'>
+<span class='co'># Bed file with reads (can give multiple bed files, here we will just read 1)</span>
+<span class='no'>test_bed</span> <span class='kw'>&lt;-</span> <span class='fu'>system.file</span>(<span class='st'>"extdata"</span>, <span class='st'>"test_reads.bed"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
+<span class='no'>test_counts3</span> <span class='kw'>&lt;-</span> <span class='fu'>get_counts</span>(<span class='no'>test_bed</span>, <span class='no'>test_peaks</span>, <span class='kw'>by_rg</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+                           <span class='kw'>paired</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+                           <span class='kw'>format</span> <span class='kw'>=</span> <span class='st'>"bed"</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -142,7 +167,9 @@
       <li><a href="#value">Value</a></li>
 
       <li><a href="#see-also">See also</a></li>
-          </ul>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>

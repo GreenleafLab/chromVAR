@@ -8,3 +8,4 @@
 ^.Rhistory$
 ^.RData$
 ^.gitignore$
+^.travis.yml$
