@@ -10,19 +10,15 @@ chromVAR is an R package for the analysis of sparse chromatin accessibility data
 Installation is easiest using the devtools package. The function `install_github` will install the package.
 
 ``` r
-devtools::install_github("GreenleafLab/chromVAR", auth_token = "my_token")
+devtools::install_github("GreenleafLab/chromVAR")
 ```
-
-The argument auth\_token takes in your github [personal access token](https://github.com/settings/tokens). This token is needed because at the moment this repository is private.
 
 Two additional packages that are recommended and used in the vignettes:
 
 * motifmatchr - available on [GitHub](https://github.com/GreenleafLab/motifmatchr)
 * JASPAR2016  - available from Bioconductor
 
-Depending on your repository settings, the Bioconductor dependencies may fail to install. Use `setRepositories(graphics=FALSE)` to see what repositories you have activated and to add the BioC software repository if need be. You may also have to install some of the BioConductor packages manually, and possible some non-R dependencies for some of the Bioconductor packages.  
-
-
+A number of needed packages are installed in this process. One of the dependencies has a system requirement for the gsl library, so if this is not installed already it may need to be installed separately.  
 
 ## Quickstart
 
