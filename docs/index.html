@@ -122,7 +122,7 @@ fragment_counts &lt;-<span class="st"> </span><span class="kw"><a href="referenc
 example_counts &lt;-<span class="st"> </span><span class="kw"><a href="reference/add_gc_bias.html">add_gc_bias</a></span>(example_counts)
 counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="reference/filter_samples.html">filter_samples</a></span>(example_counts, <span class="dt">min_depth =</span> <span class="dv">1500</span>,
                                   <span class="dt">min_in_peaks =</span> <span class="fl">0.15</span>)
-counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="reference/filter_peaks.html">filter_peaks</a></span>(example_counts)
+counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="reference/filter_peaks.html">filter_peaks</a></span>(counts_filtered)
 motifs &lt;-<span class="st"> </span><span class="kw"><a href="reference/get_jaspar_motifs.html">get_jaspar_motifs</a></span>()
 motif_ix &lt;-<span class="st"> </span><span class="kw">match_motifs</span>(motifs, counts_filtered)
 

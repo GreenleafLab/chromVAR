@@ -49,7 +49,7 @@ data(example_counts, package = "chromVAR")
 example_counts <- add_gc_bias(example_counts)
 counts_filtered <- filter_samples(example_counts, min_depth = 1500,
                                   min_in_peaks = 0.15)
-counts_filtered <- filter_peaks(example_counts)
+counts_filtered <- filter_peaks(counts_filtered)
 motifs <- get_jaspar_motifs()
 motif_ix <- match_motifs(motifs, counts_filtered)
 
