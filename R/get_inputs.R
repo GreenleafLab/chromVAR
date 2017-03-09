@@ -353,7 +353,7 @@ bamToFragmentsByRG <- function(bamfile, paired) {
                                             tag = "RG"))[[1]]
     RG_tags <- mxsort(unique(scanned$tag$RG))
     
-    out <- BiocParallel::bplapply(RG_tags, function(RG) {
+    out <- bplapply(RG_tags, function(RG) {
       match_RG <- which(scanned$tag$RG == RG)
       return(GRanges(seqnames = scanned$rname[match_RG], 
                      IRanges(start = ifelse(scanned$strand[match_RG] ==  "-", 

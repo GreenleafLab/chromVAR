@@ -12,7 +12,7 @@ This vignette covers the main function of chromVAR, compute_deviations.
 
 ## Inputs
 
-The `compute_deviations` has two required inputs, `object` and `annotations`. The first argument should be a RangedSummarizedExperiment with a `counts` assay storing the fragment counts per peak (rows) per cell or sample (columns). The second argument (annnotations)  argument should be a RangedSummarizedExperiment with the `matches` assay storing whether each peak (rows) contains each annotation (columns).  For more information on these two primary inputs, see the "Counts" and "Annotations" vignettes.
+The `compute_deviations` has two required inputs, `object` and `annotations`. The first argument should be a RangedSummarizedExperiment with a `counts` assay storing the fragment counts per peak (rows) per cell or sample (columns). The second argument (annnotations)  argument should be a RangedSummarizedExperiment with a `motif_matches` or `annotation_matches` assay storing whether each peak (rows) contains each annotation (columns).  For more information on these two primary inputs, see the "Counts" and "Annotations" vignettes.
 
 ```{r, message = FALSE}
 # Getting inputs ready -- See Inputs vignette for more info

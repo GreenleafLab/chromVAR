@@ -25,8 +25,8 @@ get_cis_groups(object, ...)
 \item{stepsize}{number of peaks between each new set of groups}
 }
 \value{
-SummarizedExperiment with matches assay storing which peaks belong
-to which groups
+SummarizedExperiment with annotation_matches assay storing which peaks 
+belong to which groups
 }
 \description{
 Function for grouping peaks based on proximity along chromosomes

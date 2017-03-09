@@ -30,6 +30,24 @@ Then the dimensionality will be further reduced via PCA if the number of
 dimensions exceeds initial_dims.  Then  the supplied distance_function will 
 be used.
 }
+\examples{
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+library(motifmatchr)
+motif_ix <- match_motifs(motifs, mini_counts)
+
+# computing deviations
+dev <- compute_deviations(object = mini_counts, 
+                         annotations = motif_ix)
+sample_dist <- get_sample_distance(dev, threshold = 1)  
+# setting very low variabilitiy threshold because this is mini data set
+# Use plot_variability to get a sense of an appropriate threshold
+# As this is mini data set, results probably not very meaningful!
+}
+\seealso{
+\code{\link{get_sample_correlation}}
+}
 \author{
 Alicia Schep
 }

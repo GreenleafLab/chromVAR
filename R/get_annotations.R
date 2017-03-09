@@ -26,10 +26,17 @@ setGeneric("get_annotations",
 
 #' annotation_matches
 #' 
-#' @param object SummarizedExperiment with matches slot
+#' @param object SummarizedExperiment with matches slot, see details
+#' @details Will extract matrix from the "matches", "annotation_matches", or
+#' "motif_matches" assay of a SummarizedExperiment
 #' @return logical matrix of annotation matches
 #' @export
 #' @author Alicia Schep
+#' @rdname annotation_matches
+#' @name annotation_matches
+#' @aliases annotation_matches,SummarizedExperiment-method 
+#' annoation_matches<-,SummarizedExperiment-method
+#' @examples 
 #' # Load very small example counts (already filtered)
 #' data(mini_counts, package = "chromVAR")
 #' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
@@ -39,14 +46,51 @@ setGeneric("get_annotations",
 setGeneric("annotation_matches", 
            function(object) standardGeneric("annotation_matches"))
 
+#' @rdname annotation_matches
+setGeneric("annotation_matches<-", 
+           function(object, value) standardGeneric("annotation_matches<-"))
 
 
-#' @describeIn annotation_matches get matches assay from SummarizedExperiment
+#' @rdname annotation_matches
 setMethod("annotation_matches", 
           c(object = "SummarizedExperiment"), 
           function(object) {
-            object <- matches_check(object)
-            assays(object)$matches
+            #object <- matches_check(object)
+            if ("annotation_matches" %in% assayNames(object)){
+              out <- assays(object)$annotation_matches
+            } else if ("motif_matches" %in% assayNames(object)){
+              out <- assays(object)$motif_matches
+            } else if ("matches" %in% assayNames(object)){
+              out <- assays(object)$matches
+            } else {
+              stop("No appropriately named assay. See Details section in man", 
+                   "page")
+            }
+            return(out)
+          })
+
+#' @rdname annotation_matches
+#' @param value logical Matrix with annotation matches
+#' @export
+setReplaceMethod("annotation_matches", 
+          c(object = "SummarizedExperiment"), 
+          function(object, value) {
+            #object <- matches_check(object)
+            stopifnot(canCoerce(value,"lMatrix"))
+            if (!is(value, "lMatrix")) {
+              value <- as(value, "lMatrix")
+              warning("Annotation object matches converted to logical")
+            }
+            if ("annotation_matches" %in% assayNames(object)){
+              assays(object)$annotation_matches <- value
+            } else if ("motif_matches" %in% assayNames(object)){
+              assays(object)$motif_matches <- value
+            } else if ("matches" %in% assayNames(object)){
+              assays(object)$matches <- value
+            } else {
+              assays(object)$annotation_matches <- value
+            }
+            return(object)
           })
 
 #' @param rowRanges GenomicRanges or GenomicRangesList or 
@@ -60,7 +104,7 @@ setMethod(get_annotations,
               rowRanges <- rowRanges(rowRanges)
             matches <- sapply(annotations, 
                               function(x) overlapsAny(rowRanges, x))
-            SummarizedExperiment(assays = list(matches = Matrix(matches)),
+            SummarizedExperiment(assays = list(annotation_matches = Matrix(matches)),
                                  rowRanges = rowRanges)
           })
 
@@ -68,8 +112,9 @@ setMethod(get_annotations,
 #' @export
 setMethod(get_annotations, c(annotations = "MatrixOrmatrix"), 
           function(annotations,  ...) {
-            SummarizedExperiment(assays = list(matches = as(annotations,
-                                                            "lMatrix")),
+            SummarizedExperiment(assays = 
+                                   list(annotation_matches = as(annotations,
+                                                                "lMatrix")),
                                  ...)
           })
 
@@ -95,9 +140,10 @@ setMethod(get_annotations, c(annotations = "list"),
             } else if (is.null(npeaks)) {
               npeaks <- nrow(add_args[["rowData"]])
             }
-            SummarizedExperiment(assays = list(matches = 
-                                                 convert_from_ix_list(annotations, 
-                                                                      npeaks)),
+            SummarizedExperiment(assays = 
+                                   list(annotation_matches = 
+                                          convert_from_ix_list(annotations, 
+                                                               npeaks)),
                                  ...)
           })
 

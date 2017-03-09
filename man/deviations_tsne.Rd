@@ -32,6 +32,23 @@ data.frame with two columns for the two dimensions of tSNE output
 Perform tsne using bias corrected deviations to visualize either cell/sample
 similarity or motif/kmer/annotation similarity
 }
+\examples{
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+library(motifmatchr)
+motif_ix <- match_motifs(motifs, mini_counts)
+
+# computing deviations
+dev <- compute_deviations(object = mini_counts, 
+                         annotations = motif_ix)
+                         
+# Not run                         
+\dontrun{sample_dist <- deviations_tsne(dev, threshold = 1)}  
+# setting very low variabilitiy threshold because this is mini data set
+# Use plot_variability to get a sense of an appropriate threshold
+# This gives an error with this mini data set as there too many NA values
+}
 \author{
 Alicia Schep
 }

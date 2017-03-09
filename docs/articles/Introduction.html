@@ -236,7 +236,7 @@ tsne_plots[[<span class="dv">1</span>]]</code></pre></div>
 <h1 class="hasAnchor">
 <html><body><a href="#session-info" class="anchor"> </a></body></html>Session Info</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Sys.Date</span>()</code></pre></div>
-<pre><code>## [1] "2017-02-21"</code></pre>
+<pre><code>## [1] "2017-03-08"</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre></div>
 <pre><code>## R version 3.3.1 (2016-06-21)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
@@ -255,14 +255,14 @@ tsne_plots[[<span class="dv">1</span>]]</code></pre></div>
 ## [8] methods   base     
 ## 
 ## other attached packages:
-##  [1] ggmotif_0.0.0              chromVAR_0.4.3            
+##  [1] chromVAR_0.4.5             ggmotif_0.0.0             
 ##  [3] pheatmap_1.0.8             ggplot2_2.2.1             
-##  [5] BiocParallel_1.8.1         Matrix_1.2-7.1            
-##  [7] TFBSTools_1.12.1           shiny_1.0.0               
+##  [5] BiocParallel_1.8.1         TFBSTools_1.12.1          
+##  [7] motifmatchr_0.99.1         Matrix_1.2-7.1            
 ##  [9] SummarizedExperiment_1.4.0 Biobase_2.34.0            
 ## [11] GenomicRanges_1.26.2       GenomeInfoDb_1.10.3       
 ## [13] IRanges_2.8.1              S4Vectors_0.12.1          
-## [15] BiocGenerics_0.20.0        motifmatchr_0.1.0         
+## [15] BiocGenerics_0.20.0        testthat_1.0.2            
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] bitops_1.0-6                      DirichletMultinomial_1.16.0      
@@ -273,46 +273,44 @@ tsne_plots[[<span class="dv">1</span>]]</code></pre></div>
 ## [11] DT_0.2                            seqLogo_1.40.0                   
 ## [13] DBI_0.5-1                         lazyeval_0.2.0                   
 ## [15] colorspace_1.3-2                  withr_1.0.2                      
-## [17] curl_2.3                          git2r_0.18.0                     
-## [19] xml2_1.1.1                        desc_1.1.0                       
-## [21] plotly_4.5.6                      labeling_0.3                     
-## [23] rtracklayer_1.34.1                caTools_1.17.1                   
-## [25] scales_0.4.1                      readr_1.0.0                      
-## [27] callr_1.0.0.9000                  pkgdown_0.1.0.9000               
-## [29] commonmark_1.1                    nabor_0.4.6                      
-## [31] stringr_1.1.0                     digest_0.6.12.1                  
-## [33] Rsamtools_1.26.1                  rmarkdown_1.3                    
-## [35] R.utils_2.5.0                     BSgenome.Hsapiens.UCSC.hg19_1.4.0
-## [37] XVector_0.14.0                    base64enc_0.1-3                  
-## [39] htmltools_0.3.5                   BSgenome_1.42.0                  
-## [41] htmlwidgets_0.8                   RSQLite_1.1-2                    
-## [43] VGAM_1.0-3                        BiocInstaller_1.24.0             
-## [45] jsonlite_1.2                      gtools_3.5.0                     
-## [47] dplyr_0.5.0                       R.oo_1.21.0                      
-## [49] RCurl_1.95-4.8                    magrittr_1.5                     
-## [51] GO.db_3.4.0                       Rcpp_0.12.9                      
-## [53] munsell_0.4.3                     R.methodsS3_1.7.1                
-## [55] whisker_0.3-2                     yaml_2.1.14                      
-## [57] stringi_1.1.2                     zlibbioc_1.20.0                  
-## [59] Rtsne_0.11                        pkgbuild_0.0.0.9000              
-## [61] plyr_1.8.4                        grid_3.3.1                       
-## [63] crayon_1.3.2                      miniUI_0.1.1                     
-## [65] CNEr_1.10.1                       lattice_0.20-34                  
-## [67] Biostrings_2.42.1                 splines_3.3.1                    
-## [69] annotate_1.52.1                   KEGGREST_1.14.0                  
-## [71] knitr_1.15.1                      JASPAR2016_1.2.0                 
-## [73] codetools_0.2-15                  reshape2_1.4.2                   
-## [75] pkgload_0.0.0.9000                TFMPvalue_0.0.6                  
-## [77] XML_3.98-1.5                      evaluate_0.10                    
-## [79] RcppArmadillo_0.7.700.0.0         png_0.1-7                        
-## [81] httpuv_1.3.3                      testthat_1.0.2                   
-## [83] gtable_0.2.0                      poweRlaw_0.70.0                  
-## [85] purrr_0.2.2                       tidyr_0.6.1                      
-## [87] assertthat_0.1                    mime_0.5                         
-## [89] xtable_1.8-2                      roxygen2_6.0.1                   
-## [91] viridisLite_0.1.3                 tibble_1.2                       
-## [93] GenomicAlignments_1.10.0          AnnotationDbi_1.36.2             
-## [95] memoise_1.0.0</code></pre>
+## [17] xml2_1.1.1                        desc_1.1.0                       
+## [19] plotly_4.5.6                      labeling_0.3                     
+## [21] rtracklayer_1.34.1                caTools_1.17.1                   
+## [23] scales_0.4.1                      readr_1.0.0                      
+## [25] callr_1.0.0.9000                  pkgdown_0.1.0.9000               
+## [27] commonmark_1.1                    stringr_1.2.0                    
+## [29] nabor_0.4.6                       digest_0.6.12.1                  
+## [31] Rsamtools_1.26.1                  rmarkdown_1.3                    
+## [33] R.utils_2.5.0                     BSgenome.Hsapiens.UCSC.hg19_1.4.0
+## [35] XVector_0.14.0                    base64enc_0.1-3                  
+## [37] htmltools_0.3.5                   BSgenome_1.42.0                  
+## [39] htmlwidgets_0.8                   RSQLite_1.1-2                    
+## [41] VGAM_1.0-3                        shiny_1.0.0                      
+## [43] jsonlite_1.2                      gtools_3.5.0                     
+## [45] dplyr_0.5.0                       R.oo_1.21.0                      
+## [47] RCurl_1.95-4.8                    magrittr_1.5                     
+## [49] GO.db_3.4.0                       Rcpp_0.12.9                      
+## [51] munsell_0.4.3                     R.methodsS3_1.7.1                
+## [53] whisker_0.3-2                     yaml_2.1.14                      
+## [55] stringi_1.1.2                     zlibbioc_1.20.0                  
+## [57] pkgbuild_0.0.0.9000               Rtsne_0.11                       
+## [59] plyr_1.8.4                        grid_3.3.1                       
+## [61] crayon_1.3.2                      miniUI_0.1.1                     
+## [63] CNEr_1.10.1                       lattice_0.20-34                  
+## [65] Biostrings_2.42.1                 splines_3.3.1                    
+## [67] annotate_1.52.1                   KEGGREST_1.14.0                  
+## [69] knitr_1.15.1                      JASPAR2016_1.2.0                 
+## [71] reshape2_1.4.2                    codetools_0.2-15                 
+## [73] pkgload_0.0.0.9000                TFMPvalue_0.0.6                  
+## [75] XML_3.98-1.5                      evaluate_0.10                    
+## [77] RcppArmadillo_0.7.700.0.0         png_0.1-7                        
+## [79] httpuv_1.3.3                      gtable_0.2.0                     
+## [81] poweRlaw_0.70.0                   purrr_0.2.2                      
+## [83] tidyr_0.6.1                       assertthat_0.1                   
+## [85] mime_0.5                          xtable_1.8-2                     
+## [87] roxygen2_6.0.1                    viridisLite_0.1.3                
+## [89] tibble_1.2                        GenomicAlignments_1.10.0         
+## [91] AnnotationDbi_1.36.2              memoise_1.0.0</code></pre>
 </div>
 </div>
   </div>

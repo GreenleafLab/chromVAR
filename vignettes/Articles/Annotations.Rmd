@@ -106,7 +106,7 @@ If you have already read in your annotations into R, you can also use the get_an
 
 #### Annotations GenomicRangesList:
 
-If your annotations are stored as a GenomicRangesList, with each element of the list a GenomicRanges corresponding to the locations of the annotation, then the `get_annotations` method can determine what peaks overlap with what annotations and create the appropriate matrix stored within the `matches` assay of a SummarizedExperiment.  
+If your annotations are stored as a GenomicRangesList, with each element of the list a GenomicRanges corresponding to the locations of the annotation, then the `get_annotations` method can determine what peaks overlap with what annotations and create the appropriate matrix stored within the `annotation_matches` assay of a SummarizedExperiment.  
 
 ```{r}
 library(GenomicRanges)
@@ -117,7 +117,7 @@ anno_ix <- get_annotations(my_annotation_granges, rowRanges = rowRanges(counts_f
 
 #### Annotations as a matrix, Matrix, data.frame, or DataFrame
 
-If your annotations already exist as a matrix-like object indicating what peak contains what annotation, then the get_annotations method is simply a wrapper around SummarizedExperiment that ensures that the annotation gets stored in the `matches` assay.  
+If your annotations already exist as a matrix-like object indicating what peak contains what annotation, then the get_annotations method is simply a wrapper around SummarizedExperiment that ensures that the annotation gets stored in the `annotation_matches` assay.  
 
 ```{r}
 my_annotation_df <- data.frame(first100 = c(rep(TRUE, 100),rep(FALSE,nrow(counts_filtered) - 100)),
@@ -128,7 +128,7 @@ anno_ix <- get_annotations(my_annotation_df, rowRanges = rowRanges(counts_filter
 
 #### Annotations as a list of peak indices
 
-If your annotations are stored as a list of peak indices, with each element of the list a vector of which peaks contain the annotation, then the get_annotations function can be used to convert that list into a boolean matrix of peak and annotation overlaps stored within the `matches` assay of a SummarizedExperiment.  
+If your annotations are stored as a list of peak indices, with each element of the list a vector of which peaks contain the annotation, then the get_annotations function can be used to convert that list into a boolean matrix of peak and annotation overlaps stored within the `annotation_matches` assay of a SummarizedExperiment.  
 
 ```{r}
 my_annotation_list <- list(first100 = rep(1, 100), last100 = c(rep(nrow(counts_filtered) - 100, nrow(counts_filtered))))

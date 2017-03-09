@@ -91,7 +91,7 @@ make_bias_bins_core <- function(object, bias, nbins = 25, frac = 0.3) {
   mean_bias <- sapply(sets, function(x) mean(bias[x]))
   mean_counts <- sapply(sets, function(x) mean(fragments_per_peak[x]))
   rd <- DataFrame(bias = mean_bias, counts = mean_counts)
-  out <- SummarizedExperiment(assays = list(matches = 
+  out <- SummarizedExperiment(assays = list(annotation_matches = 
                                               convert_from_ix_list(sets, 
                                                                    nrow(object))),
                               colData = rd)
@@ -132,7 +132,7 @@ setMethod(make_permuted_sets, c(object = "SummarizedExperiment", annotations = "
                    bias = rowData(object)$bias, window = 10) {
             object <- counts_check(object)
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(assays(annotations)$matches)
+            peak_indices <- convert_to_ix_list(annotation_matches(annotations))
             make_permuted_sets_core(object, peak_indices, bias, window = window, 
                                     colData = colData(annotations))
           })
@@ -144,7 +144,7 @@ setMethod(make_permuted_sets, c(object = "RangedSummarizedExperiment", annotatio
                    bias = rowRanges(object)$bias, window = 10) {
             object <- counts_check(object)
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(assays(annotations)$matches)
+            peak_indices <- convert_to_ix_list(annotation_matches(annotations))
             make_permuted_sets_core(object, peak_indices, bias, window = window, 
                                     colData = colData(annotations))
           })
@@ -155,7 +155,7 @@ setMethod(make_permuted_sets, c(object = "MatrixOrmatrix", annotation = "Summari
           function(object, annotations,
                    bias, window = 10) {
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(assays(annotations)$matches)
+            peak_indices <- convert_to_ix_list(annotation_matches(assays(annotations)))
             make_permuted_sets_core(object, peak_indices, bias, window = window, 
                                     colData = colData(annotations))
           })

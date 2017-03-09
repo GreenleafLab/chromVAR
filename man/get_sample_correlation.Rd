@@ -22,6 +22,24 @@ This function will compute the correlation between samples based on
 the normalized deviations. It will first remove correlated motifs/peak sets. 
 Then the pearson correlation coefficient will be computed and returned.
 }
+\examples{
+# Load very small example counts (already filtered)
+data(mini_counts, package = "chromVAR")
+motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+library(motifmatchr)
+motif_ix <- match_motifs(motifs, mini_counts)
+
+# computing deviations
+dev <- compute_deviations(object = mini_counts, 
+                         annotations = motif_ix)
+sample_cor <- get_sample_correlation(dev, threshold = 1)  
+# setting very low variabilitiy threshold because this is mini data set
+# Use plot_variability to get a sense of an appropriate threshold
+# As this is mini data set, results probably not very meaningful!
+}
+\seealso{
+\code{\link{get_sample_distance}}
+}
 \author{
 Alicia Schep
 }

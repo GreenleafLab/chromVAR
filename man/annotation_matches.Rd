@@ -4,14 +4,24 @@
 \name{annotation_matches}
 \alias{annotation_matches}
 \alias{annotation_matches,SummarizedExperiment-method}
+\alias{annoation_matches<-,SummarizedExperiment-method}
+\alias{annotation_matches<-}
+\alias{annotation_matches,SummarizedExperiment-method}
+\alias{annotation_matches<-,SummarizedExperiment-method}
 \title{annotation_matches}
 \usage{
 annotation_matches(object)
 
+annotation_matches(object) <- value
+
 \S4method{annotation_matches}{SummarizedExperiment}(object)
+
+\S4method{annotation_matches}{SummarizedExperiment}(object) <- value
 }
 \arguments{
-\item{object}{SummarizedExperiment with matches slot}
+\item{object}{SummarizedExperiment with matches slot, see details}
+
+\item{value}{logical Matrix with annotation matches}
 }
 \value{
 logical matrix of annotation matches
@@ -19,17 +29,18 @@ logical matrix of annotation matches
 \description{
 annotation_matches
 }
-\section{Methods (by class)}{
-\itemize{
-\item \code{SummarizedExperiment}: get matches assay from SummarizedExperiment
-}}
-
-\author{
-Alicia Schep
+\details{
+Will extract matrix from the "matches", "annotation_matches", or
+"motif_matches" assay of a SummarizedExperiment
+}
+\examples{
 # Load very small example counts (already filtered)
 data(mini_counts, package = "chromVAR")
 motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
 library(motifmatchr)
 motif_ix <- match_motifs(motifs, mini_counts)
 matches <- annotation_matches(motif_ix)
+}
+\author{
+Alicia Schep
 }

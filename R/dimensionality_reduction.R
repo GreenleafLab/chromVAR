@@ -4,7 +4,7 @@ remove_correlated_helper <- function(mat, val, cutoff = 0.9) {
   stopifnot(nrow(mat) == length(val))
   cormat <- cor(t(mat), use = "pairwise.complete.obs")
   diag(cormat) <- NA
-  keep <- 1:nrow(mat)
+  keep <- seq_len(nrow(mat))
   for (i in order(val, decreasing = TRUE)) {
     if (i %in% keep) {
       toremove <- which(cormat[keep, i] >= cutoff)
@@ -33,6 +33,22 @@ remove_correlated_helper <- function(mat, val, cutoff = 0.9) {
 #' @return data.frame with two columns for the two dimensions of tSNE output
 #' @export
 #' @author Alicia Schep
+#' @examples 
+#' # Load very small example counts (already filtered)
+#' data(mini_counts, package = "chromVAR")
+#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+#' library(motifmatchr)
+#' motif_ix <- match_motifs(motifs, mini_counts)
+#'
+#' # computing deviations
+#' dev <- compute_deviations(object = mini_counts, 
+#'                          annotations = motif_ix)
+#'                          
+#' # Not run                         
+#' \dontrun{sample_dist <- deviations_tsne(dev, threshold = 1)}  
+#' # setting very low variabilitiy threshold because this is mini data set
+#' # Use plot_variability to get a sense of an appropriate threshold
+#' # This gives an error with this mini data set as there too many NA values
 deviations_tsne <- function(object, 
                             threshold = 1.5, 
                             perplexity = if (what == "samples") 30 else 8, 
@@ -52,6 +68,8 @@ deviations_tsne <- function(object,
     vars <- row_sds(deviation_scores(object), FALSE)
     if (threshold > max(vars, na.rm = TRUE)) 
       stop("Threshold too high")
+    if (sum(vars > threshold, na.rm = TRUE) < 2)
+      stop("Threshold too high, and/or too few non/NA")
     if (shiny){
       res <- deviations_tsne_shiny(object, threshold, perplexity, max_iter, 
                                    theta)
@@ -60,10 +78,12 @@ deviations_tsne <- function(object,
       tsne_res <- res$tsne
     } else{
       ix <- which(vars > threshold)
-      mat <- assays(object)[["deviations"]][ix, ]
+      mat <- deviations(object)[ix, , drop = FALSE]
       ix2 <- remove_correlated_helper(mat, vars[ix])
-      tsne_res <- Rtsne::Rtsne(t(mat[ix2, ]), perplexity = perplexity, 
-                               max_iter = max_iter, theta = theta)
+      tsne_res <- Rtsne::Rtsne(t(mat[ix2, , drop = FALSE]), 
+                               perplexity = perplexity, 
+                               max_iter = max_iter, 
+                               theta = theta)
     }
     out <- tsne_res$Y
     rownames(out) <- colnames(object)
@@ -72,7 +92,8 @@ deviations_tsne <- function(object,
     vars <- row_sds(deviation_scores(object), FALSE)
     if (threshold > max(vars, na.rm = TRUE)) 
       stop("threshold too high")
-    
+    if (sum(vars > threshold, na.rm = TRUE) < 2)
+      stop("Threshold too high, and/or too few non/NA")
     if (shiny){
       res <- deviations_tsne_inv_shiny(object, threshold, perplexity, max_iter, 
                                    theta)
@@ -83,7 +104,8 @@ deviations_tsne <- function(object,
     } else{
       mat <- deviations(object)
       ix <- which(vars > threshold)
-      tsne_res <- Rtsne::Rtsne(mat[ix,], perplexity = perplexity, check_duplicates = FALSE,
+      tsne_res <- Rtsne::Rtsne(mat[ix ,, drop = FALSE], perplexity = perplexity, 
+                               check_duplicates = FALSE,
                                max_iter = max_iter, theta = theta)
     }
     out <- as.data.frame(tsne_res$Y)
@@ -101,7 +123,7 @@ deviations_tsne_shiny <- function(object, threshold = 1.5, perplexity = 30,
   mat <- assays(object)$deviations
   
   ix <- remove_correlated_helper(mat, vars)
-  mat <- mat[ix,]
+  mat <- mat[ix, , drop = FALSE]
   vars <- vars[ix]
 
   ui <- miniPage(
@@ -124,13 +146,17 @@ deviations_tsne_shiny <- function(object, threshold = 1.5, perplexity = 30,
                                                   value = threshold, 
                                                   step = 0.1, width = "90%"),
                                      selectizeInput("color", 
-                                                 "Color by", 
-                                                 options = list(dropdownParent = 'body'),
-                                                 choices = c("none",
-                                                             colnames(colData(object)),
-                                                             rownames(object)[order(vars, 
-                                                                                    decreasing = TRUE)]), 
-                                                 selected = "none", width = "90%"))),
+                                                    "Color by", 
+                                                    options = 
+                                                      list(dropdownParent = 
+                                                             'body'),
+                                                    choices = 
+                                                      c("none",
+                                                        colnames(colData(object)),
+                                                        rownames(object)[order(vars, 
+                                                                               decreasing = 
+                                                                                 TRUE)]), 
+                                                    selected = "none", width = "90%"))),
             miniContentPanel(plotlyOutput("plot1", height = "100%")), 
             width = "95%", 
             height ="95%")
@@ -140,7 +166,7 @@ deviations_tsne_shiny <- function(object, threshold = 1.5, perplexity = 30,
     
     
     get_tsne <- reactive({
-      Rtsne::Rtsne(t(mat[which(vars > input$threshold),]),
+      Rtsne::Rtsne(t(mat[which(vars > input$threshold), , drop = FALSE]),
                    perplexity = input$perplexity, 
                    max_iter = max_iter, theta = theta)
     })
@@ -221,7 +247,7 @@ deviations_tsne_inv_shiny <- function(object, threshold, perplexity,
     
     
     get_tsne <- reactive({
-      Rtsne::Rtsne(mat[which(vars > input$threshold),],
+      Rtsne::Rtsne(mat[which(vars > input$threshold), , drop = FALSE],
                    perplexity = input$perplexity, 
                    max_iter = max_iter, theta = theta,
                    check_duplicates = FALSE)

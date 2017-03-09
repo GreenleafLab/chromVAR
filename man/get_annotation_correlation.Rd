@@ -52,7 +52,8 @@ get_annotation_correlation(object, annotations, ...)
 \item{expectation}{optional, expected fraction of reads per peak, as computed
 by compute_expectations}
 
-\item{variabilities}{optional, variabilities computed from compute_variability}
+\item{variabilities}{optional, variabilities computed from 
+compute_variability}
 }
 \value{
 correlation matrix
@@ -61,11 +62,13 @@ correlation matrix
 get_annotation_correlation
 }
 \details{
-should only be run on small number of motifs/kmers/peaksets (very slow!)
+should only be run on small number of motifs/kmers/peaksets 
+(very slow!)
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{object = SummarizedExperiment,annotations = SummarizedExperiment}: object and annotations are SummarizedExperiment
+\item \code{object = SummarizedExperiment,annotations = SummarizedExperiment}: object and annotations are 
+SummarizedExperiment
 
 \item \code{object = SummarizedExperiment,annotations = MatrixOrmatrix}: object is SummarizedExperiment, 
 annotations are Matrix
@@ -73,7 +76,8 @@ annotations are Matrix
 \item \code{object = SummarizedExperiment,annotations = list}: object is SummarizedExperiment, 
 annotations are list
 
-\item \code{object = MatrixOrmatrix,annotations = SummarizedExperiment}: object and annotations are SummarizedExperiment
+\item \code{object = MatrixOrmatrix,annotations = SummarizedExperiment}: object and annotations are 
+SummarizedExperiment
 
 \item \code{object = MatrixOrmatrix,annotations = MatrixOrmatrix}: object is SummarizedExperiment, 
 annotations are Matrix

@@ -21,14 +21,13 @@
 #' @importFrom Rcpp sourceCpp
 #' @importFrom S4Vectors queryHits subjectHits DataFrame elementNROWS isSorted
 #' @importFrom GenomeInfoDb seqlevels seqlevels<- sortSeqlevels seqnames
-#' @importFrom BiocParallel bplapply
 #' @importFrom Rsamtools ScanBamParam scanBamFlag scanBam countBam
 #' @importFrom IRanges IRanges overlapsAny
 #' @importFrom BiocParallel bplapply
 #' @importFrom TFBSTools PWMatrixList bg name
 #' @importMethodsFrom GenomicRanges sort start end
 #' @importClassesFrom SummarizedExperiment SummarizedExperiment
-#' @useDynLib chromVAR
+#' @useDynLib chromVAR, .registration = TRUE
 #' @docType package
 #' @name chromVAR
 NULL

@@ -227,7 +227,7 @@ setMethod("compute_deviations", c(object = "SummarizedExperiment",
                    expectation = compute_expectations(object)) {
             object <- counts_check(object)
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(assays(annotations)$matches)
+            peak_indices <- convert_to_ix_list(annotation_matches(annotations))
             compute_deviations_core(counts(object), 
                                     peak_indices,
                                     background_peaks, 
@@ -302,7 +302,7 @@ setMethod("compute_deviations", c(object = "MatrixOrmatrix",
                    background_peaks, 
                    expectation = compute_expectations(object)) {
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(assays(annotations)$matches)
+            peak_indices <- convert_to_ix_list(annotation_matches(annotations))
             compute_deviations_core(object, peak_indices, background_peaks, 
                                     expectation, 
                                     rowData = colData(annotations))

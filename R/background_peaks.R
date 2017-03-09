@@ -173,7 +173,7 @@ get_background_peaks_core <- function(object,
 #' 
 get_permuted_data <- function(object, niterations = 10, w = 0.1, bs = 50) {
   
-  out <- BiocParallel::bplapply(1:niterations, 
+  out <- bplapply(1:niterations, 
                                 function(x) get_permuted_data_helper(object, 
                                                                      w = w, 
                                                                      bs = bs))

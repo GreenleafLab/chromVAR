@@ -106,27 +106,39 @@
 
     <pre><span class='fu'>annotation_matches</span>(<span class='no'>object</span>)
 
+<span class='fu'>annotation_matches</span>(<span class='no'>object</span>) <span class='kw'>&lt;-</span> <span class='no'>value</span>
+
 <span class='co'># S4 method for SummarizedExperiment</span>
-<span class='fu'>annotation_matches</span>(<span class='no'>object</span>)</pre>
+<span class='fu'>annotation_matches</span>(<span class='no'>object</span>)
+
+<span class='co'># S4 method for SummarizedExperiment</span>
+<span class='fu'>annotation_matches</span>(<span class='no'>object</span>) <span class='kw'>&lt;-</span> <span class='no'>value</span></pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <dl class="dl-horizontal">
       <dt>object</dt>
-      <dd>SummarizedExperiment with matches slot</dd>
+      <dd>SummarizedExperiment with matches slot, see details</dd>
+      <dt>value</dt>
+      <dd>logical Matrix with annotation matches</dd>
     </dl>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>logical matrix of annotation matches</p>
     
-    <h2 class="hasAnchor" id="methods-by-class-"><a class="anchor" href="#methods-by-class-"></a>Methods (by class)</h2>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><ul>
-<li> <code>SummarizedExperiment</code>: get matches assay from SummarizedExperiment
-</li>
-</ul></p>
+    <p>Will extract matrix from the &quot;matches&quot;, &quot;annotation_matches&quot;, or
+&quot;motif_matches&quot; assay of a SummarizedExperiment</p>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'># Load very small example counts (already filtered)</span>
+<span class='fu'>data</span>(<span class='no'>mini_counts</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
+<span class='no'>motifs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='get_jaspar_motifs.html'>get_jaspar_motifs</a></span>()[<span class='fu'>c</span>(<span class='fl'>1</span>,<span class='fl'>2</span>,<span class='fl'>4</span>,<span class='fl'>298</span>)] <span class='co'># only use a few for demo </span>
+<span class='fu'>library</span>(<span class='no'>motifmatchr</span>)
+<span class='no'>motif_ix</span> <span class='kw'>&lt;-</span> <span class='fu'>match_motifs</span>(<span class='no'>motifs</span>, <span class='no'>mini_counts</span>)
+<span class='no'>matches</span> <span class='kw'>&lt;-</span> <span class='fu'>annotation_matches</span>(<span class='no'>motif_ix</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -135,18 +147,14 @@
       
       <li><a href="#value">Value</a></li>
 
-      <li><a href="#methods-by-class-">Methods (by class)</a></li>
-          </ul>
+      <li><a href="#details">Details</a></li>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
     <h2>Author</h2>
     
 Alicia Schep
-# Load very small example counts (already filtered)
-data(mini_counts, package = &quot;chromVAR&quot;)
-motifs &lt;- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
-library(motifmatchr)
-motif_ix &lt;- match_motifs(motifs, mini_counts)
-matches &lt;- annotation_matches(motif_ix)
 
   </div>
 </div>

@@ -7,8 +7,8 @@
 #' @param ... additional arguments
 #' @export
 #' @author Alicia Schep
-#' @return SummarizedExperiment with matches assay storing which peaks belong
-#' to which groups
+#' @return SummarizedExperiment with annotation_matches assay storing which peaks 
+#' belong to which groups
 #' @examples 
 #' 
 #' # Load very small example counts (already filtered)
@@ -41,7 +41,7 @@ get_cis_groups_core <- function(peaks, grpsize = 25, stepsize = 10) {
   
   chrs <- seqlevels(peaks)
   out <- list()
-  out <- do.call(c, BiocParallel::bplapply(seq_along(chrs), function(i) {
+  out <- do.call(c, bplapply(seq_along(chrs), function(i) {
     chr_ix <- which(as.character(seqnames(peaks)) == chrs[i])
     if (length(chr_ix) > stepsize) {
       tmp <- lapply(1:(length(chr_ix)%/%stepsize), function(x) chr_ix[((x - 
@@ -53,6 +53,7 @@ get_cis_groups_core <- function(peaks, grpsize = 25, stepsize = 10) {
       return(list())
     }
   }))
+  out <- get_annotations(out, rowRanges = peaks)
   return(out)
 }
 

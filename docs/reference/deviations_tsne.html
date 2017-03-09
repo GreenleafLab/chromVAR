@@ -134,6 +134,22 @@ variability threshold parameter?</dd>
     <p>data.frame with two columns for the two dimensions of tSNE output</p>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'># Load very small example counts (already filtered)</span>
+<span class='fu'>data</span>(<span class='no'>mini_counts</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
+<span class='no'>motifs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='get_jaspar_motifs.html'>get_jaspar_motifs</a></span>()[<span class='fu'>c</span>(<span class='fl'>1</span>,<span class='fl'>2</span>,<span class='fl'>4</span>,<span class='fl'>298</span>)] <span class='co'># only use a few for demo </span>
+<span class='fu'>library</span>(<span class='no'>motifmatchr</span>)
+<span class='no'>motif_ix</span> <span class='kw'>&lt;-</span> <span class='fu'>match_motifs</span>(<span class='no'>motifs</span>, <span class='no'>mini_counts</span>)
+
+<span class='co'># computing deviations</span>
+<span class='no'>dev</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='compute_deviations.html'>compute_deviations</a></span>(<span class='kw'>object</span> <span class='kw'>=</span> <span class='no'>mini_counts</span>,
+                         <span class='kw'>annotations</span> <span class='kw'>=</span> <span class='no'>motif_ix</span>)
+
+<span class='co'># Not run                         </span>
+<span class='co'>## Not run: sample_dist &amp;lt;- deviations_tsne(dev, threshold = 1)  </span>
+<span class='co'># setting very low variabilitiy threshold because this is mini data set</span>
+<span class='co'># Use plot_variability to get a sense of an appropriate threshold</span>
+<span class='co'># This gives an error with this mini data set as there too many NA values</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -141,7 +157,9 @@ variability threshold parameter?</dd>
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-          </ul>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
     <h2>Author</h2>
     
