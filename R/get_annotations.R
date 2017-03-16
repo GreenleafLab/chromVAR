@@ -105,7 +105,7 @@ setMethod(get_annotations,
             matches <- sapply(annotations, 
                               function(x) overlapsAny(rowRanges, x))
             SummarizedExperiment(assays = list(annotation_matches = Matrix(matches)),
-                                 rowRanges = rowRanges)
+                                 rowRanges = rowRanges, ...)
           })
 
 #' @describeIn get_annotations get annotation matrix from Matrix or matrix
