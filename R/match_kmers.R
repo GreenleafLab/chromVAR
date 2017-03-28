@@ -104,7 +104,9 @@ match_kmers_helper <- function(seqs, kmers, out, ranges) {
 #' data(mini_counts, package = "chromVAR")
 #' 
 #' # Get peak-kmer annotation matrix for 6mers
-#' kmer_ix <- match_kmers(6, mini_counts)
+#' library(BSgenome.Hsapiens.UCSC.hg19)
+#' kmer_ix <- match_kmers(6, mini_counts, 
+#'                        genome = BSgenome.Hsapiens.UCSC.hg19)
 setGeneric("match_kmers",
            function(k, subject, ...) standardGeneric("match_kmers"))
 
@@ -112,7 +114,7 @@ setGeneric("match_kmers",
 #' @export
 setMethod("match_kmers", signature(k = "character", subject = "DNAStringSet"),
           function(k,
-                   subject, genome = NULL,
+                   subject,
                    out = c("matches", "positions"),
                    ranges = NULL) {
             out <- match.arg(out)
@@ -150,42 +152,37 @@ setMethod("match_kmers", signature(k = "character", subject = "DNAString"),
 #' @export
 setMethod("match_kmers", signature(k = "character", subject = "GenomicRanges"),
           function(k,
-                   subject, genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
-                   out = c("matches", "positions"),
-                   ranges = NULL) {
+                   subject, 
+                   genome = GenomeInfoDb::genome(subject),
+                   out = c("matches", "positions")) {
             out <- match.arg(out)
             GenomicRanges::strand(subject) <- "+"
-  seqs <- getSeq(genome, subject)
-
-  match_kmers_helper(seqs, k, out, subject)
-})
+            genome <- validate_genome_input(genome)
+            seqs <- getSeq(genome, subject)
+            
+            match_kmers_helper(seqs, k, out, subject)
+          })
 
 #' @describeIn match_kmers For RangedSummarizedExperiment (containing GRanges in rowRanges)
 #' @export
 setMethod("match_kmers", signature(k = "character",
                                    subject = "RangedSummarizedExperiment"),
           function(k, subject,
-                   genome = BSgenome.Hsapiens.UCSC.hg19,
-                   out = c("matches", "counts", "positions"),
-                   ranges = NULL) {
-            out <- match.arg(out)
-            match_kmers(k, rowRanges(subject), genome, out)
+                   ...) {
+            match_kmers(k, rowRanges(subject), ...)
           })
 
 
 #' @describeIn match_kmers Catch-all for other un-documented types
 #' @export
 setMethod("match_kmers", signature(k = "numeric", subject = "ANY"),
-          function(k, subject,
-                   genome = BSgenome.Hsapiens.UCSC.hg19,
-                   out = c("matches", "counts", "positions"),
-                   ranges = NULL) {
-            out <- match.arg(out)
+          function(k, subject, ...) {
+            
             kmers <- DNAStringSet(mkAllStrings(c("A", "C", "G", "T"),
-                                     width = k))
-  kmers <- remove_rc(kmers)
-  match_kmers(kmers, subject, genome, out, ranges)
-})
+                                               width = k))
+            kmers <- remove_rc(kmers)
+            match_kmers(kmers, subject,...)
+          })
 
 
 #' @describeIn match_kmers Catch-all for other un-documented types with DNAStringSet
@@ -193,12 +190,9 @@ setMethod("match_kmers", signature(k = "numeric", subject = "ANY"),
 setMethod("match_kmers", signature(k = "DNAStringSet", subject = "ANY"),
           function(k,
                    subject,
-                   genome = BSgenome.Hsapiens.UCSC.hg19,
-                   out = c("matches", "counts", "positions"),
-                   ranges = NULL) {
-            out <- match.arg(out)
+                   ...) {
             kmers <- as.character(k)
-            match_kmers(kmers, subject, genome, out, ranges)
+            match_kmers(kmers, subject, ...)
 })
 
 
@@ -207,11 +201,9 @@ setMethod("match_kmers", signature(k = "DNAStringSet", subject = "ANY"),
 setMethod("match_kmers", signature(k = "DNAString", subject = "ANY"),
           function(k,
                    subject,
-                   genome = BSgenome.Hsapiens.UCSC.hg19,
-                   out = c("matches", "counts", "positions"),
-                   ranges = NULL) {
-            out <- match.arg(out)
+                   ...) {
+            
             kmers <- as.character(k)
-  match_kmers(kmers, subject, genome, out, ranges)
-})
+            match_kmers(kmers, subject, ...)
+          })
 

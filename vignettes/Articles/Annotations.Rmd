@@ -43,14 +43,15 @@ If using your own motifs, they need to be formatted as either a PWMatrixList or 
 The package motifmatchr can be used to find motifs within peaks.  The `match_motifs` method takes as inputs the motif lists described above, or your own list of motifs, and returns a (Ranged)SummarizedExperiment with a matrix indicating what peaks (rows) contain what motifs (columns). 
 
 ```{r}
+library(BSgenome.Hsapiens.UCSC.hg19)
 # First get filtered counts
 data(example_counts, package = "chromVAR")
-example_counts <- add_gc_bias(example_counts)
+example_counts <- add_gc_bias(example_counts, genome = BSgenome.Hsapiens.UCSC.hg19)
 counts_filtered <- filter_samples(example_counts, min_depth = 1500, min_in_peaks = 0.15, shiny = FALSE)
 counts_filtered <- filter_peaks(counts_filtered)
 
 # get motif matches
-motif_ix <- match_motifs(jaspar_motifs, counts_filtered)
+motif_ix <- match_motifs(jaspar_motifs, counts_filtered, genome = BSgenome.Hsapiens.UCSC.hg19)
 ```
 
 match_motifs can accept as the second argument either a RangedSummarizedExperiment, GenomicRanges, DNAStringSet, or character vector.  If the argument is not a sequence object, then a genome argument is also required, which should be a BSgenome object -- the default is BSgenome.Hsapiens.UCSC.hg19. For more information on motifmatchr see the vignette from that package. 
@@ -60,13 +61,13 @@ match_motifs can accept as the second argument either a RangedSummarizedExperime
 The `match_kmers` function in chromVAR can be used to make an annotation matrix for all kmers of a given length:
 
 ```{r}
-kmer_ix <- match_kmers(6, counts_filtered)
+kmer_ix <- match_kmers(6, counts_filtered, genome = BSgenome.Hsapiens.UCSC.hg19)
 ```
 
 Alternatively, if you only want an annotation matrix for a set of pre-determined kmers, you can pass match_kmers a list of those kmers:
 
 ```{r}
-my_kmers_ix <- match_kmers(c("AGATAA","GATAAG"), counts_filtered)
+my_kmers_ix <- match_kmers(c("AGATAA","GATAAG"), counts_filtered, genome = BSgenome.Hsapiens.UCSC.hg19)
 ```
 
 ### Cis groups

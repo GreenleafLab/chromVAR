@@ -10,10 +10,10 @@
 add_gc_bias(object, ...)
 
 \S4method{add_gc_bias}{RangedSummarizedExperiment}(object,
-  genome = BSgenome.Hsapiens.UCSC.hg19)
+  genome = GenomeInfoDb::genome(subject))
 
 \S4method{add_gc_bias}{SummarizedExperiment}(object, peaks,
-  genome = BSgenome.Hsapiens.UCSC.hg19)
+  genome = GenomeInfoDb::genome(peaks))
 }
 \arguments{
 \item{object}{(Ranged)SummarizedExperiment}
@@ -44,6 +44,8 @@ Computes GC content for peaks
 data(example_counts, package = "chromVAR")
 # show example on small part of data 
 subset_counts <- example_counts[1:500,]
-example_counts <- add_gc_bias(subset_counts)
+library(BSgenome.Hsapiens.UCSC.hg19)
+example_counts <- add_gc_bias(subset_counts, 
+                              genome = BSgenome.Hsapiens.UCSC.hg19)
 
 }

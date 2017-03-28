@@ -27,7 +27,9 @@ Accessor for deviation Z-scores from \code{\link{chromVARDeviations-class}} obje
 data(mini_counts, package = "chromVAR")
 motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
 library(motifmatchr)
-motif_ix <- match_motifs(motifs, mini_counts)
+library(BSgenome.Hsapiens.UCSC.hg19)
+motif_ix <- match_motifs(motifs, mini_counts, 
+                         genome = BSgenome.Hsapiens.UCSC.hg19)
 
 # computing deviations
 dev <- compute_deviations(object = mini_counts, 

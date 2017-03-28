@@ -125,7 +125,9 @@
 <span class='fu'>data</span>(<span class='no'>mini_counts</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
 <span class='no'>motifs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='get_jaspar_motifs.html'>get_jaspar_motifs</a></span>()[<span class='fu'>c</span>(<span class='fl'>1</span>,<span class='fl'>2</span>,<span class='fl'>4</span>,<span class='fl'>298</span>)] <span class='co'># only use a few for demo </span>
 <span class='fu'>library</span>(<span class='no'>motifmatchr</span>)
-<span class='no'>motif_ix</span> <span class='kw'>&lt;-</span> <span class='fu'>match_motifs</span>(<span class='no'>motifs</span>, <span class='no'>mini_counts</span>)
+<span class='fu'>library</span>(<span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)
+<span class='no'>motif_ix</span> <span class='kw'>&lt;-</span> <span class='fu'>match_motifs</span>(<span class='no'>motifs</span>, <span class='no'>mini_counts</span>,
+                         <span class='kw'>genome</span> <span class='kw'>=</span> <span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)
 
 <span class='co'># computing deviations</span>
 <span class='no'>dev</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='compute_deviations.html'>compute_deviations</a></span>(<span class='kw'>object</span> <span class='kw'>=</span> <span class='no'>mini_counts</span>,

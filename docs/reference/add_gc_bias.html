@@ -108,11 +108,11 @@
 
 <span class='co'># S4 method for RangedSummarizedExperiment</span>
 <span class='fu'>add_gc_bias</span>(<span class='no'>object</span>,
-  <span class='kw'>genome</span> <span class='kw'>=</span> <span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)
+  <span class='kw'>genome</span> <span class='kw'>=</span> <span class='kw'>GenomeInfoDb</span><span class='kw'>::</span><span class='fu'>genome</span>(<span class='no'>subject</span>))
 
 <span class='co'># S4 method for SummarizedExperiment</span>
 <span class='fu'>add_gc_bias</span>(<span class='no'>object</span>, <span class='no'>peaks</span>,
-  <span class='kw'>genome</span> <span class='kw'>=</span> <span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)</pre>
+  <span class='kw'>genome</span> <span class='kw'>=</span> <span class='kw'>GenomeInfoDb</span><span class='kw'>::</span><span class='fu'>genome</span>(<span class='no'>peaks</span>))</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <dl class="dl-horizontal">
@@ -147,7 +147,9 @@ with the gc content of the peak in question</p>
 <span class='fu'>data</span>(<span class='no'>example_counts</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
 <span class='co'># show example on small part of data </span>
 <span class='no'>subset_counts</span> <span class='kw'>&lt;-</span> <span class='no'>example_counts</span>[<span class='fl'>1</span>:<span class='fl'>500</span>,]
-<span class='no'>example_counts</span> <span class='kw'>&lt;-</span> <span class='fu'>add_gc_bias</span>(<span class='no'>subset_counts</span>)</div></pre>
+<span class='fu'>library</span>(<span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)
+<span class='no'>example_counts</span> <span class='kw'>&lt;-</span> <span class='fu'>add_gc_bias</span>(<span class='no'>subset_counts</span>,
+                              <span class='kw'>genome</span> <span class='kw'>=</span> <span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

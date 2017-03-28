@@ -12,7 +12,6 @@
 #' @import ggplot2
 #' @import shiny
 #' @import miniUI
-#' @import BSgenome.Hsapiens.UCSC.hg19 
 #' @importFrom plotly ggplotly plotlyOutput renderPlotly
 #' @importFrom graphics text
 #' @importFrom stats anova approx as.dist cor cov dist dnorm hclust kruskal.test lm median
@@ -25,6 +24,7 @@
 #' @importFrom IRanges IRanges overlapsAny
 #' @importFrom BiocParallel bplapply
 #' @importFrom TFBSTools PWMatrixList bg name
+#' @importFrom BSgenome getBSgenome
 #' @importMethodsFrom GenomicRanges sort start end
 #' @importClassesFrom SummarizedExperiment SummarizedExperiment
 #' @useDynLib chromVAR, .registration = TRUE

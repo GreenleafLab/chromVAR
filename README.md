@@ -25,6 +25,7 @@ A number of needed packages are installed in this process. One of the dependenci
 ``` r
 library(chromVAR)
 library(motifmatchr)
+library(BSgenome.Hsapiens.UCSC.hg19)
 
 ### Example of how to read in counts -------------------------------------------
 
@@ -46,12 +47,14 @@ fragment_counts <- get_counts(bamfiles, peaks,
 ### Using example counts from package ------------------------------------------
 
 data(example_counts, package = "chromVAR")
-example_counts <- add_gc_bias(example_counts)
+example_counts <- add_gc_bias(example_counts, 
+                              genome = BSgenome.Hsapiens.UCSC.hg19)
 counts_filtered <- filter_samples(example_counts, min_depth = 1500,
                                   min_in_peaks = 0.15)
 counts_filtered <- filter_peaks(counts_filtered)
 motifs <- get_jaspar_motifs()
-motif_ix <- match_motifs(motifs, counts_filtered)
+motif_ix <- match_motifs(motifs, counts_filtered,
+                         genome = BSgenome.Hsapiens.UCSC.hg19)
 
 # computing deviations
 dev <- compute_deviations(object = counts_filtered, 

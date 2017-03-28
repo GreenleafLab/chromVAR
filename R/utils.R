@@ -302,6 +302,51 @@ convert_from_ix_list <- function(ix, npeaks) {
   
 }
 
+# genome -----------------------------------------------------------------------
+
+## validate genome input
+
+setGeneric("validate_genome_input",
+           function(genome) standardGeneric("validate_genome_input"))
+
+setMethod("validate_genome_input", signature(genome = "FaFile"),
+          function(genome) {
+            return(genome)
+          })
+
+setMethod("validate_genome_input", signature(genome = "BSgenome"),
+          function(genome) {
+            return(genome)
+          })
+
+setMethod("validate_genome_input", signature(genome = "DNAStringSet"),
+          function(genome) {
+            return(genome)
+          })
+
+setMethod("validate_genome_input", signature(genome = "character"),
+          function(genome) {
+            return(getBSgenome(genome))
+          })
+
+setMethod("validate_genome_input", signature(genome = "character"),
+          function(genome) {
+            if (any(is.na(genome)))
+              stop("No genome provided")
+            if (length(genome) > 1){
+              stopifnot(all(genome == genome[[1]]))
+              genome <- genome[[1]]
+            }
+            return(getBSgenome(genome))
+          })
+
+setMethod("validate_genome_input", signature(genome = "ANY"),
+          function(genome) {
+            stop("genome input must be a BSgenome, DNAStringSet, or FaFile",
+                 "object or a string recognized by getBSgenome")
+          })
+
+
 
 # Jaccard ----------------------------------------------------------------------
 

@@ -107,8 +107,8 @@
     <pre><span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>, <span class='no'>...</span>)
 
 <span class='co'># S4 method for character,DNAStringSet</span>
-<span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>, <span class='kw'>genome</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>out</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"matches"</span>, <span class='st'>"positions"</span>), <span class='kw'>ranges</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)
+<span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>, <span class='kw'>out</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"matches"</span>,
+  <span class='st'>"positions"</span>), <span class='kw'>ranges</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)
 
 <span class='co'># S4 method for character,character</span>
 <span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>, <span class='kw'>out</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"matches"</span>,
@@ -120,28 +120,19 @@
 
 <span class='co'># S4 method for character,GenomicRanges</span>
 <span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>,
-  <span class='kw'>genome</span> <span class='kw'>=</span> <span class='kw'>BSgenome.Hsapiens.UCSC.hg19</span><span class='kw'>::</span><span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>,
-  <span class='kw'>out</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"matches"</span>, <span class='st'>"positions"</span>), <span class='kw'>ranges</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)
+  <span class='kw'>genome</span> <span class='kw'>=</span> <span class='kw'>GenomeInfoDb</span><span class='kw'>::</span><span class='fu'>genome</span>(<span class='no'>subject</span>), <span class='kw'>out</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"matches"</span>, <span class='st'>"positions"</span>))
 
 <span class='co'># S4 method for character,RangedSummarizedExperiment</span>
-<span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>,
-  <span class='kw'>genome</span> <span class='kw'>=</span> <span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>, <span class='kw'>out</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"matches"</span>, <span class='st'>"counts"</span>,
-  <span class='st'>"positions"</span>), <span class='kw'>ranges</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)
+<span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>, <span class='no'>...</span>)
 
 <span class='co'># S4 method for numeric,ANY</span>
-<span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>,
-  <span class='kw'>genome</span> <span class='kw'>=</span> <span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>, <span class='kw'>out</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"matches"</span>, <span class='st'>"counts"</span>,
-  <span class='st'>"positions"</span>), <span class='kw'>ranges</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)
+<span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>, <span class='no'>...</span>)
 
 <span class='co'># S4 method for DNAStringSet,ANY</span>
-<span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>,
-  <span class='kw'>genome</span> <span class='kw'>=</span> <span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>, <span class='kw'>out</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"matches"</span>, <span class='st'>"counts"</span>,
-  <span class='st'>"positions"</span>), <span class='kw'>ranges</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)
+<span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>, <span class='no'>...</span>)
 
 <span class='co'># S4 method for DNAString,ANY</span>
-<span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>,
-  <span class='kw'>genome</span> <span class='kw'>=</span> <span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>, <span class='kw'>out</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"matches"</span>, <span class='st'>"counts"</span>,
-  <span class='st'>"positions"</span>), <span class='kw'>ranges</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+<span class='fu'>match_kmers</span>(<span class='no'>k</span>, <span class='no'>subject</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <dl class="dl-horizontal">
@@ -153,14 +144,14 @@
 or character vector</dd>
       <dt>...</dt>
       <dd>additional arguments</dd>
-      <dt>genome</dt>
-      <dd>BSgenome object, only used if subect is
-<code><a href='http://www.rdocumentation.org/packages/GenomicRanges/topics/GRanges-class'>GenomicRanges</a></code></dd>
       <dt>out</dt>
       <dd>what to return? see details</dd>
       <dt>ranges</dt>
       <dd>if subject is not GenomicRanges, ranges to use when out is
 positions</dd>
+      <dt>genome</dt>
+      <dd>BSgenome object, only used if subect is
+<code><a href='http://www.rdocumentation.org/packages/GenomicRanges/topics/GRanges-class'>GenomicRanges</a></code></dd>
     </dl>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
@@ -206,7 +197,9 @@ GenomicRanges  object with all the positions of matches</p>
 <span class='fu'>data</span>(<span class='no'>mini_counts</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
 
 <span class='co'># Get peak-kmer annotation matrix for 6mers</span>
-<span class='no'>kmer_ix</span> <span class='kw'>&lt;-</span> <span class='fu'>match_kmers</span>(<span class='fl'>6</span>, <span class='no'>mini_counts</span>)</div></pre>
+<span class='fu'>library</span>(<span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)
+<span class='no'>kmer_ix</span> <span class='kw'>&lt;-</span> <span class='fu'>match_kmers</span>(<span class='fl'>6</span>, <span class='no'>mini_counts</span>,
+                       <span class='kw'>genome</span> <span class='kw'>=</span> <span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

@@ -98,6 +98,7 @@
 <a href="#quickstart" class="anchor"> </a>Quickstart</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(chromVAR)
 <span class="kw">library</span>(motifmatchr)
+<span class="kw">library</span>(BSgenome.Hsapiens.UCSC.hg19)
 
 ### Example of how to read in counts -------------------------------------------
 
@@ -119,12 +120,14 @@ fragment_counts &lt;-<span class="st"> </span><span class="kw"><a href="referenc
 ### Using example counts from package ------------------------------------------
 
 <span class="kw">data</span>(example_counts, <span class="dt">package =</span> <span class="st">"chromVAR"</span>)
-example_counts &lt;-<span class="st"> </span><span class="kw"><a href="reference/add_gc_bias.html">add_gc_bias</a></span>(example_counts)
+example_counts &lt;-<span class="st"> </span><span class="kw"><a href="reference/add_gc_bias.html">add_gc_bias</a></span>(example_counts, 
+                              <span class="dt">genome =</span> BSgenome.Hsapiens.UCSC.hg19)
 counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="reference/filter_samples.html">filter_samples</a></span>(example_counts, <span class="dt">min_depth =</span> <span class="dv">1500</span>,
                                   <span class="dt">min_in_peaks =</span> <span class="fl">0.15</span>)
 counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="reference/filter_peaks.html">filter_peaks</a></span>(counts_filtered)
 motifs &lt;-<span class="st"> </span><span class="kw"><a href="reference/get_jaspar_motifs.html">get_jaspar_motifs</a></span>()
-motif_ix &lt;-<span class="st"> </span><span class="kw">match_motifs</span>(motifs, counts_filtered)
+motif_ix &lt;-<span class="st"> </span><span class="kw">match_motifs</span>(motifs, counts_filtered,
+                         <span class="dt">genome =</span> BSgenome.Hsapiens.UCSC.hg19)
 
 <span class="co"># computing deviations</span>
 dev &lt;-<span class="st"> </span><span class="kw"><a href="reference/compute_deviations.html">compute_deviations</a></span>(<span class="dt">object =</span> counts_filtered, 

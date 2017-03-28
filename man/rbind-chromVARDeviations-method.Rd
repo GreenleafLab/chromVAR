@@ -23,7 +23,9 @@ Concatenates chromVARDeviations results for different sets of annotations
 data(mini_counts, package = "chromVAR")
 motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
 library(motifmatchr)
-motif_ix <- match_motifs(motifs, mini_counts)
+library(BSgenome.Hsapiens.UCSC.hg19)
+motif_ix <- match_motifs(motifs, mini_counts, 
+                         genome = BSgenome.Hsapiens.UCSC.hg19)
 
 # computing deviations
 dev1 <- compute_deviations(object = mini_counts, 

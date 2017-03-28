@@ -10,7 +10,7 @@ vignette: >
 
 chromVAR is an R package for the analysis of sparse chromatin accessibility. chromVAR takes as inputs aligned fragments (filtered for duplicates and low quality) from ATAC-seq or DNAse-seq experiments as well as genomic annotations such as motif positions. chromVAR computes for each annotation and each cell or sample a bias corrected "deviation" in accessibility from the expected accessibility based on the average of all the cells or samples. 
 
-This vignette covers basic usage of chromVAR with standard inputs. For more detailed documentation covering different options for various inputs and additional applications, view the Articles.
+This vignette covers basic usage of chromVAR with standard inputs. For more detailed documentation covering different options for various inputs and additional applications, view the additional vignettes on the [documentation website](https://greenleaflab.github.io/chromVAR/).
 
 ##Loading the package
 
@@ -58,21 +58,15 @@ head(example_counts)
 
 ##Getting GC content of peaks
 
-The GC content will be used for determining background peaks.  The function `add_gc_bias` returns an updated SummarizedExperiment with a new rowData column named "bias".
+The GC content will be used for determining background peaks.  The function `add_gc_bias` returns an updated SummarizedExperiment with a new rowData column named "bias". The function requires an input of a genome sequence, which can be provided as a BSgenome, FaFile, or DNAStringSet object. 
 
 ```{r}
-example_counts <- add_gc_bias(example_counts)
+library(BSgenome.Hsapiens.UCSC.hg19)
+example_counts <- add_gc_bias(example_counts, genome = BSgenome.Hsapiens.UCSC.hg19)
 head(rowData(example_counts))
 ```
 
-Note that the function `add_gc_bias` also takes in an argument for a BSgenome object.  The default is BSgenome.Hsapiens.UCSC.hg19, so if using a different genome build be sure to provide the correct genome. For example, if using sacCer3 you could do:
-```{r, eval = FALSE}
-# Not evaluated 
-library(BSgenome.Scerevisiae.UCSC.sacCer3)
-example_counts <- add_gc_bias(example_counts, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
-```
-
-Check out `available.genomes` from the BSgenome package for what genomes are available. For making your own BSgenome object, check out `BSgenomeForge`.  
+Check out `available.genomes` from the BSgenome package for what genomes are available as BSgenome packages. For making your own BSgenome object, check out `BSgenomeForge`.  
 
 ##Filtering inputs
 
@@ -125,21 +119,14 @@ For using a collection other than core, use the `collection` argument.  Options 
 The `get_motifs` function is simply a wrapper around `getMatrixSet` from TFBSTools-- you can also use that function to fetch motifs from JASPAR if you prefer, and/or check out the documentation for that function for more information.  
 
 
-The function `match_motifs` from the motifmatchr package finds which peaks contain which motifs. By default, it returns a SummarizedExperiment object, which contains  a sparse matrix indicating motif match or not.
+The function `match_motifs` from the motifmatchr package finds which peaks contain which motifs. By default, it returns a SummarizedExperiment object, which contains  a sparse matrix indicating motif match or not.The function requires an input of a genome sequence, which can be provided as a BSgenome, FaFile, or DNAStringSet object. 
 
 ```{r}
 library(motifmatchr)
-motif_ix <- match_motifs(motifs, counts_filtered)
+motif_ix <- match_motifs(motifs, counts_filtered, genome = BSgenome.Hsapiens.UCSC.hg19)
 ```
 
-For the function `match_pwm` a genome sequence is again required.  So for sacCer3 for example:
-
-```{r, eval = FALSE}
-# Not evaluated 
-motif_ix <- match_motifs(motifs, counts_filtered, genome = BSgenome.Scerevisiae.UCSC.sacCer3)
-```
-
-Another option is the p.cutoff for determing how stringent motif calling should be. The default value is 0.00005, which tends to give reasonable numbers of motif matches.  
+One option is the p.cutoff for determing how stringent motif calling should be. The default value is 0.00005, which tends to give reasonable numbers of motif matches for human motifs.  
 
 Instead of returning just motif matches, the function can also return additional matrices (stored as assays) with the number of motif matches per peak and the maximum motif score per peak.  For this additional information, use `out = scores`.  To return the actual positions of motif matches, use `out = positions`. Either the output with `out = matches` or `out = scores` can be passed to the compute_deviations function.
 

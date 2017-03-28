@@ -95,7 +95,9 @@ a certain fragment count, fragment count, or fragment count & bias.
 data(mini_counts, package = "chromVAR")
 motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
 library(motifmatchr)
-motif_ix <- match_motifs(motifs, mini_counts)
+library(BSgenome.Hsapiens.UCSC.hg19)
+motif_ix <- match_motifs(motifs, mini_counts, 
+                         genome = BSgenome.Hsapiens.UCSC.hg19)
 
 perm_sets <- make_permuted_sets(mini_counts, motif_ix)
 }

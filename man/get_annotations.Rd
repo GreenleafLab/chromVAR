@@ -21,13 +21,13 @@ get_annotations(annotations, ...)
 \S4method{get_annotations}{list}(annotations, npeaks = NULL, ...)
 
 \S4method{get_annotations}{character}(annotations, rowRanges, column = NULL,
-  colData = NULL)
+  ...)
 }
 \arguments{
 \item{annotations}{matrix, Matrix, or data.frame of fragment counts,
 or SummarizedExperiment with counts assays, see details}
 
-\item{...}{additional arguments}
+\item{...}{additional arguments to pass to SummarizedExperiment}
 
 \item{rowRanges}{GenomicRanges or GenomicRangesList or 
 RangedSummarizedExperiment}
@@ -35,8 +35,6 @@ RangedSummarizedExperiment}
 \item{npeaks}{number of peaks}
 
 \item{column}{column of bed file with annotation names, see details}
-
-\item{colData}{data on each annotation to store along with annotation matrix}
 }
 \value{
 SummarizedExperiment object with 'matches' assay

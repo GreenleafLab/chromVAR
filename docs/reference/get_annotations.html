@@ -120,7 +120,7 @@
 
 <span class='co'># S4 method for character</span>
 <span class='fu'>get_annotations</span>(<span class='no'>annotations</span>, <span class='no'>rowRanges</span>, <span class='kw'>column</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>colData</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+  <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <dl class="dl-horizontal">
@@ -128,7 +128,7 @@
       <dd>matrix, Matrix, or data.frame of fragment counts,
 or SummarizedExperiment with counts assays, see details</dd>
       <dt>...</dt>
-      <dd>additional arguments</dd>
+      <dd>additional arguments to pass to SummarizedExperiment</dd>
       <dt>rowRanges</dt>
       <dd>GenomicRanges or GenomicRangesList or 
 RangedSummarizedExperiment</dd>
@@ -136,8 +136,6 @@ RangedSummarizedExperiment</dd>
       <dd>number of peaks</dd>
       <dt>column</dt>
       <dd>column of bed file with annotation names, see details</dd>
-      <dt>colData</dt>
-      <dd>data on each annotation to store along with annotation matrix</dd>
     </dl>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>

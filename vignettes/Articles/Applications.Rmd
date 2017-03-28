@@ -17,14 +17,15 @@ library(SummarizedExperiment)
 library(Matrix)
 library(ggplot2)
 library(BiocParallel)
+library(BSgenome.Hsapiens.UCSC.hg19)
 register(MulticoreParam(8))
 data(example_counts, package = "chromVAR")
 set.seed(2017)
-example_counts <- add_gc_bias(example_counts)
+example_counts <- add_gc_bias(example_counts, genome = BSgenome.Hsapiens.UCSC.hg19)
 counts_filtered <- filter_samples(example_counts, min_depth = 1500, min_in_peaks = 0.15, shiny = FALSE)
 counts_filtered <- filter_peaks(counts_filtered)
 motifs <- get_jaspar_motifs()
-motif_ix <- match_motifs(motifs, counts_filtered)
+motif_ix <- match_motifs(motifs, counts_filtered, genome = BSgenome.Hsapiens.UCSC.hg19)
 dev <- compute_deviations(object = counts_filtered, 
                                  annotations = motif_ix)
 ```
@@ -109,7 +110,7 @@ ggplot(inv_tsne_results, aes(x = Dim1, y = Dim2)) + geom_point() +
 By using kmers as the annnotation, we can use the kmers to identify the precise nucleotides necessary for chromatin accessibility variability.  The `deviations_covariability` function returns a normalized covariance between the bias corrected deviations of any pair of annotations. We will use 6mers here in the interest of computational time, but in general 7mers yield higher variability and are better starting points for assembling de novo motifs (see next section).  
 
 ```{r}
-kmer_ix <- match_kmers(6, counts_filtered)
+kmer_ix <- match_kmers(6, counts_filtered, genome = BSgenome.Hsapiens.UCSC.hg19)
 kmer_dev <- compute_deviations(counts_filtered, kmer_ix)
 
 kmer_cov <- deviations_covariability(kmer_dev)

@@ -11,7 +11,9 @@
 #' data(example_counts, package = "chromVAR")
 #' # show example on small part of data 
 #' subset_counts <- example_counts[1:500,]
-#' example_counts <- add_gc_bias(subset_counts)
+#' library(BSgenome.Hsapiens.UCSC.hg19)
+#' example_counts <- add_gc_bias(subset_counts, 
+#'                               genome = BSgenome.Hsapiens.UCSC.hg19)
 #' 
 setGeneric("add_gc_bias", function(object, ...) standardGeneric("add_gc_bias"))
 
@@ -20,7 +22,8 @@ setGeneric("add_gc_bias", function(object, ...) standardGeneric("add_gc_bias"))
 #' @export
 setMethod(add_gc_bias, c(object = "RangedSummarizedExperiment"), 
           function(object, 
-                   genome = BSgenome.Hsapiens.UCSC.hg19) {
+                   genome = GenomeInfoDb::genome(subject)) {
+            genome <- validate_genome_input(genome)
             peaks <- rowRanges(object)
             seqs <- getSeq(genome, peaks)
             nucfreqs <- letterFrequency(seqs, c("A", "C", "G", "T"))
@@ -35,7 +38,8 @@ setMethod(add_gc_bias, c(object = "RangedSummarizedExperiment"),
 #' @export
 setMethod(add_gc_bias, c(object = "SummarizedExperiment"), 
           function(object, peaks, 
-                   genome = BSgenome.Hsapiens.UCSC.hg19) {
+                   genome = GenomeInfoDb::genome(peaks)) {
+            genome <- validate_genome_input(genome)
             seqs <- getSeq(genome, peaks)
             nucfreqs <- letterFrequency(seqs, c("A", "C", "G", "T"))
             gc <- apply(nucfreqs, 1, function(x) sum(x[2:3])/sum(x))

@@ -2,7 +2,7 @@
 #' 
 #' @param annotations matrix, Matrix, or data.frame of fragment counts,
 #' or SummarizedExperiment with counts assays, see details
-#' @param ... additional arguments
+#' @param ... additional arguments to pass to SummarizedExperiment
 #' @return SummarizedExperiment object with 'matches' assay
 #' @export
 #' @author Alicia Schep
@@ -41,7 +41,9 @@ setGeneric("get_annotations",
 #' data(mini_counts, package = "chromVAR")
 #' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
 #' library(motifmatchr)
-#' motif_ix <- match_motifs(motifs, mini_counts)
+#' library(BSgenome.Hsapiens.UCSC.hg19)
+#' motif_ix <- match_motifs(motifs, mini_counts, 
+#'                          genome = BSgenome.Hsapiens.UCSC.hg19)
 #' matches <- annotation_matches(motif_ix)
 setGeneric("annotation_matches", 
            function(object) standardGeneric("annotation_matches"))
@@ -149,12 +151,11 @@ setMethod(get_annotations, c(annotations = "list"),
 
 
 #' @param column column of bed file with annotation names, see details
-#' @param colData data on each annotation to store along with annotation matrix
 #' @describeIn get_annotations get annotations from bed files
 #' @export
 setMethod(get_annotations, c(annotations = "character"), 
           function(annotations, rowRanges, 
-                   column = NULL, colData = NULL) {
+                   column = NULL, ...) {
             if (length(annotations) == 1 && !is.null(column)) {
               if (is.installed("readr")) {
                 bed <- 
@@ -192,6 +193,6 @@ setMethod(get_annotations, c(annotations = "character"),
                 makeGRangesFromDataFrame(bed)
               }))
             }
-            get_annotations(grl, rowRanges, colData = colData)
+            get_annotations(grl, rowRanges, ...)
           })
 

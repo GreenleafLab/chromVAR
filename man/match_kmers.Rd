@@ -15,8 +15,8 @@
 \usage{
 match_kmers(k, subject, ...)
 
-\S4method{match_kmers}{character,DNAStringSet}(k, subject, genome = NULL,
-  out = c("matches", "positions"), ranges = NULL)
+\S4method{match_kmers}{character,DNAStringSet}(k, subject, out = c("matches",
+  "positions"), ranges = NULL)
 
 \S4method{match_kmers}{character,character}(k, subject, out = c("matches",
   "positions"), ranges = NULL)
@@ -25,24 +25,15 @@ match_kmers(k, subject, ...)
   "positions"), ranges = NULL)
 
 \S4method{match_kmers}{character,GenomicRanges}(k, subject,
-  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
-  out = c("matches", "positions"), ranges = NULL)
+  genome = GenomeInfoDb::genome(subject), out = c("matches", "positions"))
 
-\S4method{match_kmers}{character,RangedSummarizedExperiment}(k, subject,
-  genome = BSgenome.Hsapiens.UCSC.hg19, out = c("matches", "counts",
-  "positions"), ranges = NULL)
+\S4method{match_kmers}{character,RangedSummarizedExperiment}(k, subject, ...)
 
-\S4method{match_kmers}{numeric,ANY}(k, subject,
-  genome = BSgenome.Hsapiens.UCSC.hg19, out = c("matches", "counts",
-  "positions"), ranges = NULL)
+\S4method{match_kmers}{numeric,ANY}(k, subject, ...)
 
-\S4method{match_kmers}{DNAStringSet,ANY}(k, subject,
-  genome = BSgenome.Hsapiens.UCSC.hg19, out = c("matches", "counts",
-  "positions"), ranges = NULL)
+\S4method{match_kmers}{DNAStringSet,ANY}(k, subject, ...)
 
-\S4method{match_kmers}{DNAString,ANY}(k, subject,
-  genome = BSgenome.Hsapiens.UCSC.hg19, out = c("matches", "counts",
-  "positions"), ranges = NULL)
+\S4method{match_kmers}{DNAString,ANY}(k, subject, ...)
 }
 \arguments{
 \item{k}{k}
@@ -53,13 +44,13 @@ or character vector}
 
 \item{...}{additional arguments}
 
-\item{genome}{BSgenome object, only used if subect is
-\code{\link[GenomicRanges]{GenomicRanges}}}
-
 \item{out}{what to return? see details}
 
 \item{ranges}{if subject is not GenomicRanges, ranges to use when out is
 positions}
+
+\item{genome}{BSgenome object, only used if subect is
+\code{\link[GenomicRanges]{GenomicRanges}}}
 }
 \value{
 SummarizedExperiment with matches assay storing which peaks contain
@@ -98,7 +89,9 @@ GenomicRanges  object with all the positions of matches
 data(mini_counts, package = "chromVAR")
 
 # Get peak-kmer annotation matrix for 6mers
-kmer_ix <- match_kmers(6, mini_counts)
+library(BSgenome.Hsapiens.UCSC.hg19)
+kmer_ix <- match_kmers(6, mini_counts, 
+                       genome = BSgenome.Hsapiens.UCSC.hg19)
 }
 \seealso{
 \code{\link{get_annotations}}, \code{\link{compute_deviations}}
