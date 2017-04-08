@@ -23,14 +23,14 @@ Accessor for bias corrected deviations from \code{\link{chromVARDeviations-class
 \examples{
 # Load very small example counts (already filtered)
 data(mini_counts, package = "chromVAR")
-motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo
 library(motifmatchr)
 library(BSgenome.Hsapiens.UCSC.hg19)
-motif_ix <- match_motifs(motifs, mini_counts, 
+motif_ix <- match_motifs(motifs, mini_counts,
                          genome = BSgenome.Hsapiens.UCSC.hg19)
-                         
+
 # computing deviations
-dev <- compute_deviations(object = mini_counts, 
+dev <- compute_deviations(object = mini_counts,
                          annotations = motif_ix)
 bias_corrected_deviations <- deviations(dev)
 }

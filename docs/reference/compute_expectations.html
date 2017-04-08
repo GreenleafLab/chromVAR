@@ -128,7 +128,7 @@
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>vector with expected fraction of reads per peak</p>
+    <p>vector with expected fraction of reads per peak.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
@@ -142,14 +142,17 @@ case the expectation will be the average fraction of reads per peak within each 
 If group vector is provided and norm is set to TRUE then within each group
 the fraction of reads per peak is the average fraction of reads per peak in each
 sample.  Otherwise, the within group fraction of reads per peak is based on the
-reads per peak within the sample divided by the total reads within each sample.</p>
+reads per peak within the sample divided by the total reads within each sample.
+The group can also be given by a length 1 character vector representing the
+name of a column in the colData of the input object if the input is a
+SummarizedExperiment</p>
     
     <h2 class="hasAnchor" id="methods-by-class-"><a class="anchor" href="#methods-by-class-"></a>Methods (by class)</h2>
 
     <p><ul>
 <li> <code>MatrixOrmatrix</code>: method for Matrix or matrix</p>
     <p></li>
-<li> <code>SummarizedExperiment</code>: method for SummarizedExperiment with counts 
+<li> <code>SummarizedExperiment</code>: method for SummarizedExperiment with counts
 slot
 </li>
 </ul></p>

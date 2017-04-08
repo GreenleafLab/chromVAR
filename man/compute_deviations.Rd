@@ -51,7 +51,7 @@ compute_deviations(object, annotations, ...)
 
 \item{...}{additional arguments}
 
-\item{background_peaks}{(optional) background peaks matrix computed using 
+\item{background_peaks}{(optional) background peaks matrix computed using
 \code{\link{get_background_peaks}}, computed internally with default
 paramaters if not provided}
 
@@ -59,7 +59,7 @@ paramaters if not provided}
 \code{\link{compute_expectations}}, computed automatically if not provided}
 }
 \value{
-\code{\link{chromVARDeviations-class}}, which inherits from 
+\code{\link{chromVARDeviations-class}}, which inherits from
 SummarizedExperiment, and has two assays: deviations and deviation scores.
 }
 \description{
@@ -72,38 +72,38 @@ multiprocessing using \code{\link[BiocParallel]{bplapply}}
 \itemize{
 \item \code{object = SummarizedExperiment,annotations = SummarizedExperiment}: object and annotations are SummarizedExperiment
 
-\item \code{object = SummarizedExperiment,annotations = MatrixOrmatrix}: object is SummarizedExperiment, 
+\item \code{object = SummarizedExperiment,annotations = MatrixOrmatrix}: object is SummarizedExperiment,
 annotations are Matrix
 
-\item \code{object = SummarizedExperiment,annotations = list}: object is SummarizedExperiment, 
+\item \code{object = SummarizedExperiment,annotations = list}: object is SummarizedExperiment,
 annotations are list
 
-\item \code{object = SummarizedExperiment,annotations = missingOrNULL}: object is SummarizedExperiment, 
+\item \code{object = SummarizedExperiment,annotations = missingOrNULL}: object is SummarizedExperiment,
 annotations are missing
 
 \item \code{object = MatrixOrmatrix,annotations = SummarizedExperiment}: object and annotations are SummarizedExperiment
 
-\item \code{object = MatrixOrmatrix,annotations = MatrixOrmatrix}: object is SummarizedExperiment, 
+\item \code{object = MatrixOrmatrix,annotations = MatrixOrmatrix}: object is SummarizedExperiment,
 annotations are Matrix
 
-\item \code{object = MatrixOrmatrix,annotations = list}: object is SummarizedExperiment, 
+\item \code{object = MatrixOrmatrix,annotations = list}: object is SummarizedExperiment,
 annotations are list
 
-\item \code{object = MatrixOrmatrix,annotations = missingOrNULL}: object is SummarizedExperiment, 
+\item \code{object = MatrixOrmatrix,annotations = missingOrNULL}: object is SummarizedExperiment,
 annotations are missing
 }}
 
 \examples{
 # Load very small example counts (already filtered)
 data(mini_counts, package = "chromVAR")
-motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo
 library(motifmatchr)
 library(BSgenome.Hsapiens.UCSC.hg19)
-motif_ix <- match_motifs(motifs, mini_counts, 
+motif_ix <- match_motifs(motifs, mini_counts,
                          genome = BSgenome.Hsapiens.UCSC.hg19)
-                         
+
 # computing deviations
-dev <- compute_deviations(object = mini_counts, 
+dev <- compute_deviations(object = mini_counts,
                          annotations = motif_ix)
 }
 \seealso{

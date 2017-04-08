@@ -25,7 +25,7 @@ compute_expectations(object, ...)
 \item{group}{an group vector, optional}
 }
 \value{
-vector with expected fraction of reads per peak
+vector with expected fraction of reads per peak.
 }
 \description{
 compute_expectations
@@ -42,12 +42,15 @@ If group vector is provided and norm is set to TRUE then within each group
 the fraction of reads per peak is the average fraction of reads per peak in each
 sample.  Otherwise, the within group fraction of reads per peak is based on the
 reads per peak within the sample divided by the total reads within each sample.
+The group can also be given by a length 1 character vector representing the
+name of a column in the colData of the input object if the input is a
+SummarizedExperiment
 }
 \section{Methods (by class)}{
 \itemize{
 \item \code{MatrixOrmatrix}: method for Matrix or matrix
 
-\item \code{SummarizedExperiment}: method for SummarizedExperiment with counts 
+\item \code{SummarizedExperiment}: method for SummarizedExperiment with counts
 slot
 }}
 

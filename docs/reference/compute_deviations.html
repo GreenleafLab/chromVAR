@@ -152,7 +152,7 @@
       <dt>...</dt>
       <dd>additional arguments</dd>
       <dt>background_peaks</dt>
-      <dd>(optional) background peaks matrix computed using 
+      <dd>(optional) background peaks matrix computed using
 <code><a href='get_background_peaks.html'>get_background_peaks</a></code>, computed internally with default
 paramaters if not provided</dd>
       <dt>expectation</dt>
@@ -162,7 +162,7 @@ paramaters if not provided</dd>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p><code><a href='chromVARDeviations-class.html'>chromVARDeviations-class</a></code>, which inherits from 
+    <p><code><a href='chromVARDeviations-class.html'>chromVARDeviations-class</a></code>, which inherits from
 SummarizedExperiment, and has two assays: deviations and deviation scores.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
@@ -174,24 +174,24 @@ SummarizedExperiment, and has two assays: deviations and deviation scores.</p>
     <p><ul>
 <li> <code>object = SummarizedExperiment,annotations = SummarizedExperiment</code>: object and annotations are SummarizedExperiment</p>
     <p></li>
-<li> <code>object = SummarizedExperiment,annotations = MatrixOrmatrix</code>: object is SummarizedExperiment, 
+<li> <code>object = SummarizedExperiment,annotations = MatrixOrmatrix</code>: object is SummarizedExperiment,
 annotations are Matrix</p>
     <p></li>
-<li> <code>object = SummarizedExperiment,annotations = list</code>: object is SummarizedExperiment, 
+<li> <code>object = SummarizedExperiment,annotations = list</code>: object is SummarizedExperiment,
 annotations are list</p>
     <p></li>
-<li> <code>object = SummarizedExperiment,annotations = missingOrNULL</code>: object is SummarizedExperiment, 
+<li> <code>object = SummarizedExperiment,annotations = missingOrNULL</code>: object is SummarizedExperiment,
 annotations are missing</p>
     <p></li>
 <li> <code>object = MatrixOrmatrix,annotations = SummarizedExperiment</code>: object and annotations are SummarizedExperiment</p>
     <p></li>
-<li> <code>object = MatrixOrmatrix,annotations = MatrixOrmatrix</code>: object is SummarizedExperiment, 
+<li> <code>object = MatrixOrmatrix,annotations = MatrixOrmatrix</code>: object is SummarizedExperiment,
 annotations are Matrix</p>
     <p></li>
-<li> <code>object = MatrixOrmatrix,annotations = list</code>: object is SummarizedExperiment, 
+<li> <code>object = MatrixOrmatrix,annotations = list</code>: object is SummarizedExperiment,
 annotations are list</p>
     <p></li>
-<li> <code>object = MatrixOrmatrix,annotations = missingOrNULL</code>: object is SummarizedExperiment, 
+<li> <code>object = MatrixOrmatrix,annotations = missingOrNULL</code>: object is SummarizedExperiment,
 annotations are missing
 </li>
 </ul></p>
@@ -204,15 +204,16 @@ annotations are missing
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># Load very small example counts (already filtered)</span>
 <span class='fu'>data</span>(<span class='no'>mini_counts</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
-<span class='no'>motifs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='get_jaspar_motifs.html'>get_jaspar_motifs</a></span>()[<span class='fu'>c</span>(<span class='fl'>1</span>,<span class='fl'>2</span>,<span class='fl'>4</span>,<span class='fl'>298</span>)] <span class='co'># only use a few for demo </span>
-<span class='fu'>library</span>(<span class='no'>motifmatchr</span>)
-<span class='fu'>library</span>(<span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)
-<span class='no'>motif_ix</span> <span class='kw'>&lt;-</span> <span class='fu'>match_motifs</span>(<span class='no'>motifs</span>, <span class='no'>mini_counts</span>,
+<span class='no'>motifs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='get_jaspar_motifs.html'>get_jaspar_motifs</a></span>()[<span class='fu'>c</span>(<span class='fl'>1</span>,<span class='fl'>2</span>,<span class='fl'>4</span>,<span class='fl'>298</span>)] <span class='co'># only use a few for demo</span>
+<span class='fu'>library</span>(<span class='no'>motifmatchr</span>)</div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>Attaching package: ‘motifmatchr’</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from ‘package:chromVAR’:</span>
+#&gt; <span class='message'></span>
+#&gt; <span class='message'>    pwm_type</span></div><div class='input'><span class='fu'>library</span>(<span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required package: BSgenome</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: Biostrings</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: XVector</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: rtracklayer</span></div><div class='input'><span class='no'>motif_ix</span> <span class='kw'>&lt;-</span> <span class='fu'>match_motifs</span>(<span class='no'>motifs</span>, <span class='no'>mini_counts</span>,
                          <span class='kw'>genome</span> <span class='kw'>=</span> <span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)
 
 <span class='co'># computing deviations</span>
 <span class='no'>dev</span> <span class='kw'>&lt;-</span> <span class='fu'>compute_deviations</span>(<span class='kw'>object</span> <span class='kw'>=</span> <span class='no'>mini_counts</span>,
-                         <span class='kw'>annotations</span> <span class='kw'>=</span> <span class='no'>motif_ix</span>)</div></pre>
+                         <span class='kw'>annotations</span> <span class='kw'>=</span> <span class='no'>motif_ix</span>)</div><div class='output co'>#&gt; <span class='error'>Error in compute_deviations_core(counts(object), peak_indices, background_peaks,     expectation, colData = colData(object), rowData = colData(annotations)): Annotations are not valid</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
