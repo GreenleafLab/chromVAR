@@ -31,5 +31,5 @@ corresponding to "A","C","G","T" and columns summing to 1.
 
 motifs <- getJasparMotifs()
 library(TFBSTools)
-pwmDistance(toPWM(motifs[[1]]), toPWM(motifs[[2]]))
+pwm_dists <- pwmDistance(toPWM(motifs[[1]]), toPWM(motifs[[2]]))
 }

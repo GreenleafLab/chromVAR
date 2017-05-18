@@ -126,7 +126,7 @@ setMethod("deviationScores", c(object = "chromVARDeviations"),
 #' @examples
 #' # Load very small example results from computeDeviations
 #' data(mini_dev, package = "chromVAR")
-#' rbind(mini_dev, mini_dev) #concatenate two of the same tother
+#' doubledev <- rbind(mini_dev, mini_dev) #concatenate two of the same tother
 setMethod("rbind", "chromVARDeviations",
           function(..., deparse.level=1){
             inputs = list(...)

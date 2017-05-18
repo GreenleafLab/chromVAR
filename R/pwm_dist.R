@@ -87,7 +87,7 @@ pwm_to_prob <- function(pwms) {
 #' 
 #' motifs <- getJasparMotifs()
 #' library(TFBSTools)
-#' pwmDistance(toPWM(motifs[[1]]), toPWM(motifs[[2]]))
+#' pwm_dists <- pwmDistance(toPWM(motifs[[1]]), toPWM(motifs[[2]]))
 pwmDistance <- function(x, y = NULL, min_overlap = 5) {
   if (is.null(y)) {
     mats <- pwm_to_prob(x)
