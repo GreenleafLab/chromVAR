@@ -25,19 +25,19 @@ library(chromVAR)
 library(motifmatchr)
 library(Matrix)
 library(SummarizedExperiment)
+library(BiocParallel)
 set.seed(2017)
 ```
 
 ##Setting multiprocessing options
 The package uses BiocParallel to do the multiprocessing.  Check the documentation for BiocParallel to see available options.  The settings can be set using the register function.  For example, to use MulticoreParam with 8 cores:
+
 ```{r, eval = FALSE}
-library(BiocParallel)
 register(MulticoreParam(8))
 ```
 
 To enable progress bars for multiprocessed tasks, use 
 ```{r, eval = FALSE}
-library(BiocParallel)
 register(MulticoreParam(8), progressbar = TRUE)
 ```
 
@@ -47,8 +47,8 @@ For Windows, `MultiCoreParam` will not work, but you can use SnowParam:
 register(SnowParam(SnowParam(workers=1, type = "SOCK")))
 ```
 
-Even if you don't want to use more than one core, it is recommended to explicitly register that choice using SerialParam:
-```{r, eval = FALSE}
+Even if you don't want to use more than one core, it is best to explicitly register that choice using SerialParam:
+```{r}
 register(SerialParam())
 ```
 
