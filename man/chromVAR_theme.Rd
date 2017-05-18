@@ -15,7 +15,7 @@ chromVAR_theme(base_size = 12, base_family = "Helvetica")
 ggplot2 theme
 }
 \description{
-chromVAR_theme
+theme for use with ggplot2, used by chromVAR plotting functions
 }
 \examples{
 p <- ggplot2::qplot(1:3,1:3) + chromVAR_theme(18)

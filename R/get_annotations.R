@@ -1,4 +1,4 @@
-#' get_annotations
+#' getAnnotations
 #' 
 #' @param annotations matrix, Matrix, or data.frame of fragment counts,
 #' or SummarizedExperiment with counts assays, see details
@@ -19,49 +19,49 @@
 #'                                              c(566763,805090), width = 8)),
 #'                                      GRanges("chr1", ranges = IRanges(start = 
 #'                                                c(566792,895798), width = 8)))
-#' anno_ix <- get_annotations(my_annotation_granges, 
+#' anno_ix <- getAnnotations(my_annotation_granges, 
 #'                            rowRanges = rowRanges(mini_counts))
-setGeneric("get_annotations", 
-           function(annotations, ...) standardGeneric("get_annotations"))
+setGeneric("getAnnotations", 
+           function(annotations, ...) standardGeneric("getAnnotations"))
 
-#' annotation_matches
+#' annotationMatches
 #' 
 #' @param object SummarizedExperiment with matches slot, see details
-#' @details Will extract matrix from the "matches", "annotation_matches", or
+#' @details Will extract matrix from the "matches", "annotationMatches", or
 #' "motif_matches" assay of a SummarizedExperiment
 #' @return logical matrix of annotation matches
 #' @export
 #' @author Alicia Schep
-#' @rdname annotation_matches
-#' @name annotation_matches
-#' @aliases annotation_matches,SummarizedExperiment-method 
+#' @rdname annotationMatches
+#' @name annotationMatches
+#' @aliases annotationMatches,SummarizedExperiment-method 
 #' annoation_matches<-,SummarizedExperiment-method
 #' @examples 
-#' # Load very small example counts (already filtered)
-#' data(mini_counts, package = "chromVAR")
-#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
-#' library(motifmatchr)
-#' library(BSgenome.Hsapiens.UCSC.hg19)
-#' motif_ix <- match_motifs(motifs, mini_counts, 
-#'                          genome = BSgenome.Hsapiens.UCSC.hg19)
-#' matches <- annotation_matches(motif_ix)
-setGeneric("annotation_matches", 
-           function(object) standardGeneric("annotation_matches"))
+#' # load annotation matrix; result from matchMotifs
+#' data(mini_ix, package = "chromVAR")
+#' matches <- annotationMatches(mini_ix)
+setGeneric("annotationMatches", 
+           function(object) standardGeneric("annotationMatches"))
 
-#' @rdname annotation_matches
-setGeneric("annotation_matches<-", 
-           function(object, value) standardGeneric("annotation_matches<-"))
+#' @rdname annotationMatches
+setGeneric("annotationMatches<-", 
+           function(object, value) standardGeneric("annotationMatches<-"))
 
 
-#' @rdname annotation_matches
-setMethod("annotation_matches", 
+#' @rdname annotationMatches
+setMethod("annotationMatches", 
           c(object = "SummarizedExperiment"), 
           function(object) {
             #object <- matches_check(object)
-            if ("annotation_matches" %in% assayNames(object)){
+            if ("annotationMatches" %in% assayNames(object)){
+              out <- assays(object)$annotationMatches
+            } else if ("annotation_matches" %in% assayNames(object)){
               out <- assays(object)$annotation_matches
             } else if ("motif_matches" %in% assayNames(object)){
               out <- assays(object)$motif_matches
+              warning("motif_matches assay deprecated; update motifmatchr")
+            } else if ("motifMatches" %in% assayNames(object)){
+              out <- assays(object)$motifMatches
             } else if ("matches" %in% assayNames(object)){
               out <- assays(object)$matches
             } else {
@@ -71,10 +71,10 @@ setMethod("annotation_matches",
             return(out)
           })
 
-#' @rdname annotation_matches
+#' @rdname annotationMatches
 #' @param value logical Matrix with annotation matches
 #' @export
-setReplaceMethod("annotation_matches", 
+setReplaceMethod("annotationMatches", 
           c(object = "SummarizedExperiment"), 
           function(object, value) {
             #object <- matches_check(object)
@@ -83,54 +83,59 @@ setReplaceMethod("annotation_matches",
               value <- as(value, "lMatrix")
               warning("Annotation object matches converted to logical")
             }
-            if ("annotation_matches" %in% assayNames(object)){
+            if ("annotationMatches" %in% assayNames(object)){
+              assays(object)$annotationMatches <- value
+            } else if ("annotation_matches" %in% assayNames(object)){
               assays(object)$annotation_matches <- value
             } else if ("motif_matches" %in% assayNames(object)){
               assays(object)$motif_matches <- value
-            } else if ("matches" %in% assayNames(object)){
+              warning("motif_matches assay deprecated; update motifmatchr")
+            } else if ("motifMatches" %in% assayNames(object)){
+              assays(object)$motifMatches <- value
+            }  else if ("matches" %in% assayNames(object)){
               assays(object)$matches <- value
             } else {
-              assays(object)$annotation_matches <- value
+              assays(object)$annotationMatches <- value
             }
             return(object)
           })
 
 #' @param rowRanges GenomicRanges or GenomicRangesList or 
 #' RangedSummarizedExperiment
-#' @describeIn get_annotations get annotation matrix from GRangesList
+#' @describeIn getAnnotations get annotation matrix from GRangesList
 #' @export
-setMethod(get_annotations, 
+setMethod(getAnnotations, 
           c(annotations = "GRangesList"), function(annotations, 
                                                    rowRanges, ...) {
             if (is(rowRanges, "RangedSummarizedExperiment")) 
               rowRanges <- rowRanges(rowRanges)
             matches <- sapply(annotations, 
                               function(x) overlapsAny(rowRanges, x))
-            SummarizedExperiment(assays = list(annotation_matches = Matrix(matches)),
+            SummarizedExperiment(assays = list(annotationMatches = Matrix(matches)),
                                  rowRanges = rowRanges, ...)
           })
 
-#' @describeIn get_annotations get annotation matrix from Matrix or matrix
+#' @describeIn getAnnotations get annotation matrix from Matrix or matrix
 #' @export
-setMethod(get_annotations, c(annotations = "MatrixOrmatrix"), 
+setMethod(getAnnotations, c(annotations = "MatrixOrmatrix"), 
           function(annotations,  ...) {
             SummarizedExperiment(assays = 
-                                   list(annotation_matches = as(annotations,
+                                   list(annotationMatches = as(annotations,
                                                                 "lMatrix")),
                                  ...)
           })
 
-#' @describeIn get_annotations get annotation matrix from data.frame
+#' @describeIn getAnnotations get annotation matrix from data.frame
 #' @export
-setMethod(get_annotations, c(annotations = "data.frame"), 
+setMethod(getAnnotations, c(annotations = "data.frame"), 
           function(annotations, ...) {
-            get_annotations(as.matrix(annotations), ...)
+            getAnnotations(as.matrix(annotations), ...)
           })
 
 #' @param npeaks number of peaks
-#' @describeIn get_annotations get annotation matrix from list
+#' @describeIn getAnnotations get annotation matrix from list
 #' @export
-setMethod(get_annotations, c(annotations = "list"), 
+setMethod(getAnnotations, c(annotations = "list"), 
           function(annotations, npeaks = NULL, 
                    ...) {
             add_args <- list(...)
@@ -143,7 +148,7 @@ setMethod(get_annotations, c(annotations = "list"),
               npeaks <- nrow(add_args[["rowData"]])
             }
             SummarizedExperiment(assays = 
-                                   list(annotation_matches = 
+                                   list(annotationMatches = 
                                           convert_from_ix_list(annotations, 
                                                                npeaks)),
                                  ...)
@@ -151,9 +156,9 @@ setMethod(get_annotations, c(annotations = "list"),
 
 
 #' @param column column of bed file with annotation names, see details
-#' @describeIn get_annotations get annotations from bed files
+#' @describeIn getAnnotations get annotations from bed files
 #' @export
-setMethod(get_annotations, c(annotations = "character"), 
+setMethod(getAnnotations, c(annotations = "character"), 
           function(annotations, rowRanges, 
                    column = NULL, ...) {
             if (length(annotations) == 1 && !is.null(column)) {
@@ -193,6 +198,6 @@ setMethod(get_annotations, c(annotations = "character"),
                 makeGRangesFromDataFrame(bed)
               }))
             }
-            get_annotations(grl, rowRanges, ...)
+            getAnnotations(grl, rowRanges, ...)
           })
 

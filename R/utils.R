@@ -13,11 +13,13 @@ counts_check <- function(object) {
 matches_check <- function(object) {
   stopifnot(is(object, "SummarizedExperiment"))
   stopifnot("matches" %in% assayNames(object) ||
+              "annotationMatches" %in% assayNames(object) ||
               "annotation_matches" %in% assayNames(object) ||
-              "motif_matches" %in% assayNames(object))
-  stopifnot(canCoerce(annotation_matches(object), "lMatrix"))
-  if (!is(annotation_matches(object), "lMatrix")) {
-    annotation_matches(object) <- as(annotation_matches(object), "lMatrix")
+              "motif_matches" %in% assayNames(object) ||
+              "motifMatches" %in% assayNames(object))
+  stopifnot(canCoerce(annotationMatches(object), "lMatrix"))
+  if (!is(annotationMatches(object), "lMatrix")) {
+    annotationMatches(object) <- as(annotationMatches(object), "lMatrix")
     warning("Annotation object matches converted to logical")
   }
   return(object)

@@ -2,11 +2,11 @@
 
 # Filter samples based on number of reads in peaks -----------------------------
 
-#' filter_samples
+#' filterSamples
 #' 
 #' function to get indices of samples that pass filtters
 #' @param object SummarizedExperiment with matrix of fragment counts per peak per sample, as computed 
-#' by \code{\link{get_counts}}
+#' by \code{\link{getCounts}}
 #' @param min_in_peaks minimum fraction of samples within peaks 
 #' @param min_depth minimum library size
 #' @param shiny make shiny gadget?
@@ -15,14 +15,14 @@
 #' min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  min_depth is 
 #' set to the maximum of 500 or 10% of the median library size.
 #' @return indices of samples to keep
-#' @seealso \code{\link{get_counts}},  \code{\link{get_peaks}}, \code{\link{filter_peaks}}
+#' @seealso \code{\link{getCounts}},  \code{\link{getPeaks}}, \code{\link{filterPeaks}}
 #' @export 
 #' @examples         
 #' data(example_counts, package = "chromVAR")
 #' 
-#' counts_filtered <- filter_samples(example_counts, min_depth = 1500,
+#' counts_filtered <- filterSamples(example_counts, min_depth = 1500,
 #'                                   min_in_peaks = 0.15, shiny = FALSE)
-filter_samples <- function(object, min_in_peaks = NULL, min_depth = NULL, shiny = interactive(), 
+filterSamples <- function(object, min_in_peaks = NULL, min_depth = NULL, shiny = interactive(), 
   ix_return = FALSE) {
   object <- counts_check(object)
   if ("depth" %ni% colnames(colData(object))) 
@@ -30,7 +30,7 @@ filter_samples <- function(object, min_in_peaks = NULL, min_depth = NULL, shiny 
   if (shiny && !interactive()) 
     shiny <- FALSE
   depths <- colData(object)$depth
-  fragments_per_sample <- get_fragments_per_sample(object)
+  fragments_per_sample <- getFragmentsPerSample(object)
   if (is.null(min_in_peaks)) {
     min_in_peaks <- round(median(fragments_per_sample/depths) * 0.5, digits = 3)
     if (!shiny) 
@@ -56,11 +56,11 @@ filter_samples <- function(object, min_in_peaks = NULL, min_depth = NULL, shiny 
     return(keep_samples) else return(object[, keep_samples])
 }
 
-#' filter_samples_plot
+#' filterSamplesPlot
 #' 
 #' plot filtering of samples
 #' @param object SummarizedExperiment with matrix of fragment counts per peak 
-#' per sample, as computed by \code{\link{get_counts}}
+#' per sample, as computed by \code{\link{getCounts}}
 #' @param min_in_peaks minimum fraction of samples within peaks 
 #' @param min_depth minimum library size
 #' @param use_plotly make interactive plot?
@@ -69,19 +69,19 @@ filter_samples <- function(object, min_in_peaks = NULL, min_depth = NULL, shiny 
 #' fragments in peaks.  min_depth is set to the maximum of 500 or 10% of the 
 #' median library size.
 #' @return indices of samples to keep
-#' @seealso \code{\link{get_counts}},  \code{\link{get_peaks}}, 
-#' \code{\link{filter_peaks}}
+#' @seealso \code{\link{getCounts}},  \code{\link{getPeaks}}, 
+#' \code{\link{filterPeaks}}
 #' @export
 #' @examples 
 #' data(example_counts, package = "chromVAR")
 #' 
-#' counts_filtered <- filter_samples(example_counts, min_depth = 1500,
+#' counts_filtered <- filterSamples(example_counts, min_depth = 1500,
 #'                                   min_in_peaks = 0.15, shiny = FALSE)
-#' counts_filtered_plot <- filter_samples_plot(counts_filtered, min_in_peaks = 0.15,
-#'                                             min_depth = 1500, 
-#'                                             use_plotly = FALSE)
+#' counts_filtered_plot <- filterSamplesPlot(counts_filtered, min_in_peaks = 0.15,
+#'                                           min_depth = 1500, 
+#'                                           use_plotly = FALSE)
 #' 
-filter_samples_plot <- function(object, min_in_peaks = NULL, min_depth = NULL, 
+filterSamplesPlot <- function(object, min_in_peaks = NULL, min_depth = NULL, 
                                 use_plotly = interactive()) {
   object <- counts_check(object)
   if ("depth" %ni% colnames(colData(object))) 
@@ -89,7 +89,7 @@ filter_samples_plot <- function(object, min_in_peaks = NULL, min_depth = NULL,
   if (use_plotly && !interactive()) 
     use_plotly <- FALSE
   depths <- colData(object)$depth
-  fragments_per_sample <- get_fragments_per_sample(object)
+  fragments_per_sample <- getFragmentsPerSample(object)
   if (is.null(min_in_peaks)) {
     min_in_peaks <- round(median(fragments_per_sample/depths) * 0.5, digits = 3)
     message(paste("min_in_peaks set to ", min_in_peaks, sep = "", collapse = ""))
@@ -197,15 +197,15 @@ bias_skew <- function(object, nbins = 10, expectation = NULL,
   
   what <- match.arg(what)
   
-  fragments_per_sample <- get_fragments_per_sample(object)
+  fragments_per_sample <- getFragmentsPerSample(object)
   
   if (what == "bias") {
     bias <- rowRanges(object)$bias
   } else {
-    bias <- get_fragments_per_peak(object)
+    bias <- getFragmentsPerPeak(object)
   }
   
-  if (min(get_fragments_per_peak(object)) <= 0) 
+  if (min(getFragmentsPerPeak(object)) <= 0) 
     stop("All peaks must have at least one fragment in one sample")
   
   bias <- bias + runif(length(bias), 0, 0.001)
@@ -246,11 +246,11 @@ upper_bias_limit_helper <- function(x, k) {
 
 # Filter peaks based on counts -------------------------------------------------
 
-#' filter_peaks
+#' filterPeaks
 #' 
 #' function to get indices of peaks that pass filters
 #' @param object SummarizedExperiment with matrix of fragment counts per peak 
-#' per sample, as computed by \code{\link{get_counts}}
+#' per sample, as computed by \code{\link{getCounts}}
 #' @param min_fragments_per_peak minimum number of fragmints in peaks across all 
 #' samples 
 #' @param non_overlapping reduce peak set to non-overlapping peaks, see details
@@ -258,22 +258,22 @@ upper_bias_limit_helper <- function(x, k) {
 #' @details if non_overlapping is set to true, when peaks overlap the overlapping
 #' peak with lower counts is removed
 #' @return vector of indices, representing peaks that should be kept
-#' @seealso \code{\link{get_peaks}},  \code{\link{filter_samples}},
-#' \code{\link{get_counts}}
+#' @seealso \code{\link{getPeaks}},  \code{\link{filterSamples}},
+#' \code{\link{getCounts}}
 #' @export   
 #' @author Alicia Schep       
 #' @examples 
 #' data(example_counts, package = "chromVAR")
 #' 
-#' counts_filtered <- filter_samples(example_counts, min_depth = 1500,
+#' counts_filtered <- filterSamples(example_counts, min_depth = 1500,
 #'                                   min_in_peaks = 0.15, shiny = FALSE)
-#' counts_filtered <- filter_peaks(example_counts)
-filter_peaks <- function(object, 
+#' counts_filtered <- filterPeaks(example_counts)
+filterPeaks <- function(object, 
                          min_fragments_per_peak = 1, 
                          non_overlapping = TRUE, 
                          ix_return = FALSE) {
   object <- counts_check(object)
-  fragments_per_peak <- get_fragments_per_peak(object)
+  fragments_per_peak <- getFragmentsPerPeak(object)
   peaks <- rowRanges(object)
   keep_peaks <- which(fragments_per_peak >= min_fragments_per_peak)
   if (non_overlapping) {

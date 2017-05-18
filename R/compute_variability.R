@@ -12,10 +12,10 @@ quantile_helper <- function(values, quantiles, na.rm) {
   return(out)
 }
 
-#'compute_variability
+#'computeVariability
 #'
 #'function to compute overall variability of motif sets across samples
-#'@param object output from \code{\link{compute_deviations}}
+#'@param object output from \code{\link{computeDeviations}}
 #'@param bootstrap_error compute bootstrap confidence interval
 #'@param bootstrap_samples number of bootstrap samples to take
 #'@param bootstrap_quantiles quantiles for bootstrap 
@@ -24,19 +24,10 @@ quantile_helper <- function(values, quantiles, na.rm) {
 #'bootstrap upper bound, raw p value, adjust p value.
 #'@export
 #'@examples
-#' # Load very small example counts (already filtered)
-#' data(mini_counts, package = "chromVAR")
-#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
-#' library(motifmatchr)
-#' library(BSgenome.Hsapiens.UCSC.hg19)
-#' motif_ix <- match_motifs(motifs, mini_counts, 
-#'                          genome = BSgenome.Hsapiens.UCSC.hg19)
-#'
-#' # computing deviations
-#' dev <- compute_deviations(object = mini_counts, 
-#'                          annotations = motif_ix)
-#' variability <- compute_variability(dev)                        
-compute_variability <- function(object, 
+#' # Load very small example results from computeDeviations
+#' data(mini_dev, package = "chromVAR")
+#' variability <- computeVariability(mini_dev)                        
+computeVariability <- function(object, 
                                 bootstrap_error = TRUE, 
                                 bootstrap_samples = 1000, 
                                 bootstrap_quantiles = c(0.025, 0.975), 

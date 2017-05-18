@@ -16,7 +16,7 @@ remove_correlated_helper <- function(mat, val, cutoff = 0.9) {
 }
 
 
-#' deviations_tsne
+#' deviationsTsne
 #'
 #' Perform tsne using bias corrected deviations to visualize either cell/sample
 #' similarity or motif/kmer/annotation similarity
@@ -34,24 +34,14 @@ remove_correlated_helper <- function(mat, val, cutoff = 0.9) {
 #' @export
 #' @author Alicia Schep
 #' @examples 
-#' # Load very small example counts (already filtered)
-#' data(mini_counts, package = "chromVAR")
-#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
-#' library(motifmatchr)
-#' library(BSgenome.Hsapiens.UCSC.hg19)
-#' motif_ix <- match_motifs(motifs, mini_counts, 
-#'                          genome = BSgenome.Hsapiens.UCSC.hg19)
-#'
-#' # computing deviations
-#' dev <- compute_deviations(object = mini_counts, 
-#'                          annotations = motif_ix)
+#' # Load very small example results from computeDeviations
+#' data(mini_dev, package = "chromVAR")
 #'                          
-#' # Not run                         
-#' \dontrun{sample_dist <- deviations_tsne(dev, threshold = 1)}  
+#' tsne_res <- deviationsTsne(mini_dev, threshold = 0.8, shiny = FALSE)
 #' # setting very low variabilitiy threshold because this is mini data set
-#' # Use plot_variability to get a sense of an appropriate threshold
-#' # This gives an error with this mini data set as there too many NA values
-deviations_tsne <- function(object, 
+#' # threshold should generally be above 1
+#' # Use plotVariability to get a sense of an appropriate threshold
+deviationsTsne <- function(object, 
                             threshold = 1.5, 
                             perplexity = if (what == "samples") 30 else 8, 
                             max_iter = 1000, 
@@ -67,7 +57,7 @@ deviations_tsne <- function(object,
       perplexity <- floor((ncol(object) - 1)/3)
       message(paste0("Setting perplexity to ", perplexity))
     }
-    vars <- row_sds(deviation_scores(object), FALSE)
+    vars <- row_sds(deviationScores(object), FALSE)
     if (threshold > max(vars, na.rm = TRUE)) 
       stop("Threshold too high")
     if (sum(vars > threshold, na.rm = TRUE) < 2)
@@ -91,7 +81,7 @@ deviations_tsne <- function(object,
     rownames(out) <- colnames(object)
     return(out)
   } else{
-    vars <- row_sds(deviation_scores(object), FALSE)
+    vars <- row_sds(deviationScores(object), FALSE)
     if (threshold > max(vars, na.rm = TRUE)) 
       stop("threshold too high")
     if (sum(vars > threshold, na.rm = TRUE) < 2)
@@ -197,7 +187,7 @@ deviations_tsne_shiny <- function(object, threshold = 1.5, perplexity = 30,
         p1 <- 
           ggplot(data.frame(x = tsne$Y[,1], 
                             y= tsne$Y[,2], 
-                            color = deviation_scores(object[input$color,])[1,], 
+                            color = deviationScores(object[input$color,])[1,], 
                             text = colnames(object)),
                  aes_string(x = "x", y = "y", col = "color", text = "text")) + 
           geom_point(size= 2) +

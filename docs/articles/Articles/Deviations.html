@@ -85,11 +85,11 @@
 <div id="deviations" class="section level1">
 <h1 class="hasAnchor">
 <html><body><a href="#deviations" class="anchor"> </a></body></html>Deviations</h1>
-<p>This vignette covers the main function of chromVAR, compute_deviations.</p>
+<p>This vignette covers the main function of chromVAR, computeDeviations.</p>
 <div id="inputs" class="section level2">
 <h2 class="hasAnchor">
 <html><body><a href="#inputs" class="anchor"> </a></body></html>Inputs</h2>
-<p>The <code>compute_deviations</code> has two required inputs, <code>object</code> and <code>annotations</code>. The first argument should be a RangedSummarizedExperiment with a <code>counts</code> assay storing the fragment counts per peak (rows) per cell or sample (columns). The second argument (annnotations) argument should be a RangedSummarizedExperiment with a <code>motif_matches</code> or <code>annotation_matches</code> assay storing whether each peak (rows) contains each annotation (columns). For more information on these two primary inputs, see the “Counts” and “Annotations” vignettes.</p>
+<p>The <code>computeDeviations</code> has two required inputs, <code>object</code> and <code>annotations</code>. The first argument should be a RangedSummarizedExperiment with a <code>counts</code> assay storing the fragment counts per peak (rows) per cell or sample (columns). The second argument (annnotations) argument should be a RangedSummarizedExperiment with a <code>motif_matches</code> or <code>annotation_matches</code> assay storing whether each peak (rows) contains each annotation (columns). For more information on these two primary inputs, see the “Counts” and “Annotations” vignettes.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Getting inputs ready -- See Inputs vignette for more info</span>
 <span class="kw">library</span>(chromVAR)
 <span class="kw">library</span>(motifmatchr)
@@ -97,21 +97,21 @@
 <span class="kw">library</span>(Matrix)
 <span class="kw">library</span>(BSgenome.Hsapiens.UCSC.hg19)
 <span class="kw">data</span>(example_counts, <span class="dt">package =</span> <span class="st">"chromVAR"</span>)
-example_counts &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/add_gc_bias.html">add_gc_bias</a></span>(example_counts, <span class="dt">genome =</span> BSgenome.Hsapiens.UCSC.hg19)
-counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/filter_samples.html">filter_samples</a></span>(example_counts, <span class="dt">min_depth =</span> <span class="dv">1500</span>, <span class="dt">min_in_peaks =</span> <span class="fl">0.15</span>, <span class="dt">shiny =</span> <span class="ot">FALSE</span>)
-counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/filter_peaks.html">filter_peaks</a></span>(counts_filtered)
-motifs &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/get_jaspar_motifs.html">get_jaspar_motifs</a></span>()
-motif_ix &lt;-<span class="st"> </span><span class="kw">match_motifs</span>(motifs, counts_filtered, <span class="dt">genome =</span> BSgenome.Hsapiens.UCSC.hg19)
+example_counts &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/addGCBias.html">addGCBias</a></span>(example_counts, <span class="dt">genome =</span> BSgenome.Hsapiens.UCSC.hg19)
+counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/filterSamples.html">filterSamples</a></span>(example_counts, <span class="dt">min_depth =</span> <span class="dv">1500</span>, <span class="dt">min_in_peaks =</span> <span class="fl">0.15</span>, <span class="dt">shiny =</span> <span class="ot">FALSE</span>)
+counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/filterPeaks.html">filterPeaks</a></span>(counts_filtered)
+motifs &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/getJasparMotifs.html">getJasparMotifs</a></span>()
+motif_ix &lt;-<span class="st"> </span><span class="kw">matchMotifs</span>(motifs, counts_filtered, <span class="dt">genome =</span> BSgenome.Hsapiens.UCSC.hg19)
 
 <span class="co"># computing deviations</span>
-dev &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/compute_deviations.html">compute_deviations</a></span>(<span class="dt">object =</span> counts_filtered, 
+dev &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/computeDeviations.html">computeDeviations</a></span>(<span class="dt">object =</span> counts_filtered, 
                                  <span class="dt">annotations =</span> motif_ix)</code></pre></div>
 <p>Optionally, the annotations can be omitted and then deviations will be computed per peak. That approach should only be use with bulk, deeply sequenced data.</p>
 </div>
 <div id="outputs" class="section level2">
 <h2 class="hasAnchor">
 <html><body><a href="#outputs" class="anchor"> </a></body></html>Outputs</h2>
-<p>The output from the compute_deviations function is a chromVARDeviations object. This object inherits from the RangedSummarizedExperiment object, so anything you can do with that object can be done with this one.</p>
+<p>The output from the computeDeviations function is a chromVARDeviations object. This object inherits from the RangedSummarizedExperiment object, so anything you can do with that object can be done with this one.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(dev)</code></pre></div>
 <pre><code>## class: chromVARDeviations 
 ## dim: 386 36 
@@ -119,37 +119,42 @@ dev &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/comp
 ## assays(2): deviations z
 ## rownames(386): MA0025.1_NFIL3 MA0030.1_FOXF2 ... MA0909.1_HOXD13
 ##   MA0914.1_ISL2
-## rowData names(2): pwm name
+## rowData names(3): name fractionMatches fractionBackgroundOverlap
 ## colnames(36): singles-GM12878-140905-1 singles-GM12878-140905-2
 ##   ... singles-H1ESC-140820-24 singles-H1ESC-140820-25
 ## colData names(2): Cell_Type depth</code></pre>
-<p>The object stores two main ‘assays’, which can be accessed using the deviations and deviation_scores functions. The deviations are the bias corrected deviations in accessibility. For each motif or annotation (rows), there is a value for each cell or sample (columns) representing how different the accessibility for peaks with that motif or annotation is from the expectation based on all cells being equal, corrected for biases.</p>
+<p>The object stores two main ‘assays’, which can be accessed using the deviations and <code>deviationScores</code> functions. The deviations are the bias corrected deviations in accessibility. For each motif or annotation (rows), there is a value for each cell or sample (columns) representing how different the accessibility for peaks with that motif or annotation is from the expectation based on all cells being equal, corrected for biases.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../../reference/deviations.html">deviations</a></span>(dev)[<span class="dv">1</span>:<span class="dv">3</span>,<span class="dv">1</span>:<span class="dv">2</span>]</code></pre></div>
 <pre><code>##                singles-GM12878-140905-1 singles-GM12878-140905-2
 ## MA0025.1_NFIL3              -0.06253114               0.11849419
 ## MA0030.1_FOXF2              -0.05561553              -0.07242295
 ## MA0031.1_FOXD1              -0.08999824              -0.18741128</code></pre>
-<p>The deviation_scores are the Z-scores for each bias corrected deviations.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../../reference/deviation_scores.html">deviation_scores</a></span>(dev)[<span class="dv">1</span>:<span class="dv">3</span>,<span class="dv">1</span>:<span class="dv">2</span>]</code></pre></div>
+<p>The deviationScores are the Z-scores for each bias corrected deviations.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../../reference/deviationScores.html">deviationScores</a></span>(dev)[<span class="dv">1</span>:<span class="dv">3</span>,<span class="dv">1</span>:<span class="dv">2</span>]</code></pre></div>
 <pre><code>##                singles-GM12878-140905-1 singles-GM12878-140905-2
 ## MA0025.1_NFIL3               -0.4112919                0.8738719
 ## MA0030.1_FOXF2               -0.4434714               -0.7905780
 ## MA0031.1_FOXD1               -0.7734451               -2.6886946</code></pre>
 <p>The absolute value of the deviation scores will be correlated with the read depth as with more reads, there can be more confidence that the difference in accessibility from the expecation is greater than would occur by chance.</p>
+<div id="metadata" class="section level3">
+<h3 class="hasAnchor">
+<html><body><a href="#metadata" class="anchor"> </a></body></html>Metadata</h3>
+<p>Any column metadata stored as “colData” in a SummarizedExperiment object used as the counts input for <code>computeDeviations</code> will be propagated as “colData” in the output. Any column metadata stored as “colData” in a SummarizedExperiment object used as the annotations input will be propagated as the “rowData” in the output. Additionally, two columns in the rowData will be created: “fractionMatches”, which gives the fraction of peaks that had a match for that motif, and “fractionBackgroundOverlap”, which gives the average fraction of background peaks for the motif that contain a match for the motif.</p>
+</div>
 </div>
 <div id="options" class="section level2">
 <h2 class="hasAnchor">
 <html><body><a href="#options" class="anchor"> </a></body></html>Options</h2>
-<p>The compute_deviations function also has two optional arguments, <code>background_peaks</code> and <code>expectation</code>.</p>
+<p>The computeDeviations function also has two optional arguments, <code>background_peaks</code> and <code>expectation</code>.</p>
 <div id="background-peaks" class="section level3">
 <h3 class="hasAnchor">
 <html><body><a href="#background-peaks" class="anchor"> </a></body></html>Background peaks</h3>
-<p>The function compute_deviations will use a set of background peaks for bias correcting the deviations. This computation is done internally by default and not returned – to have greater control over this step, a user can run the get_background_peaks function themselves and pass the result to compute_deviations under the <code>background_peaks</code> parameter. If the fragment counts objects is a Matrix/matrix or a SummarizedExperiment without a “bias” column in the rowData, then it is mandatory to supply a background_peaks argument.</p>
+<p>The function computeDeviations will use a set of background peaks for bias correcting the deviations. This computation is done internally by default and not returned – to have greater control over this step, a user can run the <code>getBackgroundPeaks</code> function themselves and pass the result to computeDeviations under the <code>background_peaks</code> parameter. If the fragment counts objects is a Matrix/matrix or a SummarizedExperiment without a “bias” column in the rowData, then it is mandatory to supply a background_peaks argument.</p>
 <p>Background peaks are peaks that are similar to a peak in GC content and average accessibility.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bg &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/get_background_peaks.html">get_background_peaks</a></span>(<span class="dt">object =</span> counts_filtered)</code></pre></div>
-<p>The result from get_background_peaks is a matrix of indices, where each column represents the index of the peak that is a background peak. The number of columns represents the number of background iterations that will be used for computing the bias corrected deviations.</p>
-<p>To use the background peaks computed, simply add those to the call to compute_deviations:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dev &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/compute_deviations.html">compute_deviations</a></span>(<span class="dt">object =</span> counts_filtered, 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bg &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/getBackgroundPeaks.html">getBackgroundPeaks</a></span>(<span class="dt">object =</span> counts_filtered)</code></pre></div>
+<p>The result from getBackgroundPeaks is a matrix of indices, where each column represents the index of the peak that is a background peak. The number of columns represents the number of background iterations that will be used for computing the bias corrected deviations.</p>
+<p>To use the background peaks computed, simply add those to the call to computeDeviations:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dev &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/computeDeviations.html">computeDeviations</a></span>(<span class="dt">object =</span> counts_filtered, 
                                  <span class="dt">annotations =</span> motif_ix, 
                                  <span class="dt">background_peaks =</span> bg)</code></pre></div>
 <p>If you are using a counts matrix or a SummarizedExperiment without a “bias” column in the rowRanges or rowData, then a bias argument should be given as well.</p>
@@ -157,16 +162,16 @@ dev &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/comp
 <div id="expectation" class="section level3">
 <h3 class="hasAnchor">
 <html><body><a href="#expectation" class="anchor"> </a></body></html>Expectation</h3>
-<p>By default, chromVAR measures the difference in chromatin accessibility for an annotation relative to the expectation if all cells or samples have the same chromatin accessibility profile but differ simply in read depth. Optionally, this expectation can be adjusted. The function ‘compute_expecations’ can calculate the expectation in alternate ways. The function can also be applied to only a subset of the cells or samples.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">expected &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/compute_expectations.html">compute_expectations</a></span>(counts_filtered) </code></pre></div>
+<p>By default, chromVAR measures the difference in chromatin accessibility for an annotation relative to the expectation if all cells or samples have the same chromatin accessibility profile but differ simply in read depth. Optionally, this expectation can be adjusted. The function <code>computeExpecations</code> can calculate the expectation in alternate ways. The function can also be applied to only a subset of the cells or samples.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">expected &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/computeExpectations.html">computeExpectations</a></span>(counts_filtered) </code></pre></div>
 <p>By default, this function will compute the expected fraction of reads per peak as the the total fragments per peak across all samples divided by total reads in peaks in all samples. Optionally, <code>norm</code> can be set to <code>TRUE</code> and then the expectation will be the average fraction of reads in a peak across the cells. This is <strong>not recommended</strong> for single cell applications as cells with very few reads will have a large impact.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Not recommended for single cell data or other very sparse data!</span>
-expected &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/compute_expectations.html">compute_expectations</a></span>(counts_filtered, <span class="dt">norm =</span> <span class="ot">TRUE</span>) </code></pre></div>
+expected &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/computeExpectations.html">computeExpectations</a></span>(counts_filtered, <span class="dt">norm =</span> <span class="ot">TRUE</span>) </code></pre></div>
 <p>Another option is to give a vector of groups, in which case the expectation will be the average fraction of reads per peak within each group. If a group vector is provided and <code>norm</code> is set to <code>TRUE</code> then within each group the fraction of reads per peak is the average fraction of reads per peak in each sample. Otherwise, the within group fraction of reads per peak is based on the reads per peak within the sample divided by the total reads within each sample.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">expected &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/compute_expectations.html">compute_expectations</a></span>(counts_filtered, 
-                                 <span class="dt">group =</span> <span class="kw">colData</span>(counts_filtered)$Cell_Type) </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">expected &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/computeExpectations.html">computeExpectations</a></span>(counts_filtered, 
+                                <span class="dt">group =</span> <span class="kw">colData</span>(counts_filtered)$Cell_Type) </code></pre></div>
 <p>To use your computed expectation vector, simply pass it to the <code>expectation</code> argument.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dev &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/compute_deviations.html">compute_deviations</a></span>(<span class="dt">object =</span> counts_filtered, 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dev &lt;-<span class="st"> </span><span class="kw"><a href="../../reference/computeDeviations.html">computeDeviations</a></span>(<span class="dt">object =</span> counts_filtered, 
                           <span class="dt">annotations =</span> motif_ix, 
                           <span class="dt">expectation =</span> expected)</code></pre></div>
 </div>
@@ -175,7 +180,7 @@ expected &lt;-<span class="st"> </span><span class="kw"><a href="../../reference
 <h2 class="hasAnchor">
 <html><body><a href="#session-info" class="anchor"> </a></body></html>Session Info</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Sys.Date</span>()</code></pre></div>
-<pre><code>## [1] "2017-03-28"</code></pre>
+<pre><code>## [1] "2017-05-17"</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre></div>
 <pre><code>## R version 3.3.1 (2016-06-21)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
@@ -190,67 +195,67 @@ expected &lt;-<span class="st"> </span><span class="kw"><a href="../../reference
 ## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
-## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+## [1] stats4    parallel  stats     graphics  grDevices utils     datasets 
 ## [8] methods   base     
 ## 
 ## other attached packages:
-##  [1] chromVAR_0.4.7                    TFBSTools_1.12.1                 
-##  [3] ggmotif_0.0.0                     pheatmap_1.0.8                   
-##  [5] ggplot2_2.2.1                     BiocParallel_1.8.1               
-##  [7] BSgenome.Hsapiens.UCSC.hg19_1.4.0 BSgenome_1.42.0                  
-##  [9] rtracklayer_1.34.1                Biostrings_2.42.1                
-## [11] XVector_0.14.0                    motifmatchr_0.99.1               
-## [13] Matrix_1.2-7.1                    SummarizedExperiment_1.4.0       
-## [15] Biobase_2.34.0                    GenomicRanges_1.26.2             
-## [17] GenomeInfoDb_1.10.3               IRanges_2.8.1                    
-## [19] S4Vectors_0.12.1                  BiocGenerics_0.20.0              
-## [21] testthat_1.0.2                   
+##  [1] ggmotif_0.0.0                     pheatmap_1.0.8                   
+##  [3] ggplot2_2.2.1                     BiocParallel_1.8.2               
+##  [5] Matrix_1.2-7.1                    chromVAR_0.5.0                   
+##  [7] SummarizedExperiment_1.4.0        Biobase_2.34.0                   
+##  [9] motifmatchr_0.99.7                BSgenome.Hsapiens.UCSC.hg19_1.4.0
+## [11] BSgenome_1.42.0                   rtracklayer_1.34.2               
+## [13] Biostrings_2.42.1                 XVector_0.14.1                   
+## [15] GenomicRanges_1.26.4              GenomeInfoDb_1.10.3              
+## [17] IRanges_2.8.2                     S4Vectors_0.12.2                 
+## [19] BiocGenerics_0.20.0               TFBSTools_1.12.2                 
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] bitops_1.0-6                DirichletMultinomial_1.16.0
 ##  [3] devtools_1.12.0.9000        RColorBrewer_1.1-2         
-##  [5] httr_1.2.1                  rprojroot_1.2              
-##  [7] highlight_0.4.7             backports_1.0.5            
-##  [9] tools_3.3.1                 R6_2.2.0                   
+##  [5] httr_1.2.1                  highlight_0.4.7            
+##  [7] rprojroot_1.2               tools_3.3.1                
+##  [9] backports_1.0.5             R6_2.2.1                   
 ## [11] DT_0.2                      seqLogo_1.40.0             
-## [13] DBI_0.5-1                   lazyeval_0.2.0             
+## [13] DBI_0.6-1                   lazyeval_0.2.0             
 ## [15] colorspace_1.3-2            withr_1.0.2                
 ## [17] xml2_1.1.1                  desc_1.1.0                 
-## [19] plotly_4.5.6                labeling_0.3               
+## [19] plotly_4.6.0                labeling_0.3               
 ## [21] caTools_1.17.1              scales_0.4.1               
-## [23] readr_1.0.0                 callr_1.0.0.9000           
+## [23] readr_1.1.1                 callr_1.0.0.9000           
 ## [25] pkgdown_0.1.0.9000          nabor_0.4.6                
 ## [27] commonmark_1.1              stringr_1.2.0              
-## [29] digest_0.6.12.1             Rsamtools_1.26.1           
+## [29] digest_0.6.12.1             Rsamtools_1.26.2           
 ## [31] rmarkdown_1.3               R.utils_2.5.0              
-## [33] base64enc_0.1-3             htmltools_0.3.5            
-## [35] htmlwidgets_0.8             RSQLite_1.1-2              
-## [37] VGAM_1.0-3                  shiny_1.0.0                
-## [39] jsonlite_1.2                gtools_3.5.0               
+## [33] htmltools_0.3.6             htmlwidgets_0.8            
+## [35] rlang_0.1                   RSQLite_1.1-2              
+## [37] VGAM_1.0-3                  shiny_1.0.3                
+## [39] jsonlite_1.4                gtools_3.5.0               
 ## [41] dplyr_0.5.0                 R.oo_1.21.0                
 ## [43] RCurl_1.95-4.8              magrittr_1.5               
-## [45] GO.db_3.4.0                 Rcpp_0.12.9                
+## [45] GO.db_3.4.0                 Rcpp_0.12.10               
 ## [47] munsell_0.4.3               R.methodsS3_1.7.1          
 ## [49] whisker_0.3-2               yaml_2.1.14                
-## [51] stringi_1.1.2               zlibbioc_1.20.0            
+## [51] stringi_1.1.5               zlibbioc_1.20.0            
 ## [53] Rtsne_0.11                  pkgbuild_0.0.0.9000        
 ## [55] plyr_1.8.4                  grid_3.3.1                 
 ## [57] crayon_1.3.2                miniUI_0.1.1               
-## [59] CNEr_1.10.1                 lattice_0.20-34            
+## [59] CNEr_1.10.2                 lattice_0.20-34            
 ## [61] splines_3.3.1               annotate_1.52.1            
-## [63] KEGGREST_1.14.0             knitr_1.15.1               
-## [65] JASPAR2016_1.2.0            codetools_0.2-15           
-## [67] reshape2_1.4.2              pkgload_0.0.0.9000         
-## [69] TFMPvalue_0.0.6             XML_3.98-1.5               
-## [71] evaluate_0.10               RcppArmadillo_0.7.700.0.0  
-## [73] png_0.1-7                   httpuv_1.3.3               
-## [75] gtable_0.2.0                poweRlaw_0.70.0            
-## [77] purrr_0.2.2                 tidyr_0.6.1                
-## [79] assertthat_0.1              mime_0.5                   
-## [81] xtable_1.8-2                roxygen2_6.0.1             
-## [83] viridisLite_0.1.3           tibble_1.2                 
-## [85] GenomicAlignments_1.10.0    AnnotationDbi_1.36.2       
-## [87] memoise_1.0.0</code></pre>
+## [63] hms_0.3                     KEGGREST_1.14.1            
+## [65] knitr_1.15.1                JASPAR2016_1.2.0           
+## [67] codetools_0.2-15            reshape2_1.4.2             
+## [69] pkgload_0.0.0.9000          TFMPvalue_0.0.6            
+## [71] XML_3.98-1.7                evaluate_0.10              
+## [73] RcppArmadillo_0.7.700.0.0   png_0.1-7                  
+## [75] httpuv_1.3.3                testthat_1.0.2             
+## [77] gtable_0.2.0                poweRlaw_0.70.0            
+## [79] purrr_0.2.2                 tidyr_0.6.2                
+## [81] assertthat_0.2.0            mime_0.5                   
+## [83] xtable_1.8-2                roxygen2_6.0.1             
+## [85] viridisLite_0.2.0           tibble_1.3.1               
+## [87] GenomicAlignments_1.10.1    AnnotationDbi_1.36.2       
+## [89] memoise_1.1.0</code></pre>
 </div>
 </div>
 </div>

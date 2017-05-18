@@ -1,4 +1,4 @@
-#' add_gc_bias
+#' addGCBias
 #'
 #' Computes GC content for peaks
 #' @param object (Ranged)SummarizedExperiment
@@ -12,15 +12,15 @@
 #' # show example on small part of data 
 #' subset_counts <- example_counts[1:500,]
 #' library(BSgenome.Hsapiens.UCSC.hg19)
-#' example_counts <- add_gc_bias(subset_counts, 
+#' example_counts <- addGCBias(subset_counts, 
 #'                               genome = BSgenome.Hsapiens.UCSC.hg19)
 #' 
-setGeneric("add_gc_bias", function(object, ...) standardGeneric("add_gc_bias"))
+setGeneric("addGCBias", function(object, ...) standardGeneric("addGCBias"))
 
-#' @describeIn add_gc_bias method for RangedSummarizedExperiment
+#' @describeIn addGCBias method for RangedSummarizedExperiment
 #' @param genome BSgenome object, by defualt hg19
 #' @export
-setMethod(add_gc_bias, c(object = "RangedSummarizedExperiment"), 
+setMethod(addGCBias, c(object = "RangedSummarizedExperiment"), 
           function(object, 
                    genome = GenomeInfoDb::genome(subject)) {
             genome <- validate_genome_input(genome)
@@ -34,9 +34,9 @@ setMethod(add_gc_bias, c(object = "RangedSummarizedExperiment"),
 
 #' @param peaks GenomicRanges with peaks, needed if object is 
 #' SummarizedExperiment and not RangedSummarizedExperiment
-#' @describeIn add_gc_bias method for SummarizedExperiment
+#' @describeIn addGCBias method for SummarizedExperiment
 #' @export
-setMethod(add_gc_bias, c(object = "SummarizedExperiment"), 
+setMethod(addGCBias, c(object = "SummarizedExperiment"), 
           function(object, peaks, 
                    genome = GenomeInfoDb::genome(peaks)) {
             genome <- validate_genome_input(genome)
@@ -47,7 +47,7 @@ setMethod(add_gc_bias, c(object = "SummarizedExperiment"),
             return(object)
           })
 
-#' get_background_peaks
+#' getBackgroundPeaks
 #'
 #' Function to get a set of background peaks for each peak based on GC content 
 #' and # of fragments across all samples
@@ -73,14 +73,14 @@ setMethod(add_gc_bias, c(object = "SummarizedExperiment"),
 #' data(mini_counts, package = "chromVAR")
 #' 
 #' # get background peaks
-#' bgpeaks <- get_background_peaks(mini_counts)
+#' bgpeaks <- getBackgroundPeaks(mini_counts)
 #' 
-setGeneric("get_background_peaks", 
-           function(object, ...) standardGeneric("get_background_peaks"))
+setGeneric("getBackgroundPeaks", 
+           function(object, ...) standardGeneric("getBackgroundPeaks"))
 
-#' @describeIn get_background_peaks method for SummarizedExperiment
+#' @describeIn getBackgroundPeaks method for SummarizedExperiment
 #' @export
-setMethod(get_background_peaks, c(object = "SummarizedExperiment"), 
+setMethod(getBackgroundPeaks, c(object = "SummarizedExperiment"), 
           function(object, 
                    bias = rowData(object)$bias, 
                    niterations = 50, 
@@ -90,9 +90,9 @@ setMethod(get_background_peaks, c(object = "SummarizedExperiment"),
             get_background_peaks_core(object, bias, niterations, w, bs)
           })
 
-#' @describeIn get_background_peaks method for RangedSummarizedExperiment
+#' @describeIn getBackgroundPeaks method for RangedSummarizedExperiment
 #' @export
-setMethod(get_background_peaks, c(object = "RangedSummarizedExperiment"), 
+setMethod(getBackgroundPeaks, c(object = "RangedSummarizedExperiment"), 
           function(object, 
                    bias = rowRanges(object)$bias, 
                    niterations = 50, 
@@ -102,9 +102,9 @@ setMethod(get_background_peaks, c(object = "RangedSummarizedExperiment"),
             get_background_peaks_core(object, bias, niterations, w, bs)
           })
 
-#' @describeIn get_background_peaks method for Matrix or matrix
+#' @describeIn getBackgroundPeaks method for Matrix or matrix
 #' @export
-setMethod(get_background_peaks, c(object = "MatrixOrmatrix"), 
+setMethod(getBackgroundPeaks, c(object = "MatrixOrmatrix"), 
           function(object, 
                    bias, 
                    niterations = 50, 
@@ -119,7 +119,7 @@ get_background_peaks_core <- function(object,
                                       w = 0.1, 
                                       bs = 50) {
   
-  fragments_per_peak <- get_fragments_per_peak(object)
+  fragments_per_peak <- getFragmentsPerPeak(object)
   stopifnot(length(bias) == length(fragments_per_peak))
   if (min(fragments_per_peak) <= 0) 
     stop("All peaks must have at least one fragment in one sample")
@@ -155,7 +155,7 @@ get_background_peaks_core <- function(object,
   
 }
 
-#' get_permuted_data
+#' getPermutedData
 #'
 #' Function to get permuted data while maintaining biases
 #' @param object SummarizedExperiment
@@ -173,9 +173,9 @@ get_background_peaks_core <- function(object,
 #' data(mini_counts, package = "chromVAR")
 #' 
 #' # get background peaks
-#' perm_counts <- get_permuted_data(mini_counts, niterations = 2)
+#' perm_counts <- getPermutedData(mini_counts, niterations = 2)
 #' 
-get_permuted_data <- function(object, niterations = 10, w = 0.1, bs = 50) {
+getPermutedData <- function(object, niterations = 10, w = 0.1, bs = 50) {
   
   out <- bplapply(1:niterations, 
                                 function(x) get_permuted_data_helper(object, 
@@ -190,7 +190,7 @@ get_permuted_data <- function(object, niterations = 10, w = 0.1, bs = 50) {
 
 
 get_permuted_data_helper <- function(object, w, bs) {
-  bgpeaks <- get_background_peaks(object, niterations = ncol(object), 
+  bgpeaks <- getBackgroundPeaks(object, niterations = ncol(object), 
                                   w = w, bs = bs)
   reorder_columns(assays(object)$counts, bgpeaks)
 }

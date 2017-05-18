@@ -1,4 +1,4 @@
-context("compute_deviations")
+context("computeDeviations")
 
 library(SummarizedExperiment)
 library(IRanges)
@@ -31,57 +31,57 @@ deviations_test <- readRDS(system.file("extdata", "deviations_test",
 
 
 
-test_that("compute_deviations works with SummarizedExperiment & SummarizedExperient",
+test_that("computeDeviations works with SummarizedExperiment & SummarizedExperient",
           {
-            dev <- compute_deviations(counts, anno_se, bg)
+            dev <- computeDeviations(counts, anno_se, bg)
             expect_equal(assays(dev)$deviations, deviations_test$deviations)
             expect_equal(assays(dev)$z, deviations_test$z)
             expect_is(dev, "chromVARDeviations")
           })
 
-test_that("compute_deviations works with SummarizedExperiment & list",
+test_that("computeDeviations works with SummarizedExperiment & list",
           {
-            dev <- compute_deviations(counts, anno_list, bg)
+            dev <- computeDeviations(counts, anno_list, bg)
             expect_equal(assays(dev)$deviations, deviations_test$deviations)
             expect_equal(assays(dev)$z, deviations_test$z)
             expect_is(dev, "chromVARDeviations")
           })
 
-test_that("compute_deviations works with SummarizedExperiment & Matrix",
+test_that("computeDeviations works with SummarizedExperiment & Matrix",
           {
-            dev <- compute_deviations(counts, anno_mat, bg)
+            dev <- computeDeviations(counts, anno_mat, bg)
             expect_equal(assays(dev)$deviations, deviations_test$deviations)
             expect_equal(assays(dev)$z, deviations_test$z)
             expect_is(dev, "chromVARDeviations")
           })
 
-test_that("compute_deviations works with matrix & SummarizedExperient",
+test_that("computeDeviations works with matrix & SummarizedExperient",
           {
-            dev <- compute_deviations(mat, anno_se, bg)
+            dev <- computeDeviations(mat, anno_se, bg)
             expect_equal(assays(dev)$deviations, deviations_test$deviations)
             expect_equal(assays(dev)$z, deviations_test$z)
             expect_is(dev, "chromVARDeviations")
           })
 
-test_that("compute_deviations works with matrix & list",
+test_that("computeDeviations works with matrix & list",
           {
-            dev <- compute_deviations(mat, anno_list, bg)
+            dev <- computeDeviations(mat, anno_list, bg)
             expect_equal(assays(dev)$deviations, deviations_test$deviations)
             expect_equal(assays(dev)$z, deviations_test$z)
             expect_is(dev, "chromVARDeviations")
           })
 
-test_that("compute_deviations works with matrix & Matrix",
+test_that("computeDeviations works with matrix & Matrix",
           {
-            dev <- compute_deviations(mat, anno_mat, bg)
+            dev <- computeDeviations(mat, anno_mat, bg)
             expect_equal(assays(dev)$deviations, deviations_test$deviations)
             expect_equal(assays(dev)$z, deviations_test$z)
             expect_is(dev, "chromVARDeviations")
           })
 
-test_that("compute_deviations works with Matrix & Matrix",
+test_that("computeDeviations works with Matrix & Matrix",
           {
-            dev <- compute_deviations(Matrix(mat), anno_mat, bg)
+            dev <- computeDeviations(Matrix(mat), anno_mat, bg)
             expect_equal(assays(dev)$deviations, deviations_test$deviations)
             expect_equal(assays(dev)$z, deviations_test$z)
             expect_is(dev, "chromVARDeviations")

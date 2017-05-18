@@ -17,7 +17,7 @@ chromVARDeviations object
 }
 \description{
 cbind returns an error when applied to chromVARDeviations because results for
-all cells or samples should originate from same compute_deviations computation
+all cells or samples should originate from same computeDeviations computation
 }
 \seealso{
 \code{\link{chromVARDeviations-class}}

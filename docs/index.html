@@ -80,18 +80,41 @@
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#chromvar" class="anchor"> </a>chromVAR</h1></div>
 <p>chromVAR is an R package for the analysis of sparse chromatin accessibility data from single cell or bulk ATAC or DNAse-seq data.</p>
+<div id="note-on-recent-function-name-changes" class="section level2">
+<h2 class="hasAnchor">
+<a href="#note-on-recent-function-name-changes" class="anchor"> </a>Note on recent function name changes</h2>
+<p>The chromVAR (and related motifmatchr) function names recently changed to switch over to camelCase from snake_case. All exported functions now use camelCase, e.g. <code>compute_deviations</code> is now <code>computeDeviations</code>. If following the current documentation but using an earlier version of the package, either update the package or be aware of the discrepancy. This change was made to comply with Bioconductor naming preferences, as chromVAR will soon be submitted to Bioconductor.</p>
+</div>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"> </a>Installation</h2>
 <p>Installation is easiest using the devtools package. The function <code>install_github</code> will install the package.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">"GreenleafLab/chromVAR"</span>)</code></pre></div>
+<p>A number of needed packages are installed in this process. One of the dependencies has a system requirement for the gsl library, so if this is not installed already it may need to be installed separately.</p>
+<p>For Windows users, some have reported that the S4Vector dependency does not currently function on windows R 3.3.3, but that installation was successful on R 3.3.2</p>
 <p>Two additional packages that are recommended and used in the vignettes:</p>
 <ul>
 <li>motifmatchr - available on <a href="https://github.com/GreenleafLab/motifmatchr">GitHub</a>
 </li>
 <li>JASPAR2016 - available from Bioconductor</li>
 </ul>
-<p>A number of needed packages are installed in this process. One of the dependencies has a system requirement for the gsl library, so if this is not installed already it may need to be installed separately.</p>
+<p>Additionally, the package chromVARmotifs can be useful for loading additional motif collections:</p>
+<ul>
+<li>chromVARmotifs - available on <a href="https://github.com/GreenleafLab/chromVARmotifs">GitHub</a>
+</li>
+</ul>
+</div>
+<div id="parallelization" class="section level2">
+<h2 class="hasAnchor">
+<a href="#parallelization" class="anchor"> </a>Parallelization</h2>
+<p>Before running chromVAR functions, it is advisable to use the <code>register</code> function from BiocParallel to specify your preferred method of parallelization. For unix systems,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(BiocParallel)
+<span class="kw">register</span>(<span class="kw">MultiCoreParam</span>(<span class="dv">8</span>)) <span class="co"># Use 8 cores</span></code></pre></div>
+<p>For Windows, <code>MultiCoreParam</code> will not work, but you can use SnowParam:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">register</span>(<span class="kw">SnowParam</span>(<span class="kw">SnowParam</span>(<span class="dt">workers=</span><span class="dv">1</span>, <span class="dt">type =</span> <span class="st">"SOCK"</span>)))</code></pre></div>
+<p>Even if you don’t want to use more than one core, it is recommended to explicitly register that choice:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">register</span>()</code></pre></div>
+<p>Please see the documentation for <a href="https://bioconductor.org/packages/release/bioc/html/BiocParallel.html">BiocParallel</a> for more information about the <code>register</code> function and the various options for multi-processing.</p>
 </div>
 <div id="quickstart" class="section level2">
 <h2 class="hasAnchor">
@@ -106,10 +129,10 @@
 <span class="co"># run on example data in package, start at next section with example_counts data</span>
 
 peakfile &lt;-<span class="st"> "mypeaks.bed"</span>
-peaks &lt;-<span class="st"> </span><span class="kw"><a href="reference/get_peaks.html">get_peaks</a></span>(peakfile)
+peaks &lt;-<span class="st"> </span><span class="kw"><a href="reference/getPeaks.html">getPeaks</a></span>(peakfile)
 
 bamfiles &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"mybam1.bam"</span>,<span class="st">"mybam2.bam"</span>)
-fragment_counts &lt;-<span class="st"> </span><span class="kw"><a href="reference/get_counts.html">get_counts</a></span>(bamfiles, peaks, 
+fragment_counts &lt;-<span class="st"> </span><span class="kw"><a href="reference/getCounts.html">getCounts</a></span>(bamfiles, peaks, 
                               <span class="dt">paired =</span>  <span class="ot">TRUE</span>, 
                               <span class="dt">by_rg =</span> <span class="ot">TRUE</span>, 
                               <span class="dt">format =</span> <span class="st">"bam"</span>, 
@@ -120,19 +143,19 @@ fragment_counts &lt;-<span class="st"> </span><span class="kw"><a href="referenc
 ### Using example counts from package ------------------------------------------
 
 <span class="kw">data</span>(example_counts, <span class="dt">package =</span> <span class="st">"chromVAR"</span>)
-example_counts &lt;-<span class="st"> </span><span class="kw"><a href="reference/add_gc_bias.html">add_gc_bias</a></span>(example_counts, 
+example_counts &lt;-<span class="st"> </span><span class="kw"><a href="reference/addGCBias.html">addGCBias</a></span>(example_counts, 
                               <span class="dt">genome =</span> BSgenome.Hsapiens.UCSC.hg19)
-counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="reference/filter_samples.html">filter_samples</a></span>(example_counts, <span class="dt">min_depth =</span> <span class="dv">1500</span>,
+counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="reference/filterSamples.html">filterSamples</a></span>(example_counts, <span class="dt">min_depth =</span> <span class="dv">1500</span>,
                                   <span class="dt">min_in_peaks =</span> <span class="fl">0.15</span>)
-counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="reference/filter_peaks.html">filter_peaks</a></span>(counts_filtered)
-motifs &lt;-<span class="st"> </span><span class="kw"><a href="reference/get_jaspar_motifs.html">get_jaspar_motifs</a></span>()
-motif_ix &lt;-<span class="st"> </span><span class="kw">match_motifs</span>(motifs, counts_filtered,
+counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="reference/filterPeaks.html">filterPeaks</a></span>(counts_filtered)
+motifs &lt;-<span class="st"> </span><span class="kw"><a href="reference/getJasparMotifs.html">getJasparMotifs</a></span>()
+motif_ix &lt;-<span class="st"> </span><span class="kw">matchMotifs</span>(motifs, counts_filtered,
                          <span class="dt">genome =</span> BSgenome.Hsapiens.UCSC.hg19)
 
 <span class="co"># computing deviations</span>
-dev &lt;-<span class="st"> </span><span class="kw"><a href="reference/compute_deviations.html">compute_deviations</a></span>(<span class="dt">object =</span> counts_filtered, 
+dev &lt;-<span class="st"> </span><span class="kw"><a href="reference/computeDeviations.html">computeDeviations</a></span>(<span class="dt">object =</span> counts_filtered, 
                                  <span class="dt">annotations =</span> motif_ix)</code></pre></div>
-<p>See Vignettes for more information!</p>
+<p>See <a href="https://greenleaflab.github.io/chromVAR/">documentation website</a> for more information!</p>
 </div>
 </div>
 

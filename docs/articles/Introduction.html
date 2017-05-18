@@ -87,6 +87,11 @@
 <html><body><a href="#chromvar" class="anchor"> </a></body></html>chromVAR</h1>
 <p>chromVAR is an R package for the analysis of sparse chromatin accessibility. chromVAR takes as inputs aligned fragments (filtered for duplicates and low quality) from ATAC-seq or DNAse-seq experiments as well as genomic annotations such as motif positions. chromVAR computes for each annotation and each cell or sample a bias corrected “deviation” in accessibility from the expected accessibility based on the average of all the cells or samples.</p>
 <p>This vignette covers basic usage of chromVAR with standard inputs. For more detailed documentation covering different options for various inputs and additional applications, view the additional vignettes on the <a href="https://greenleaflab.github.io/chromVAR/">documentation website</a>.</p>
+<div id="note-on-recent-function-name-changes" class="section level2">
+<h2 class="hasAnchor">
+<html><body><a href="#note-on-recent-function-name-changes" class="anchor"> </a></body></html>Note on recent function name changes</h2>
+<p>The chromVAR (and related motifmatchr) function names recently changed to switch over to camelCase from snake_case. All exported functions now use camelCase, e.g. <code>compute_deviations</code> is now <code>computeDeviations</code>. If following the current documentation but using an earlier version of the package, either update the package or be aware of the discrepancy. This change was made to comply with Bioconductor naming preferences, as chromVAR will soon be submitted to Bioconductor.</p>
+</div>
 <div id="loading-the-package" class="section level2">
 <h2 class="hasAnchor">
 <html><body><a href="#loading-the-package" class="anchor"> </a></body></html>Loading the package</h2>
@@ -106,18 +111,25 @@
 <p>To enable progress bars for multiprocessed tasks, use</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(BiocParallel)
 <span class="kw">register</span>(<span class="kw">MulticoreParam</span>(<span class="dv">8</span>), <span class="dt">progressbar =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p>For Windows, <code>MultiCoreParam</code> will not work, but you can use SnowParam:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">register</span>(<span class="kw">SnowParam</span>(<span class="kw">SnowParam</span>(<span class="dt">workers=</span><span class="dv">1</span>, <span class="dt">type =</span> <span class="st">"SOCK"</span>)))</code></pre></div>
+<p>Even if you don’t want to use more than one core, it is recommended to explicitly register that choice using SerialParam:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">register</span>(<span class="kw">SerialParam</span>())</code></pre></div>
+<p>Please see the documentation for <a href="https://bioconductor.org/packages/release/bioc/html/BiocParallel.html">BiocParallel</a> for more information about the <code>register</code> function and the various options for multi-processing.</p>
 </div>
 <div id="reading-in-inputs" class="section level2">
 <h2 class="hasAnchor">
 <html><body><a href="#reading-in-inputs" class="anchor"> </a></body></html>Reading in inputs</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Not evaluated </span>
 peakfile &lt;-<span class="st"> "mypeaks.bed"</span>
-peaks &lt;-<span class="st"> </span><span class="kw"><a href="../reference/get_peaks.html">get_peaks</a></span>(peakfile)
+peaks &lt;-<span class="st"> </span><span class="kw"><a href="../reference/getPeaks.html">getPeaks</a></span>(peakfile)
 
 bamfiles &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">"mybam1.bam"</span>,<span class="st">"mybam2.bam"</span>)
-fragment_counts &lt;-<span class="st"> </span><span class="kw"><a href="../reference/get_counts.html">get_counts</a></span>(bamfiles, peaks, <span class="dt">paired =</span>  <span class="ot">TRUE</span>, <span class="dt">by_rg =</span> <span class="ot">TRUE</span>, <span class="dt">format =</span> <span class="st">"bam"</span>, <span class="dt">colData =</span> <span class="kw">DataFrame</span>(<span class="dt">celltype =</span> <span class="kw">c</span>(<span class="st">"GM"</span>,<span class="st">"K562"</span>)))</code></pre></div>
-<p>The function <code>get_peaks</code> reads in the peaks as a GenomicRanges object. The function <code>get_counts</code> returns a chromVARCounts object with a Matrix of fragment counts per sample/cell for each peak in assays. This data can be accessed with <code>counts(fragment_counts)</code>.The Matrix package is used so that if the matrix is sparse, the matrix will be stored as a sparse Matrix.</p>
-<p>For the rest of the vignette, we will use a very small example data set of 10 GM cells and 10 H1 cells that has already been read in as a chromVARCounts object.</p>
+fragment_counts &lt;-<span class="st"> </span><span class="kw">getDounts</span>(bamfiles, peaks, <span class="dt">paired =</span>  <span class="ot">TRUE</span>, 
+                             <span class="dt">by_rg =</span> <span class="ot">TRUE</span>, <span class="dt">format =</span> <span class="st">"bam"</span>, 
+                             <span class="dt">colData =</span> <span class="kw">DataFrame</span>(<span class="dt">celltype =</span> <span class="kw">c</span>(<span class="st">"GM"</span>,<span class="st">"K562"</span>)))</code></pre></div>
+<p>The function <code>getPeaks</code> reads in the peaks as a GenomicRanges object. The function <code>getCounts</code> returns a chromVARCounts object with a Matrix of fragment counts per sample/cell for each peak in assays. This data can be accessed with <code>counts(fragment_counts)</code>.The Matrix package is used so that if the matrix is sparse, the matrix will be stored as a sparse Matrix.</p>
+<p>For the rest of the vignette, we will use a very small example data set of 10 GM cells and 10 H1 cells that has already been read in as a SummarizedExperiment object.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(example_counts, <span class="dt">package =</span> <span class="st">"chromVAR"</span>)
 <span class="kw">head</span>(example_counts)</code></pre></div>
 <pre><code>## class: RangedSummarizedExperiment 
@@ -133,9 +145,9 @@ fragment_counts &lt;-<span class="st"> </span><span class="kw"><a href="../refer
 <div id="getting-gc-content-of-peaks" class="section level2">
 <h2 class="hasAnchor">
 <html><body><a href="#getting-gc-content-of-peaks" class="anchor"> </a></body></html>Getting GC content of peaks</h2>
-<p>The GC content will be used for determining background peaks. The function <code>add_gc_bias</code> returns an updated SummarizedExperiment with a new rowData column named “bias”. The function requires an input of a genome sequence, which can be provided as a BSgenome, FaFile, or DNAStringSet object.</p>
+<p>The GC content will be used for determining background peaks. The function <code>addGCBias</code> returns an updated SummarizedExperiment with a new rowData column named “bias”. The function requires an input of a genome sequence, which can be provided as a BSgenome, FaFile, or DNAStringSet object.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(BSgenome.Hsapiens.UCSC.hg19)
-example_counts &lt;-<span class="st"> </span><span class="kw"><a href="../reference/add_gc_bias.html">add_gc_bias</a></span>(example_counts, <span class="dt">genome =</span> BSgenome.Hsapiens.UCSC.hg19)
+example_counts &lt;-<span class="st"> </span><span class="kw"><a href="../reference/addGCBias.html">addGCBias</a></span>(example_counts, <span class="dt">genome =</span> BSgenome.Hsapiens.UCSC.hg19)
 <span class="kw">head</span>(<span class="kw">rowData</span>(example_counts))</code></pre></div>
 <pre><code>## DataFrame with 6 rows and 4 columns
 ##       score      qval        name      bias
@@ -152,85 +164,87 @@ example_counts &lt;-<span class="st"> </span><span class="kw"><a href="../refere
 <h2 class="hasAnchor">
 <html><body><a href="#filtering-inputs" class="anchor"> </a></body></html>Filtering inputs</h2>
 <p>If working with single cell data, it is advisable to filter out samples with insufficient reads or a low proportion of reads in peaks as these may represent empty wells or dead cells. Two parameters are used for filtering – min_in_peaks and min_depth. If not provided (as above), these cutoffs are estimated based on the medians from the data. min_in_peaks is set to 0.5 times the median proportion of fragments in peaks. min_depth is set to the maximum of 500 or 10% of the median library size.</p>
-<p>Unless <code>plot = FALSE</code> given as argument to function <code>filter_samples</code>, a plot will be generated.</p>
+<p>Unless <code>plot = FALSE</code> given as argument to function <code>filterSamples</code>, a plot will be generated.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#find indices of samples to keep</span>
-counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="../reference/filter_samples.html">filter_samples</a></span>(example_counts, <span class="dt">min_depth =</span> <span class="dv">1500</span>, <span class="dt">min_in_peaks =</span> <span class="fl">0.15</span>, <span class="dt">shiny =</span> <span class="ot">FALSE</span>)</code></pre></div>
+counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="../reference/filterSamples.html">filterSamples</a></span>(example_counts, <span class="dt">min_depth =</span> <span class="dv">1500</span>, <span class="dt">min_in_peaks =</span> <span class="fl">0.15</span>, <span class="dt">shiny =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <p>If shiny argument is set to TRUE (the default), a shiny gadget will pop up which allows you to play with the filtering parameters and see which cells pass filters or not.</p>
-<p>To get just the plot of what is filtered, use <code>filter_samples_plot</code>. By default, the plot is interactive– to set it as not interactive use DEFAULT = FALSE.</p>
+<p>To get just the plot of what is filtered, use <code>filterSamplesPlot</code>. By default, the plot is interactive– to set it as not interactive use DEFAULT = FALSE.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#find indices of samples to keep</span>
-filtering_plot &lt;-<span class="st"> </span><span class="kw"><a href="../reference/filter_samples_plot.html">filter_samples_plot</a></span>(example_counts, <span class="dt">min_depth =</span> <span class="dv">1500</span>, <span class="dt">min_in_peaks =</span> <span class="fl">0.15</span>, <span class="dt">use_plotly =</span> <span class="ot">FALSE</span>)
+filtering_plot &lt;-<span class="st"> </span><span class="kw"><a href="../reference/filterSamplesPlot.html">filterSamplesPlot</a></span>(example_counts, <span class="dt">min_depth =</span> <span class="dv">1500</span>, <span class="dt">min_in_peaks =</span> <span class="fl">0.15</span>, <span class="dt">use_plotly =</span> <span class="ot">FALSE</span>)
 filtering_plot</code></pre></div>
 <p><img src="Introduction_files/figure-html/filter_plot-1.png" width="576"></p>
 <p>To instead return the indexes of the samples to keep instead of a new SummarizedExperiment object, use ix_return = TRUE.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Not evaluated </span>
-ix &lt;-<span class="st"> </span><span class="kw"><a href="../reference/filter_samples.html">filter_samples</a></span>(example_counts, <span class="dt">ix_return =</span> <span class="ot">TRUE</span>, <span class="dt">shiny =</span> <span class="ot">FALSE</span>)</code></pre></div>
-<p>For both bulk and single cell data, peaks should be filtered based on having at least a certain number of fragments. At minimum, each peak should have at least one fragment across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data). Otherwise, downstream functions won’t work. The function <code>filter_peaks</code> will also reduce the peak set to non-overlapping peaks (keeping the peak with higher counts for peaks that overlap) if non_overlapping argument is set to TRUE (which is default).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="../reference/filter_peaks.html">filter_peaks</a></span>(counts_filtered, <span class="dt">non_overlapping =</span> <span class="ot">TRUE</span>)</code></pre></div>
+ix &lt;-<span class="st"> </span><span class="kw"><a href="../reference/filterSamples.html">filterSamples</a></span>(example_counts, <span class="dt">ix_return =</span> <span class="ot">TRUE</span>, <span class="dt">shiny =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p>For both bulk and single cell data, peaks should be filtered based on having at least a certain number of fragments. At minimum, each peak should have at least one fragment across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data). Otherwise, downstream functions won’t work. The function <code>filterPeaks</code> will also reduce the peak set to non-overlapping peaks (keeping the peak with higher counts for peaks that overlap) if non_overlapping argument is set to TRUE (which is default).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">counts_filtered &lt;-<span class="st"> </span><span class="kw"><a href="../reference/filterPeaks.html">filterPeaks</a></span>(counts_filtered, <span class="dt">non_overlapping =</span> <span class="ot">TRUE</span>)</code></pre></div>
 </div>
 <div id="get-motifs-and-what-peaks-contain-motifs" class="section level2">
 <h2 class="hasAnchor">
 <html><body><a href="#get-motifs-and-what-peaks-contain-motifs" class="anchor"> </a></body></html>Get motifs and what peaks contain motifs</h2>
-<p>The function <code>get_jaspar_motifs</code> fetches motifs from the JASPAR database.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">motifs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/get_jaspar_motifs.html">get_jaspar_motifs</a></span>()</code></pre></div>
+<p>The function <code>getJasparMotifs</code> fetches motifs from the JASPAR database.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">motifs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/getJasparMotifs.html">getJasparMotifs</a></span>()</code></pre></div>
 <p>The function get_motifs() by default gets human motifs from JASPAR core database. For other species motifs, change the species argument.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Not evaluated </span>
-motifs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/get_jaspar_motifs.html">get_jaspar_motifs</a></span>(<span class="dt">species =</span> <span class="st">"Saccharomyces cerevisiae"</span>)</code></pre></div>
+motifs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/getJasparMotifs.html">getJasparMotifs</a></span>(<span class="dt">species =</span> <span class="st">"Saccharomyces cerevisiae"</span>)</code></pre></div>
 <p>For using a collection other than core, use the <code>collection</code> argument. Options include: “CORE”, “CNE”, “PHYLOFACTS”, “SPLICE”, “POLII”, “FAM”, “PBM”, “PBM_HOMEO”, “PBM_HLH”.</p>
-<p>The <code>get_motifs</code> function is simply a wrapper around <code>getMatrixSet</code> from TFBSTools– you can also use that function to fetch motifs from JASPAR if you prefer, and/or check out the documentation for that function for more information.</p>
-<p>The function <code>match_motifs</code> from the motifmatchr package finds which peaks contain which motifs. By default, it returns a SummarizedExperiment object, which contains a sparse matrix indicating motif match or not.The function requires an input of a genome sequence, which can be provided as a BSgenome, FaFile, or DNAStringSet object.</p>
+<p>The <code>getMotifs</code> function is simply a wrapper around <code>getMatrixSet</code> from TFBSTools– you can also use that function to fetch motifs from JASPAR if you prefer, and/or check out the documentation for that function for more information.</p>
+<p>The function <code>matchMotifs</code> from the motifmatchr package finds which peaks contain which motifs. By default, it returns a SummarizedExperiment object, which contains a sparse matrix indicating motif match or not.The function requires an input of a genome sequence, which can be provided as a BSgenome, FaFile, or DNAStringSet object.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(motifmatchr)
-motif_ix &lt;-<span class="st"> </span><span class="kw">match_motifs</span>(motifs, counts_filtered, <span class="dt">genome =</span> BSgenome.Hsapiens.UCSC.hg19)</code></pre></div>
+motif_ix &lt;-<span class="st"> </span><span class="kw">matchMotifs</span>(motifs, counts_filtered, 
+                        <span class="dt">genome =</span> BSgenome.Hsapiens.UCSC.hg19)</code></pre></div>
 <p>One option is the p.cutoff for determing how stringent motif calling should be. The default value is 0.00005, which tends to give reasonable numbers of motif matches for human motifs.</p>
-<p>Instead of returning just motif matches, the function can also return additional matrices (stored as assays) with the number of motif matches per peak and the maximum motif score per peak. For this additional information, use <code>out = scores</code>. To return the actual positions of motif matches, use <code>out = positions</code>. Either the output with <code>out = matches</code> or <code>out = scores</code> can be passed to the compute_deviations function.</p>
-<p>If instead of using known motifs, you want to use all kmers of a certain length, the match_kmers function can be used. For more about using kmers as inputs, see the Annotations vignette on the documentation website.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">kmer_ix &lt;-<span class="st"> </span><span class="kw"><a href="../reference/match_kmers.html">match_kmers</a></span>(<span class="dv">7</span>, counts_filtered)</code></pre></div>
+<p>Instead of returning just motif matches, the function can also return additional matrices (stored as assays) with the number of motif matches per peak and the maximum motif score per peak. For this additional information, use <code>out = scores</code>. To return the actual positions of motif matches, use <code>out = positions</code>. Either the output with <code>out = matches</code> or <code>out = scores</code> can be passed to the computeDeviations function.</p>
+<p>If instead of using known motifs, you want to use all kmers of a certain length, the <code>matchKmers</code> function can be used. For more about using kmers as inputs, see the Annotations vignette on the documentation website.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">kmer_ix &lt;-<span class="st"> </span><span class="kw"><a href="../reference/matchKmers.html">matchKmers</a></span>(<span class="dv">7</span>, counts_filtered)</code></pre></div>
 </div>
 <div id="compute-deviations" class="section level2">
 <h2 class="hasAnchor">
 <html><body><a href="#compute-deviations" class="anchor"> </a></body></html>Compute deviations</h2>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dev &lt;-<span class="st"> </span><span class="kw"><a href="../reference/compute_deviations.html">compute_deviations</a></span>(<span class="dt">object =</span> counts_filtered, <span class="dt">annotations =</span> motif_ix)</code></pre></div>
-<p>The function <code>compute_deviations</code> returns a SummarizedExperiment with two “assays”. The first matrix (accessible via <code><a href="../reference/deviations.html">deviations(dev)</a></code> or <code>assays(dev)$deviations</code>) will give the bias corrected “deviation” in accessibility for each set of peaks (rows) for each cell or sample (columns). This metric represent how accessible the set of peaks is relative to the expectation based on equal chromatin accessibility profiles across cells/samples, normalized by a set of background peak sets matched for GC and average accessability. The second matrix (<code><a href="../reference/deviation_scores.html">deviation_scores(dev)</a></code> or <code>assays(deviations)$z</code>) gives the deviation Z-score, which takes into account how likely such a score would occur if randomly sampling sets of beaks with similar GC content and average accessibility.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dev &lt;-<span class="st"> </span><span class="kw"><a href="../reference/computeDeviations.html">computeDeviations</a></span>(<span class="dt">object =</span> counts_filtered, <span class="dt">annotations =</span> motif_ix)</code></pre></div>
+<p>The function <code>computeDeviations</code> returns a SummarizedExperiment with two “assays”. The first matrix (accessible via <code><a href="../reference/deviations.html">deviations(dev)</a></code> or <code>assays(dev)$deviations</code>) will give the bias corrected “deviation” in accessibility for each set of peaks (rows) for each cell or sample (columns). This metric represent how accessible the set of peaks is relative to the expectation based on equal chromatin accessibility profiles across cells/samples, normalized by a set of background peak sets matched for GC and average accessability. The second matrix (<code><a href="../reference/deviationScores.html">deviationScores(dev)</a></code> or <code>assays(deviations)$z</code>) gives the deviation Z-score, which takes into account how likely such a score would occur if randomly sampling sets of beaks with similar GC content and average accessibility.</p>
 </div>
 <div id="background-peaks" class="section level2">
 <h2 class="hasAnchor">
 <html><body><a href="#background-peaks" class="anchor"> </a></body></html>Background Peaks</h2>
-<p>The function compute_deviations will use a set of background peaks for normalizing the deviation scores. This computation is done internally by default and not returned – to have greater control over this step, a user can run the get_background_peaks function themselves and pass the result to compute_deviations under the background_peaks parameter.</p>
+<p>The function computeDeviations will use a set of background peaks for normalizing the deviation scores. This computation is done internally by default and not returned – to have greater control over this step, a user can run the <code>getBackgroundPeaks</code> function themselves and pass the result to computeDeviations under the background_peaks parameter.</p>
 <p>Background peaks are peaks that are similar to a peak in GC content and average accessibility.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bg &lt;-<span class="st"> </span><span class="kw"><a href="../reference/get_background_peaks.html">get_background_peaks</a></span>(<span class="dt">object =</span> counts_filtered)</code></pre></div>
-<p>The result from get_background_peaks is a matrix of indices, where each column represents the index of the peak that is a background peak.</p>
-<p>To use the background peaks computed, simply add those to the call to compute_deviations:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bg &lt;-<span class="st"> </span><span class="kw"><a href="../reference/getBackgroundPeaks.html">getBackgroundPeaks</a></span>(<span class="dt">object =</span> counts_filtered)</code></pre></div>
+<p>The result from <code>getBackgroundPeaks</code> is a matrix of indices, where each column represents the index of the peak that is a background peak.</p>
+<p>To use the background peaks computed, simply add those to the call to computeDeviations:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Not evaluated </span>
-dev &lt;-<span class="st"> </span><span class="kw"><a href="../reference/compute_deviations.html">compute_deviations</a></span>(<span class="dt">object =</span> counts_filtered, <span class="dt">annotations =</span> motif_ix, <span class="dt">background_peaks =</span> bg)</code></pre></div>
+dev &lt;-<span class="st"> </span><span class="kw"><a href="../reference/computeDeviations.html">computeDeviations</a></span>(<span class="dt">object =</span> counts_filtered, <span class="dt">annotations =</span> motif_ix,
+                         <span class="dt">background_peaks =</span> bg)</code></pre></div>
 </div>
 <div id="variability" class="section level2">
 <h2 class="hasAnchor">
 <html><body><a href="#variability" class="anchor"> </a></body></html>Variability</h2>
-<p>The function <code>compute_variability</code> returns a data.frame that contains the variability (standard deviation of the z scores computed above across all cell/samples for a set of peaks), bootstrap confidence intervals for that variability (by resampling cells/samples), and a p-value for the variability being greater than the null hypothesis of 1.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">variability &lt;-<span class="st"> </span><span class="kw"><a href="../reference/compute_variability.html">compute_variability</a></span>(dev)
+<p>The function <code>computeVariability</code> returns a data.frame that contains the variability (standard deviation of the z scores computed above across all cell/samples for a set of peaks), bootstrap confidence intervals for that variability (by resampling cells/samples), and a p-value for the variability being greater than the null hypothesis of 1.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">variability &lt;-<span class="st"> </span><span class="kw"><a href="../reference/computeVariability.html">computeVariability</a></span>(dev)
 
-<span class="kw"><a href="../reference/plot_variability.html">plot_variability</a></span>(variability, <span class="dt">use_plotly =</span> <span class="ot">FALSE</span>) </code></pre></div>
+<span class="kw"><a href="../reference/plotVariability.html">plotVariability</a></span>(variability, <span class="dt">use_plotly =</span> <span class="ot">FALSE</span>) </code></pre></div>
 <p><img src="Introduction_files/figure-html/variability-1.png" width="576"></p>
-<p><code>plot_variability</code> takes the output of <code>compute_variability</code> and returns a plot of rank sorted annotation sets and their variability. By default, the plot will be interactive, unless you set <code>use_plotly = FALSE</code>.</p>
+<p><code>plotVariability</code> takes the output of <code>computeVariability</code> and returns a plot of rank sorted annotation sets and their variability. By default, the plot will be interactive, unless you set <code>use_plotly = FALSE</code>.</p>
 </div>
 <div id="visualizing-deviations" class="section level2">
 <h2 class="hasAnchor">
 <html><body><a href="#visualizing-deviations" class="anchor"> </a></body></html>Visualizing Deviations</h2>
-<p>For visualizing cells, it can be useful to project the deviation values into two dimension using TSNE. A convenience function for doing so is provided in <code>deviations_tsne</code>. If running in an interactive session, shiny can be set to TRUE to load up a shiny gadget for exploring parameters.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tsne_results &lt;-<span class="st"> </span><span class="kw"><a href="../reference/deviations_tsne.html">deviations_tsne</a></span>(dev, <span class="dt">threshold =</span> <span class="fl">1.5</span>, <span class="dt">perplexity =</span> <span class="dv">10</span>)</code></pre></div>
-<p>To plot the results, <code>plot_deviations_tsne</code> can be used. If running in an interactive session or an interactive Rmarkdown document, shiny can be set to TRUE to generate a shiny widget. Here we will show static results.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tsne_plots &lt;-<span class="st"> </span><span class="kw"><a href="../reference/plot_deviations_tsne.html">plot_deviations_tsne</a></span>(dev, tsne_results, <span class="dt">annotation =</span> <span class="st">"TEAD3"</span>, 
+<p>For visualizing cells, it can be useful to project the deviation values into two dimension using TSNE. A convenience function for doing so is provided in <code>deviationsTsne</code>. If running in an interactive session, shiny can be set to TRUE to load up a shiny gadget for exploring parameters.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tsne_results &lt;-<span class="st"> </span><span class="kw"><a href="../reference/deviationsTsne.html">deviationsTsne</a></span>(dev, <span class="dt">threshold =</span> <span class="fl">1.5</span>, <span class="dt">perplexity =</span> <span class="dv">10</span>)</code></pre></div>
+<p>To plot the results, <code>plotDeviationsTsne</code> can be used. If running in an interactive session or an interactive Rmarkdown document, shiny can be set to TRUE to generate a shiny widget. Here we will show static results.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tsne_plots &lt;-<span class="st"> </span><span class="kw"><a href="../reference/plotDeviationsTsne.html">plotDeviationsTsne</a></span>(dev, tsne_results, <span class="dt">annotation =</span> <span class="st">"TEAD3"</span>, 
                                    <span class="dt">sample_column =</span> <span class="st">"Cell_Type"</span>, <span class="dt">shiny =</span> <span class="ot">FALSE</span>)
 tsne_plots[[<span class="dv">1</span>]]</code></pre></div>
-<p><img src="Introduction_files/figure-html/unnamed-chunk-18-1.png" width="672"></p>
+<p><img src="Introduction_files/figure-html/unnamed-chunk-20-1.png" width="672"></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tsne_plots[[<span class="dv">2</span>]]</code></pre></div>
-<p><img src="Introduction_files/figure-html/unnamed-chunk-18-2.png" width="672"></p>
+<p><img src="Introduction_files/figure-html/unnamed-chunk-20-2.png" width="672"></p>
 </div>
 </div>
 <div id="session-info" class="section level1">
 <h1 class="hasAnchor">
 <html><body><a href="#session-info" class="anchor"> </a></body></html>Session Info</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Sys.Date</span>()</code></pre></div>
-<pre><code>## [1] "2017-03-28"</code></pre>
+<pre><code>## [1] "2017-05-17"</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre></div>
 <pre><code>## R version 3.3.1 (2016-06-21)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
@@ -245,67 +259,67 @@ tsne_plots[[<span class="dv">1</span>]]</code></pre></div>
 ## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
-## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+## [1] stats4    parallel  stats     graphics  grDevices utils     datasets 
 ## [8] methods   base     
 ## 
 ## other attached packages:
-##  [1] chromVAR_0.4.7                    TFBSTools_1.12.1                 
-##  [3] ggmotif_0.0.0                     pheatmap_1.0.8                   
-##  [5] ggplot2_2.2.1                     BiocParallel_1.8.1               
-##  [7] BSgenome.Hsapiens.UCSC.hg19_1.4.0 BSgenome_1.42.0                  
-##  [9] rtracklayer_1.34.1                Biostrings_2.42.1                
-## [11] XVector_0.14.0                    motifmatchr_0.99.1               
-## [13] Matrix_1.2-7.1                    SummarizedExperiment_1.4.0       
-## [15] Biobase_2.34.0                    GenomicRanges_1.26.2             
-## [17] GenomeInfoDb_1.10.3               IRanges_2.8.1                    
-## [19] S4Vectors_0.12.1                  BiocGenerics_0.20.0              
-## [21] testthat_1.0.2                   
+##  [1] ggmotif_0.0.0                     pheatmap_1.0.8                   
+##  [3] ggplot2_2.2.1                     BiocParallel_1.8.2               
+##  [5] Matrix_1.2-7.1                    chromVAR_0.5.0                   
+##  [7] SummarizedExperiment_1.4.0        Biobase_2.34.0                   
+##  [9] motifmatchr_0.99.7                BSgenome.Hsapiens.UCSC.hg19_1.4.0
+## [11] BSgenome_1.42.0                   rtracklayer_1.34.2               
+## [13] Biostrings_2.42.1                 XVector_0.14.1                   
+## [15] GenomicRanges_1.26.4              GenomeInfoDb_1.10.3              
+## [17] IRanges_2.8.2                     S4Vectors_0.12.2                 
+## [19] BiocGenerics_0.20.0               TFBSTools_1.12.2                 
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] bitops_1.0-6                DirichletMultinomial_1.16.0
 ##  [3] devtools_1.12.0.9000        RColorBrewer_1.1-2         
-##  [5] httr_1.2.1                  rprojroot_1.2              
-##  [7] highlight_0.4.7             backports_1.0.5            
-##  [9] tools_3.3.1                 R6_2.2.0                   
+##  [5] httr_1.2.1                  highlight_0.4.7            
+##  [7] rprojroot_1.2               tools_3.3.1                
+##  [9] backports_1.0.5             R6_2.2.1                   
 ## [11] DT_0.2                      seqLogo_1.40.0             
-## [13] DBI_0.5-1                   lazyeval_0.2.0             
+## [13] DBI_0.6-1                   lazyeval_0.2.0             
 ## [15] colorspace_1.3-2            withr_1.0.2                
 ## [17] xml2_1.1.1                  desc_1.1.0                 
-## [19] plotly_4.5.6                labeling_0.3               
+## [19] plotly_4.6.0                labeling_0.3               
 ## [21] caTools_1.17.1              scales_0.4.1               
-## [23] readr_1.0.0                 callr_1.0.0.9000           
+## [23] readr_1.1.1                 callr_1.0.0.9000           
 ## [25] pkgdown_0.1.0.9000          nabor_0.4.6                
 ## [27] commonmark_1.1              stringr_1.2.0              
-## [29] digest_0.6.12.1             Rsamtools_1.26.1           
+## [29] digest_0.6.12.1             Rsamtools_1.26.2           
 ## [31] rmarkdown_1.3               R.utils_2.5.0              
-## [33] base64enc_0.1-3             htmltools_0.3.5            
-## [35] htmlwidgets_0.8             RSQLite_1.1-2              
-## [37] VGAM_1.0-3                  shiny_1.0.0                
-## [39] jsonlite_1.2                gtools_3.5.0               
+## [33] htmltools_0.3.6             htmlwidgets_0.8            
+## [35] rlang_0.1                   RSQLite_1.1-2              
+## [37] VGAM_1.0-3                  shiny_1.0.3                
+## [39] jsonlite_1.4                gtools_3.5.0               
 ## [41] dplyr_0.5.0                 R.oo_1.21.0                
 ## [43] RCurl_1.95-4.8              magrittr_1.5               
-## [45] GO.db_3.4.0                 Rcpp_0.12.9                
+## [45] GO.db_3.4.0                 Rcpp_0.12.10               
 ## [47] munsell_0.4.3               R.methodsS3_1.7.1          
 ## [49] whisker_0.3-2               yaml_2.1.14                
-## [51] stringi_1.1.2               zlibbioc_1.20.0            
+## [51] stringi_1.1.5               zlibbioc_1.20.0            
 ## [53] Rtsne_0.11                  pkgbuild_0.0.0.9000        
 ## [55] plyr_1.8.4                  grid_3.3.1                 
 ## [57] crayon_1.3.2                miniUI_0.1.1               
-## [59] CNEr_1.10.1                 lattice_0.20-34            
+## [59] CNEr_1.10.2                 lattice_0.20-34            
 ## [61] splines_3.3.1               annotate_1.52.1            
-## [63] KEGGREST_1.14.0             knitr_1.15.1               
-## [65] JASPAR2016_1.2.0            codetools_0.2-15           
-## [67] reshape2_1.4.2              pkgload_0.0.0.9000         
-## [69] TFMPvalue_0.0.6             XML_3.98-1.5               
-## [71] evaluate_0.10               RcppArmadillo_0.7.700.0.0  
-## [73] png_0.1-7                   httpuv_1.3.3               
-## [75] gtable_0.2.0                poweRlaw_0.70.0            
-## [77] purrr_0.2.2                 tidyr_0.6.1                
-## [79] assertthat_0.1              mime_0.5                   
-## [81] xtable_1.8-2                roxygen2_6.0.1             
-## [83] viridisLite_0.1.3           tibble_1.2                 
-## [85] GenomicAlignments_1.10.0    AnnotationDbi_1.36.2       
-## [87] memoise_1.0.0</code></pre>
+## [63] hms_0.3                     KEGGREST_1.14.1            
+## [65] knitr_1.15.1                JASPAR2016_1.2.0           
+## [67] codetools_0.2-15            reshape2_1.4.2             
+## [69] pkgload_0.0.0.9000          TFMPvalue_0.0.6            
+## [71] XML_3.98-1.7                evaluate_0.10              
+## [73] RcppArmadillo_0.7.700.0.0   png_0.1-7                  
+## [75] httpuv_1.3.3                testthat_1.0.2             
+## [77] gtable_0.2.0                poweRlaw_0.70.0            
+## [79] purrr_0.2.2                 tidyr_0.6.2                
+## [81] assertthat_0.2.0            mime_0.5                   
+## [83] xtable_1.8-2                roxygen2_6.0.1             
+## [85] viridisLite_0.2.0           tibble_1.3.1               
+## [87] GenomicAlignments_1.10.1    AnnotationDbi_1.36.2       
+## [89] memoise_1.1.0</code></pre>
 </div>
 </div>
   </div>
@@ -316,7 +330,8 @@ tsne_plots[[<span class="dv">1</span>]]</code></pre></div>
       <ul class="nav nav-pills nav-stacked">
 <li>
 <a href="#chromvar">chromVAR</a><ul class="nav nav-pills nav-stacked">
-<li><a href="#loading-the-package">Loading the package</a></li>
+<li><a href="#note-on-recent-function-name-changes">Note on recent function name changes</a></li>
+      <li><a href="#loading-the-package">Loading the package</a></li>
       <li><a href="#setting-multiprocessing-options">Setting multiprocessing options</a></li>
       <li><a href="#reading-in-inputs">Reading in inputs</a></li>
       <li><a href="#getting-gc-content-of-peaks">Getting GC content of peaks</a></li>

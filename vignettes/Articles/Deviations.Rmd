@@ -8,11 +8,11 @@ vignette: >
 
 # Deviations
 
-This vignette covers the main function of chromVAR, compute_deviations.
+This vignette covers the main function of chromVAR, computeDeviations.
 
 ## Inputs
 
-The `compute_deviations` has two required inputs, `object` and `annotations`. The first argument should be a RangedSummarizedExperiment with a `counts` assay storing the fragment counts per peak (rows) per cell or sample (columns). The second argument (annnotations)  argument should be a RangedSummarizedExperiment with a `motif_matches` or `annotation_matches` assay storing whether each peak (rows) contains each annotation (columns).  For more information on these two primary inputs, see the "Counts" and "Annotations" vignettes.
+The `computeDeviations` has two required inputs, `object` and `annotations`. The first argument should be a RangedSummarizedExperiment with a `counts` assay storing the fragment counts per peak (rows) per cell or sample (columns). The second argument (annnotations)  argument should be a RangedSummarizedExperiment with a `motif_matches` or `annotation_matches` assay storing whether each peak (rows) contains each annotation (columns).  For more information on these two primary inputs, see the "Counts" and "Annotations" vignettes.
 
 ```{r, message = FALSE}
 # Getting inputs ready -- See Inputs vignette for more info
@@ -22,14 +22,14 @@ library(SummarizedExperiment)
 library(Matrix)
 library(BSgenome.Hsapiens.UCSC.hg19)
 data(example_counts, package = "chromVAR")
-example_counts <- add_gc_bias(example_counts, genome = BSgenome.Hsapiens.UCSC.hg19)
-counts_filtered <- filter_samples(example_counts, min_depth = 1500, min_in_peaks = 0.15, shiny = FALSE)
-counts_filtered <- filter_peaks(counts_filtered)
-motifs <- get_jaspar_motifs()
-motif_ix <- match_motifs(motifs, counts_filtered, genome = BSgenome.Hsapiens.UCSC.hg19)
+example_counts <- addGCBias(example_counts, genome = BSgenome.Hsapiens.UCSC.hg19)
+counts_filtered <- filterSamples(example_counts, min_depth = 1500, min_in_peaks = 0.15, shiny = FALSE)
+counts_filtered <- filterPeaks(counts_filtered)
+motifs <- getJasparMotifs()
+motif_ix <- matchMotifs(motifs, counts_filtered, genome = BSgenome.Hsapiens.UCSC.hg19)
 
 # computing deviations
-dev <- compute_deviations(object = counts_filtered, 
+dev <- computeDeviations(object = counts_filtered, 
                                  annotations = motif_ix)
 ```
 
@@ -37,46 +37,50 @@ Optionally, the annotations can be omitted and then deviations will be computed 
 
 ## Outputs
 
-The output from the compute_deviations function is a chromVARDeviations object. This object inherits from the RangedSummarizedExperiment object, so anything you can do with that object can be done with this one.  
+The output from the computeDeviations function is a chromVARDeviations object. This object inherits from the RangedSummarizedExperiment object, so anything you can do with that object can be done with this one.  
 
 ```{r}
 print(dev)
 ```
 
-The object stores two main 'assays', which can be accessed using the deviations and deviation_scores functions. The deviations are the bias corrected deviations in accessibility. For each motif or annotation (rows), there is a value for each cell or sample (columns) representing how different the accessibility for peaks with that motif or annotation is from the expectation based on all cells being equal, corrected for biases.   
+The object stores two main 'assays', which can be accessed using the deviations and `deviationScores` functions. The deviations are the bias corrected deviations in accessibility. For each motif or annotation (rows), there is a value for each cell or sample (columns) representing how different the accessibility for peaks with that motif or annotation is from the expectation based on all cells being equal, corrected for biases.   
 
 ```{r}
 deviations(dev)[1:3,1:2]
 ```
 
-The deviation_scores are the Z-scores for each bias corrected deviations. 
+The deviationScores are the Z-scores for each bias corrected deviations. 
 
 ```{r}
-deviation_scores(dev)[1:3,1:2]
+deviationScores(dev)[1:3,1:2]
 ```
 
 The absolute value of the deviation scores will be correlated with the read depth as with more reads, there can be more confidence that the difference in accessibility from the expecation is greater than would occur by chance.
 
+### Metadata
+
+Any column metadata stored as "colData" in a SummarizedExperiment object used as the counts input for `computeDeviations` will be propagated as "colData" in the output.  Any column metadata stored as "colData" in a SummarizedExperiment object used as the annotations input will be propagated as the "rowData" in the output.  Additionally, two columns in the rowData will be created: "fractionMatches", which gives the fraction of peaks that had a match for that motif, and "fractionBackgroundOverlap", which gives the average fraction of background peaks for the motif that contain a match for the motif.  
+
 ## Options
 
-The compute_deviations function also has two optional arguments, `background_peaks` and `expectation`.  
+The computeDeviations function also has two optional arguments, `background_peaks` and `expectation`.  
 
 ### Background peaks
 
-The function compute_deviations will use a set of background peaks for bias correcting the deviations.  This computation is done internally by default and not returned -- to have greater control over this step, a user can run the get_background_peaks function themselves and pass the result to compute_deviations under the `background_peaks` parameter. If the fragment counts objects is a Matrix/matrix or a SummarizedExperiment without a "bias" column in the rowData, then it is mandatory to supply a background_peaks argument.  
+The function computeDeviations will use a set of background peaks for bias correcting the deviations.  This computation is done internally by default and not returned -- to have greater control over this step, a user can run the `getBackgroundPeaks` function themselves and pass the result to computeDeviations under the `background_peaks` parameter. If the fragment counts objects is a Matrix/matrix or a SummarizedExperiment without a "bias" column in the rowData, then it is mandatory to supply a background_peaks argument.  
 
 Background peaks are peaks that are similar to a peak in GC content and average accessibility.
 
 ```{r}
-bg <- get_background_peaks(object = counts_filtered)
+bg <- getBackgroundPeaks(object = counts_filtered)
 ```
 
-The result from get_background_peaks is a matrix of indices, where each column represents the index of the peak that is a background peak. The number of columns represents the number of background iterations that will be used for computing the bias corrected deviations.  
+The result from getBackgroundPeaks is a matrix of indices, where each column represents the index of the peak that is a background peak. The number of columns represents the number of background iterations that will be used for computing the bias corrected deviations.  
 
-To use the background peaks computed, simply add those to the call to compute_deviations:
+To use the background peaks computed, simply add those to the call to computeDeviations:
 
 ```{r, eval = FALSE}
-dev <- compute_deviations(object = counts_filtered, 
+dev <- computeDeviations(object = counts_filtered, 
                                  annotations = motif_ix, 
                                  background_peaks = bg)
 ```
@@ -85,30 +89,30 @@ If you are using a counts matrix or a SummarizedExperiment without a "bias" colu
 
 ### Expectation
 
-By default, chromVAR measures the difference in chromatin accessibility for an annotation relative to the expectation if all cells or samples have the same chromatin accessibility profile but differ simply in read depth. Optionally, this expectation can be adjusted. The function 'compute_expecations' can calculate the expectation in alternate ways. The function can also be applied to only a subset of the cells or samples.  
+By default, chromVAR measures the difference in chromatin accessibility for an annotation relative to the expectation if all cells or samples have the same chromatin accessibility profile but differ simply in read depth. Optionally, this expectation can be adjusted. The function `computeExpecations` can calculate the expectation in alternate ways. The function can also be applied to only a subset of the cells or samples.  
 
 ```{r}
-expected <- compute_expectations(counts_filtered) 
+expected <- computeExpectations(counts_filtered) 
 ```
 
 By default, this function will compute the expected fraction of reads per peak as the the total fragments per peak across all samples divided by total reads in peaks in all samples. Optionally, `norm` can be set to `TRUE` and then the expectation will be the average fraction of reads in a peak across the cells. This is **not recommended** for single cell applications as cells with very few reads will have a large impact. 
 
 ```{r}
 # Not recommended for single cell data or other very sparse data!
-expected <- compute_expectations(counts_filtered, norm = TRUE) 
+expected <- computeExpectations(counts_filtered, norm = TRUE) 
 ```
 
 Another option is to give a vector of groups, in which case the expectation will be the average fraction of reads per peak within each group. If a group vector is provided and `norm` is set to `TRUE` then within each group the fraction of reads per peak is the average fraction of reads per peak in each sample. Otherwise, the within group fraction of reads per peak is based on the reads per peak within the sample divided by the total reads within each sample.
 
 ```{r}
-expected <- compute_expectations(counts_filtered, 
-                                 group = colData(counts_filtered)$Cell_Type) 
+expected <- computeExpectations(counts_filtered, 
+                                group = colData(counts_filtered)$Cell_Type) 
 ```
 
 To use your computed expectation vector, simply pass it to the `expectation` argument.
 
 ```{r, eval = FALSE}
-dev <- compute_deviations(object = counts_filtered, 
+dev <- computeDeviations(object = counts_filtered, 
                           annotations = motif_ix, 
                           expectation = expected)
 ```

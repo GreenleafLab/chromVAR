@@ -1,4 +1,4 @@
-#' get_jaspar_motifs
+#' getJasparMotifs
 #'
 #' Function to get motifs from JASPAR database
 #' @param species Which species?  use eithe jaspar code or latin name. 
@@ -11,10 +11,10 @@
 #' @export
 #' @examples 
 #' 
-#' motifs <- get_jaspar_motifs()
+#' motifs <- getJasparMotifs()
 #' 
 #' 
-get_jaspar_motifs <- function(species = "Homo sapiens", 
+getJasparMotifs <- function(species = "Homo sapiens", 
                               collection = "CORE", ...) {
   opts <- list()
   opts["species"] <- species

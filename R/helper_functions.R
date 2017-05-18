@@ -1,89 +1,89 @@
-#' get_fragments_per_peak
+#' getFragmentsPerPeak
 #' 
 #' @param object SummarizedExperiment, matrix, or Matrix object
 #' @return vector with sum across rows of counts assay within chromVARCounts
 #' @export
-#' @seealso \code{\link{get_fragments_per_sample}},
-#' \code{\link{get_total_fragments}}
+#' @seealso \code{\link{getFragmentsPerSample}},
+#' \code{\link{getTotalFragments}}
 #' @examples 
 #' # Load very small example counts (already filtered)
 #' data(mini_counts, package = "chromVAR")
 #' 
-#' frags_per_peak <- get_fragments_per_peak(mini_counts)
-setGeneric("get_fragments_per_peak", 
-           function(object) standardGeneric("get_fragments_per_peak"))
+#' frags_per_peak <- getFragmentsPerPeak(mini_counts)
+setGeneric("getFragmentsPerPeak", 
+           function(object) standardGeneric("getFragmentsPerPeak"))
 
-#' get_fragments_per_sample
+#' getFragmentsPerSample
 #' 
 #' @param object SummarizedExperiment, matrix, or Matrix object
 #' @return vector with sum across columns of counts assay within chromVARCounts
 #' @export
-#' @seealso \code{\link{get_fragments_per_peak}},
-#' \code{\link{get_total_fragments}}
+#' @seealso \code{\link{getFragmentsPerPeak}},
+#' \code{\link{getTotalFragments}}
 #' @examples 
 #' # Load very small example counts (already filtered)
 #' data(mini_counts, package = "chromVAR")
-#' frags_per_sample <- get_fragments_per_sample(mini_counts)
-setGeneric("get_fragments_per_sample", 
-           function(object) standardGeneric("get_fragments_per_sample"))
+#' frags_per_sample <- getFragmentsPerSample(mini_counts)
+setGeneric("getFragmentsPerSample", 
+           function(object) standardGeneric("getFragmentsPerSample"))
 
-#' get_total_fragments
+#' getTotalFragments
 #' 
 #' @param object SummarizedExperiment, matrix, or Matrix object
 #' @return sum of all counts within object
 #' @export
-#' @seealso \code{\link{get_fragments_per_sample}}, 
-#' \code{\link{get_fragments_per_peak}}
+#' @seealso \code{\link{getFragmentsPerSample}}, 
+#' \code{\link{getFragmentsPerPeak}}
 #' @examples 
 #' # Load very small example counts (already filtered)
 #' data(mini_counts, package = "chromVAR")
-#' total_frags <- get_total_fragments(mini_counts)
-setGeneric("get_total_fragments", 
-           function(object) standardGeneric("get_total_fragments"))
+#' total_frags <- getTotalFragments(mini_counts)
+setGeneric("getTotalFragments", 
+           function(object) standardGeneric("getTotalFragments"))
 
 
-#' @describeIn get_fragments_per_peak method for SummarizedExperiment object 
+#' @describeIn getFragmentsPerPeak method for SummarizedExperiment object 
 #' with counts assay
 #' @export
-setMethod("get_fragments_per_peak", c(object = "SummarizedExperiment"), 
+setMethod("getFragmentsPerPeak", c(object = "SummarizedExperiment"), 
           function(object) {
             Matrix::rowSums(counts(object))
           })
 
-#' @describeIn get_fragments_per_peak method for Matrix or matrix object
+#' @describeIn getFragmentsPerPeak method for Matrix or matrix object
 #' @export
-setMethod("get_fragments_per_peak", c(object = "MatrixOrmatrix"), 
+setMethod("getFragmentsPerPeak", c(object = "MatrixOrmatrix"), 
           function(object) {
             Matrix::rowSums(object)
           })
 
 
-#' @describeIn get_fragments_per_sample method for SummarizedExperiment object 
+#' @describeIn getFragmentsPerSample method for SummarizedExperiment object 
 #' with counts assay
 #' @export
-setMethod("get_fragments_per_sample", c(object = "SummarizedExperiment"), 
+setMethod("getFragmentsPerSample", c(object = "SummarizedExperiment"), 
           function(object) {
             Matrix::colSums(counts(object))
           })
 
-#' @describeIn get_fragments_per_sample method for Matrix or matrix object
+#' @describeIn getFragmentsPerSample method for Matrix or matrix object
 #' @export
-setMethod("get_fragments_per_sample", c(object = "MatrixOrmatrix"), 
+setMethod("getFragmentsPerSample", c(object = "MatrixOrmatrix"), 
           function(object) {
             Matrix::colSums(object)
           })
 
-#' @describeIn get_total_fragments method for SummarizedExperiment object 
+#' @describeIn getTotalFragments method for SummarizedExperiment object 
 #' with counts assay
 #' @export
-setMethod("get_total_fragments", c(object = "SummarizedExperiment"), 
+setMethod("getTotalFragments", c(object = "SummarizedExperiment"), 
           function(object) {
             sum(counts(object))
           })
 
-#' @describeIn get_total_fragments method for Matrix or matrix object
+#' @describeIn getTotalFragments method for Matrix or matrix object
 #' @export
-setMethod("get_total_fragments", c(object = "MatrixOrmatrix"), 
+setMethod("getTotalFragments", c(object = "MatrixOrmatrix"), 
           function(object) {
             sum(object)
           })

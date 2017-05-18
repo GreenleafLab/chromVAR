@@ -125,18 +125,18 @@
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># Load very small example counts (already filtered)</span>
-<span class='fu'>data</span>(<span class='no'>mini_counts</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
-<span class='no'>motifs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='get_jaspar_motifs.html'>get_jaspar_motifs</a></span>()[<span class='fu'>c</span>(<span class='fl'>1</span>,<span class='fl'>2</span>,<span class='fl'>4</span>,<span class='fl'>298</span>)] <span class='co'># only use a few for demo</span>
-<span class='fu'>library</span>(<span class='no'>motifmatchr</span>)
-<span class='fu'>library</span>(<span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)
-<span class='no'>motif_ix</span> <span class='kw'>&lt;-</span> <span class='fu'>match_motifs</span>(<span class='no'>motifs</span>, <span class='no'>mini_counts</span>,
-                         <span class='kw'>genome</span> <span class='kw'>=</span> <span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)
-
-<span class='co'># computing deviations</span>
-<span class='no'>dev1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='compute_deviations.html'>compute_deviations</a></span>(<span class='kw'>object</span> <span class='kw'>=</span> <span class='no'>mini_counts</span>,
-                         <span class='kw'>annotations</span> <span class='kw'>=</span> <span class='no'>motif_ix</span>[<span class='fl'>1</span>:<span class='fl'>2</span>,])</div><div class='output co'>#&gt; <span class='error'>Error in as.list.default(X): no method for coercing this S4 class to a vector</span></div><div class='input'><span class='no'>dev2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='compute_deviations.html'>compute_deviations</a></span>(<span class='kw'>object</span> <span class='kw'>=</span> <span class='no'>mini_counts</span>,
-                         <span class='kw'>annotations</span> <span class='kw'>=</span> <span class='no'>motif_ix</span>[<span class='fl'>3</span>:<span class='fl'>4</span>,])</div><div class='output co'>#&gt; <span class='error'>Error in as.list.default(X): no method for coercing this S4 class to a vector</span></div><div class='input'><span class='no'>dev</span> <span class='kw'>&lt;-</span> <span class='fu'>rbind</span>(<span class='no'>dev1</span>, <span class='no'>dev2</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object &#39;dev1&#39; not found</span></div></pre>
+    <pre class="examples"><div class='input'><span class='co'># Load very small example results from computeDeviations</span>
+<span class='fu'>data</span>(<span class='no'>mini_dev</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
+<span class='fu'>rbind</span>(<span class='no'>mini_dev</span>, <span class='no'>mini_dev</span>) <span class='co'>#concatenate two of the same tother</span></div><div class='output co'>#&gt; class: chromVARDeviations 
+#&gt; dim: 6 35 
+#&gt; metadata(0):
+#&gt; assays(2): z deviations
+#&gt; rownames(6): MA0599.1_KLF5 MA0107.1_RELA ... MA0107.1_RELA
+#&gt;   MA0137.3_STAT1
+#&gt; rowData names(3): name fractionMatches fractionBackgroundOverlap
+#&gt; colnames(35): singles-GM12878-140905-1 singles-GM12878-140905-2 ...
+#&gt;   singles-H1ESC-140820-24 singles-H1ESC-140820-25
+#&gt; colData names(2): Cell_Type depth</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

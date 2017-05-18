@@ -21,30 +21,31 @@ library(BSgenome.Hsapiens.UCSC.hg19)
 register(MulticoreParam(8))
 data(example_counts, package = "chromVAR")
 set.seed(2017)
-example_counts <- add_gc_bias(example_counts, genome = BSgenome.Hsapiens.UCSC.hg19)
-counts_filtered <- filter_samples(example_counts, min_depth = 1500, min_in_peaks = 0.15, shiny = FALSE)
-counts_filtered <- filter_peaks(counts_filtered)
-motifs <- get_jaspar_motifs()
-motif_ix <- match_motifs(motifs, counts_filtered, genome = BSgenome.Hsapiens.UCSC.hg19)
-dev <- compute_deviations(object = counts_filtered, 
+example_counts <- addGCBias(example_counts, genome = BSgenome.Hsapiens.UCSC.hg19)
+counts_filtered <- filterSamples(example_counts, min_depth = 1500, 
+                                 min_in_peaks = 0.15, shiny = FALSE)
+counts_filtered <- filterPeaks(counts_filtered)
+motifs <- getJasparMotifs()
+motif_ix <- matchMotifs(motifs, counts_filtered, genome = BSgenome.Hsapiens.UCSC.hg19)
+dev <- computeDeviations(object = counts_filtered, 
                                  annotations = motif_ix)
 ```
 
 ## Variability
 
-The first application is simply to compute the variability of each motif or annotation across the cells or samples of interest.  The function `plot_variability` 
+The first application is simply to compute the variability of each motif or annotation across the cells or samples of interest.  The function `plotVariability` 
 
 ```{r}
-variability <- compute_variability(dev)
-plot_variability(variability, use_plotly = FALSE)
+variability <- computeVariability(dev)
+plotVariability(variability, use_plotly = FALSE)
 ```
 
 ## Clustering
 
-We can also use the bias corrected deviations to cluster the samples. The function get_sample_correlation first removes highly correlated annotations and low variability annotations and then computes the correlation between the cells for the remaining annotations.
+We can also use the bias corrected deviations to cluster the samples. The function `getSampleCorrelation` first removes highly correlated annotations and low variability annotations and then computes the correlation between the cells for the remaining annotations.
 
 ```{r, fig.width=5}
-sample_cor <- get_sample_correlation(dev)
+sample_cor <- getSampleCorrelation(dev)
 
 library(pheatmap)
 pheatmap(as.dist(sample_cor), 
@@ -55,16 +56,17 @@ pheatmap(as.dist(sample_cor),
 
 ## Cell / sample similarity
 
-We can also use tSNE for looking at cell similarity.  The function `deviations_tsne` performs tsne and results a data.frame with the results. If running in an interactive session, shiny can be set to TRUE to load up a shiny gadget for exploring parameters. In general, with 100's of cells a perplexity of around 30-50 might make sense. In this example, we have few cells so we are bounded in how high the perplexity can be set-- we will use 10 here. 
+We can also use tSNE for looking at cell similarity.  The function `deviationsTsne` performs tsne and results a data.frame with the results. If running in an interactive session, shiny can be set to TRUE to load up a shiny gadget for exploring parameters. In general, with 100's of cells a perplexity of around 30-50 might make sense. In this example, we have few cells so we are bounded in how high the perplexity can be set-- we will use 10 here. 
 
 ```{r}
-tsne_results <- deviations_tsne(dev, threshold = 1.5, perplexity = 10, shiny = FALSE)
+tsne_results <- deviationsTsne(dev, threshold = 1.5, perplexity = 10, 
+                               shiny = FALSE)
 ```
 
-To plot the results, `plot_deviations_tsne` can be used.  If running in an interactive session or an interactive Rmarkdown document, shiny can be set to TRUE to generate a shiny widget.  Here we will show static results.
+To plot the results, `plotDeviationsTsne` can be used.  If running in an interactive session or an interactive Rmarkdown document, shiny can be set to TRUE to generate a shiny widget.  Here we will show static results.
 
 ```{r}
-tsne_plots <- plot_deviations_tsne(dev, tsne_results, annotation = "TEAD3", 
+tsne_plots <- plotDeviationsTsne(dev, tsne_results, annotation = "TEAD3", 
                                    sample_column = "Cell_Type", shiny = FALSE)
 tsne_plots[[1]]
 tsne_plots[[2]]
@@ -72,20 +74,20 @@ tsne_plots[[2]]
 
 ## Differential accessibility and variability
 
-The `differential_deviations` function determines whether there is a significant difference between the bias corrected deviations for a given annotation between different groups.  The groups can be specified by giving the column name of a column in the colData of the dev object or a vector of group assignments.
+The `differentialDeviations` function determines whether there is a significant difference between the bias corrected deviations for a given annotation between different groups. The groups can be specified by giving the column name of a column in the colData of the dev object or a vector of group assignments.
 
 
 ```{r}
-diff_acc <- differential_deviations(dev, "Cell_Type")
+diff_acc <- differentialDeviations(dev, "Cell_Type")
 
 head(diff_acc)
 
 ```
 
-The `differential_variability` function determines whether there is a significant difference between the variability of any of the annotations between different groups.
+The `differentialVariability` function determines whether there is a significant difference between the variability of any of the annotations between different groups.
 
 ```{r}
-diff_var <- differential_variability(dev, "Cell_Type")
+diff_var <- differentialVariability(dev, "Cell_Type")
 
 head(diff_var)
 
@@ -94,10 +96,10 @@ head(diff_var)
 
 ## Motif / kmer similarity
 
-We can also perform tsne for motif similarity rather than cell similarity, by specifying `what = "annotations"` to the `deviations_tsne` function.  
+We can also perform tsne for motif similarity rather than cell similarity, by specifying `what = "annotations"` to the `deviationsTsne` function.  
 
 ```{r}
-inv_tsne_results <- deviations_tsne(dev, threshold = 1.5, perplexity = 8, 
+inv_tsne_results <- deviationsTsne(dev, threshold = 1.5, perplexity = 8, 
                                     what = "annotations", shiny = FALSE)
 
 ggplot(inv_tsne_results, aes(x = Dim1, y = Dim2)) + geom_point() + 
@@ -107,31 +109,31 @@ ggplot(inv_tsne_results, aes(x = Dim1, y = Dim2)) + geom_point() +
 
 ## Kmers and sequence specificity of variation
 
-By using kmers as the annnotation, we can use the kmers to identify the precise nucleotides necessary for chromatin accessibility variability.  The `deviations_covariability` function returns a normalized covariance between the bias corrected deviations of any pair of annotations. We will use 6mers here in the interest of computational time, but in general 7mers yield higher variability and are better starting points for assembling de novo motifs (see next section).  
+By using kmers as the annnotation, we can use the kmers to identify the precise nucleotides necessary for chromatin accessibility variability.  The `deviationsCovariability` function returns a normalized covariance between the bias corrected deviations of any pair of annotations. We will use 6mers here in the interest of computational time, but in general 7mers yield higher variability and are better starting points for assembling de novo motifs (see next section).  
 
 ```{r}
-kmer_ix <- match_kmers(6, counts_filtered, genome = BSgenome.Hsapiens.UCSC.hg19)
-kmer_dev <- compute_deviations(counts_filtered, kmer_ix)
+kmer_ix <- matchKmers(6, counts_filtered, genome = BSgenome.Hsapiens.UCSC.hg19)
+kmer_dev <- computeDeviations(counts_filtered, kmer_ix)
 
-kmer_cov <- deviations_covariability(kmer_dev)
+kmer_cov <- deviationsCovariability(kmer_dev)
 
-plot_kmer_mismatch("CATTCC",kmer_cov)
+plotKmerMismatch("CATTCC",kmer_cov)
 ```
 
 
 ## De novo kmer assembly
 
-We can use the `assemble_kmers` function to build de novo motifs using the kmer deviation results.  The function goes iteratively through the most variable kmers and uses the normalized covariance of the bias corrected deviations for closely related kmers to weight each nucleotide in the motif.  
+We can use the `assembleKmers` function to build de novo motifs using the kmer deviation results. The function goes iteratively through the most variable kmers and uses the normalized covariance of the bias corrected deviations for closely related kmers to weight each nucleotide in the motif.  
 
 ```{r}
-de_novos <- assemble_kmers(kmer_dev, progress = FALSE) #no progress bar
+de_novos <- assembleKmers(kmer_dev, progress = FALSE) #no progress bar
 de_novos
 ```
 
-We can use the `pwm_distance` function to see how close our de novo motifs match known motifs.  `pwm_distance` returns a list with three matrices- 'dist' has the distance between each pair of motifs, 'strand' the strand of the motif for the match, and 'offset' the offset between the motifs. 
+We can use the `pwmDistance` function to see how close our de novo motifs match known motifs. `pwmDistance` returns a list with three matrices- 'dist' has the distance between each pair of motifs, 'strand' the strand of the motif for the match, and 'offset' the offset between the motifs. 
 
 ```{r}
-dist_to_known <- pwm_distance(de_novos, motifs)
+dist_to_known <- pwmDistance(de_novos, motifs)
 
 closest_match1 <- which.min(dist_to_known$dist[1,])
 dist_to_known$strand[1,closest_match1]
@@ -163,7 +165,7 @@ The result is a matrix with Z-scores for the variability synergy of each possibl
 An extreme synergy score suggests the possibility of cooperative or competitive binding between the factors that bind the motif. However, if the two factors simply tend to be co-expressed or oppositely expressed, then the synergy score could also be extreme.  It can thus be helpful to look at the correlation between the deviations for the two motifs, in particular the correlation between the deviations for the peak sets that only have one or only the other motif.  There is a function to compute this correlation:
 
 ```{r}
-get_annotation_correlation(counts_filtered, motif_ix[,c(83,24,20)])
+getAnnotationCorrelation(counts_filtered, motif_ix[,c(83,24,20)])
 ```
 
 ## Session Info

@@ -33,30 +33,6 @@
 NULL
 # > NULL
 
-#' human_pwms_v1
-#'
-#' Collection of human pwms
-#' @docType data
-#' @keywords datasets
-#' @name human_pwms_v1
-#' @usage data(human_pwms_v1)
-#' @return \code{\link[TFBSTools]{XMatrixList}} of length 1764
-#' @examples 
-#' data(human_pwms_v1)
-NULL
-
-#' mouse_pwms_v1
-#'
-#' Collection of mouse pwms
-#' @docType data
-#' @keywords datasets
-#' @name mouse_pwms_v1
-#' @usage data(mouse_pwms_v1)
-#' @return \code{\link[TFBSTools]{XMatrixList}} of length 1346
-#' @examples 
-#' data(mouse_pwms_v1)
-NULL
-
 #' example_counts
 #' 
 #' Very small sample data set for trying out chromVAR
@@ -77,10 +53,50 @@ NULL
 #' @name mini_counts
 #' @usage data(mini_counts)
 #' @return \code{\link[SummarizedExperiment]{RangedSummarizedExperiment}}
+#' @seealso \code{\link{mini_dev}}, \code{\link{mini_ix}}
 #' @examples 
 #' data(mini_counts)
 NULL
 
+#' mini_ix
+#' 
+#' Tiny sample annotation object for use in chromVAR examples
+#' Result from running matchMotifs(example_motifs,mini_counts,"hg19) on 
+#' example_motifs from motifmatchr package and mini_counts from this package
+#' @docType data
+#' @keywords datasets
+#' @name mini_ix
+#' @usage data(mini_ix)
+#' @return \code{\link[SummarizedExperiment]{RangedSummarizedExperiment}}
+#' @seealso \code{\link{mini_counts}}, \code{\link{mini_dev}}
+#' @examples 
+#' data(mini_ix)
+NULL
+
+
+#' mini_dev
+#' 
+#' Tiny sample chromVARDeviations object resulting from computeDeviations
+#' Result from running computeDeviations(mini_counts, mini_ix) on 
+#' mini_ix and mini_counts data from this package
+#' @docType data
+#' @keywords datasets
+#' @name mini_dev
+#' @usage data(mini_dev)
+#' @return \code{\link{chromVARDeviations-class}}
+#' @seealso \code{\link{computeDeviations}}, \code{\link{mini_counts}},
+#' \code{\link{mini_ix}}
+#' @examples 
+#' data(mini_dev)
+NULL
+
+
+
+
 .onUnload <- function(libpath) {
   library.dynam.unload("chromVAR", libpath)
 }
+
+
+
+

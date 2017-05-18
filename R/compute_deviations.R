@@ -1,6 +1,6 @@
 # Generic Functions ------------------------------------------------------------
 
-#' compute_expectations
+#' computeExpectations
 #'
 #' @param object SummarizedExperiment
 #' @param norm weight all samples equally?
@@ -29,42 +29,41 @@
 #' data(mini_counts, package = "chromVAR")
 #'
 #' # Compute expectations
-#' expectations <- compute_expectations(mini_counts)
+#' expectations <- computeExpectations(mini_counts)
 #'
-setGeneric("compute_expectations",
-           function(object, ...) standardGeneric("compute_expectations"))
+setGeneric("computeExpectations",
+           function(object, ...) standardGeneric("computeExpectations"))
 
-#' compute_deviations
+#' computeDeviations
 #'
 #' Computes deviations in chromatin accessibility across sets of annotations
 #' @param object chromVARCounts object
 #' @param annotations chromVARAnnotations object
 #' @param background_peaks (optional) background peaks matrix computed using
-#' \code{\link{get_background_peaks}}, computed internally with default
+#' \code{\link{getBackgroundPeaks}}, computed internally with default
 #' paramaters if not provided
 #' @param expectation (optional) expectations computed using
-#' \code{\link{compute_expectations}}, computed automatically if not provided
+#' \code{\link{computeExpectations}}, computed automatically if not provided
 #' @param ... additional arguments
 #' @details multiprocessing using \code{\link[BiocParallel]{bplapply}}
 #' @return  \code{\link{chromVARDeviations-class}}, which inherits from
 #' SummarizedExperiment, and has two assays: deviations and deviation scores.
-#' @seealso  \code{\link{compute_variability}}, \code{\link{plot_variability}}
+#' @seealso  \code{\link{computeVariability}}, \code{\link{plotVariability}}
 #' @export
 #' @author Alicia Schep
 #' @examples
+#' # Register BiocParallel
+#' BiocParallel::register(BiocParallel::SerialParam())
 #' # Load very small example counts (already filtered)
 #' data(mini_counts, package = "chromVAR")
-#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo
-#' library(motifmatchr)
-#' library(BSgenome.Hsapiens.UCSC.hg19)
-#' motif_ix <- match_motifs(motifs, mini_counts,
-#'                          genome = BSgenome.Hsapiens.UCSC.hg19)
+#' # load annotation matrix; result from matchMotifs
+#' data(mini_ix, package = "chromVAR")
 #'
 #' # computing deviations
-#' dev <- compute_deviations(object = mini_counts,
-#'                          annotations = motif_ix)
-setGeneric("compute_deviations",
-           function(object, annotations, ...) standardGeneric("compute_deviations"))
+#' dev <- computeDeviations(object = mini_counts,
+#'                          annotations = mini_ix)
+setGeneric("computeDeviations",
+           function(object, annotations, ...) standardGeneric("computeDeviations"))
 
 
 #' deviations
@@ -77,46 +76,27 @@ setGeneric("compute_deviations",
 #' @return matrix of bias corrected deviations
 #' @author Alicia Schep
 #' @examples
-#' # Load very small example counts (already filtered)
-#' data(mini_counts, package = "chromVAR")
-#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo
-#' library(motifmatchr)
-#' library(BSgenome.Hsapiens.UCSC.hg19)
-#' motif_ix <- match_motifs(motifs, mini_counts,
-#'                          genome = BSgenome.Hsapiens.UCSC.hg19)
-#'
-#' # computing deviations
-#' dev <- compute_deviations(object = mini_counts,
-#'                          annotations = motif_ix)
-#' bias_corrected_deviations <- deviations(dev)
+#' # Load very small example results from computeDeviations
+#' data(mini_dev, package = "chromVAR")
+#' bias_corrected_deviations <- deviations(mini_dev)
 setGeneric("deviations", function(object) standardGeneric("deviations"))
 
-#' deviation_scores
+#' deviationScores
 #'
 #' Accessor for deviation Z-scores from \code{\link{chromVARDeviations-class}} object
-#' @rdname deviation_scores
-#' @name deviation_scores
-#' @aliases deviation_scores,chromVARDeviations-method
+#' @rdname deviationScores
+#' @name deviationScores
+#' @aliases deviationScores,chromVARDeviations-method
 #' @param object chromVARDeviations object
-#' @return The deviation_scores and deviations accessors both return matrices.
+#' @return The deviationScores and deviations accessors both return matrices.
 #' @return matrix of deviation Z-scores
 #' @author Alicia Schep
 #' @examples
-#' # Load very small example counts (already filtered)
-#' data(mini_counts, package = "chromVAR")
-#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo
-#' library(motifmatchr)
-#' library(BSgenome.Hsapiens.UCSC.hg19)
-#' motif_ix <- match_motifs(motifs, mini_counts,
-#'                          genome = BSgenome.Hsapiens.UCSC.hg19)
-#'
-#' # computing deviations
-#' dev <- compute_deviations(object = mini_counts,
-#'                          annotations = motif_ix)
-
-#' scores <- deviation_scores(dev)
-setGeneric("deviation_scores",
-           function(object) standardGeneric("deviation_scores"))
+#' # Load very small example results from computeDeviations
+#' data(mini_dev, package = "chromVAR")
+#' scores <- deviationScores(mini_dev)
+setGeneric("deviationScores",
+           function(object) standardGeneric("deviationScores"))
 
 # Accessors --------------------------------------------------------------------
 
@@ -127,9 +107,9 @@ setMethod("deviations", c(object = "chromVARDeviations"),
             assays(object)$deviations
           })
 
-#' @rdname deviation_scores
+#' @rdname deviationScores
 #' @export
-setMethod("deviation_scores", c(object = "chromVARDeviations"),
+setMethod("deviationScores", c(object = "chromVARDeviations"),
           function(object) {
             assays(object)$z
           })
@@ -144,20 +124,9 @@ setMethod("deviation_scores", c(object = "chromVARDeviations"),
 #' @author Alicia Schep
 #' @seealso \code{\link{chromVARDeviations-class}}
 #' @examples
-#' # Load very small example counts (already filtered)
-#' data(mini_counts, package = "chromVAR")
-#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo
-#' library(motifmatchr)
-#' library(BSgenome.Hsapiens.UCSC.hg19)
-#' motif_ix <- match_motifs(motifs, mini_counts,
-#'                          genome = BSgenome.Hsapiens.UCSC.hg19)
-#'
-#' # computing deviations
-#' dev1 <- compute_deviations(object = mini_counts,
-#'                          annotations = motif_ix[1:2,])
-#' dev2 <- compute_deviations(object = mini_counts,
-#'                          annotations = motif_ix[3:4,])
-#' dev <- rbind(dev1, dev2)
+#' # Load very small example results from computeDeviations
+#' data(mini_dev, package = "chromVAR")
+#' rbind(mini_dev, mini_dev) #concatenate two of the same tother
 setMethod("rbind", "chromVARDeviations",
           function(..., deparse.level=1){
             inputs = list(...)
@@ -196,7 +165,7 @@ setMethod("rbind", "chromVARDeviations",
 #' cbind method for chromVARDeviations
 #'
 #' cbind returns an error when applied to chromVARDeviations because results for
-#' all cells or samples should originate from same compute_deviations computation
+#' all cells or samples should originate from same computeDeviations computation
 #' @param ... chromVARDeviations object to be combined
 #' @param deparse.level See ?base::rbind for a description of this argument.
 #' @return chromVARDeviations object
@@ -208,9 +177,9 @@ setMethod("cbind", "chromVARDeviations",
             stop("Can't concatenate chromVARDeviations horizontally")
           })
 
-#' @describeIn compute_expectations method for Matrix or matrix
+#' @describeIn computeExpectations method for Matrix or matrix
 #' @export
-setMethod("compute_expectations", c(object = "MatrixOrmatrix"),
+setMethod("computeExpectations", c(object = "MatrixOrmatrix"),
           function(object,
                    norm = FALSE, group = NULL) {
             if (!is.null(group)){
@@ -224,10 +193,10 @@ setMethod("compute_expectations", c(object = "MatrixOrmatrix"),
           })
 
 
-#' @describeIn compute_expectations method for SummarizedExperiment with counts
+#' @describeIn computeExpectations method for SummarizedExperiment with counts
 #' slot
 #' @export
-setMethod("compute_expectations", c(object = "SummarizedExperiment"),
+setMethod("computeExpectations", c(object = "SummarizedExperiment"),
           function(object,
                    norm = FALSE,
                    group = NULL) {
@@ -247,16 +216,16 @@ setMethod("compute_expectations", c(object = "SummarizedExperiment"),
           })
 
 
-#' @describeIn compute_deviations object and annotations are SummarizedExperiment
+#' @describeIn computeDeviations object and annotations are SummarizedExperiment
 #' @export
-setMethod("compute_deviations", c(object = "SummarizedExperiment",
+setMethod("computeDeviations", c(object = "SummarizedExperiment",
                                   annotations = "SummarizedExperiment"),
           function(object, annotations,
-                   background_peaks = get_background_peaks(object),
-                   expectation = compute_expectations(object)) {
+                   background_peaks = getBackgroundPeaks(object),
+                   expectation = computeExpectations(object)) {
             object <- counts_check(object)
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(annotation_matches(annotations))
+            peak_indices <- convert_to_ix_list(annotationMatches(annotations))
             compute_deviations_core(counts(object),
                                     peak_indices,
                                     background_peaks,
@@ -265,14 +234,14 @@ setMethod("compute_deviations", c(object = "SummarizedExperiment",
                                     rowData = colData(annotations))
           })
 
-#' @describeIn compute_deviations object is SummarizedExperiment,
+#' @describeIn computeDeviations object is SummarizedExperiment,
 #' annotations are Matrix
 #' @export
-setMethod("compute_deviations", c(object = "SummarizedExperiment",
+setMethod("computeDeviations", c(object = "SummarizedExperiment",
                                   annotations = "MatrixOrmatrix"),
           function(object, annotations,
-                   background_peaks = get_background_peaks(object),
-                   expectation = compute_expectations(object)) {
+                   background_peaks = getBackgroundPeaks(object),
+                   expectation = computeExpectations(object)) {
             stopifnot(canCoerce(annotations, "lMatrix"))
             annotations <- as(annotations, "lMatrix")
             object <- counts_check(object)
@@ -285,15 +254,15 @@ setMethod("compute_deviations", c(object = "SummarizedExperiment",
           })
 
 
-#' @describeIn compute_deviations object is SummarizedExperiment,
+#' @describeIn computeDeviations object is SummarizedExperiment,
 #' annotations are list
 #' @export
-setMethod("compute_deviations", c(object = "SummarizedExperiment",
+setMethod("computeDeviations", c(object = "SummarizedExperiment",
                                   annotations = "list"),
           function(object,
                    annotations,
-                   background_peaks = get_background_peaks(object),
-                   expectation = compute_expectations(object)) {
+                   background_peaks = getBackgroundPeaks(object),
+                   expectation = computeExpectations(object)) {
             object <- counts_check(object)
             compute_deviations_core(counts(object),
                                     annotations,
@@ -302,15 +271,15 @@ setMethod("compute_deviations", c(object = "SummarizedExperiment",
                                     colData = colData(object))
           })
 
-#' @describeIn compute_deviations object is SummarizedExperiment,
+#' @describeIn computeDeviations object is SummarizedExperiment,
 #' annotations are missing
 #' @export
-setMethod("compute_deviations", c(object = "SummarizedExperiment",
+setMethod("computeDeviations", c(object = "SummarizedExperiment",
                                   annotations = "missingOrNULL"),
           function(object,
                    annotations,
-                   background_peaks = get_background_peaks(object),
-                   expectation = compute_expectations(object)) {
+                   background_peaks = getBackgroundPeaks(object),
+                   expectation = computeExpectations(object)) {
             message(paste0("Annotations not provided, ",
                            "so chromVAR being run on individual peaks..."))
             object <- counts_check(object)
@@ -322,28 +291,28 @@ setMethod("compute_deviations", c(object = "SummarizedExperiment",
                                     colData = colData(object))
           })
 
-#' @describeIn compute_deviations object and annotations are SummarizedExperiment
+#' @describeIn computeDeviations object and annotations are SummarizedExperiment
 #' @export
-setMethod("compute_deviations", c(object = "MatrixOrmatrix",
+setMethod("computeDeviations", c(object = "MatrixOrmatrix",
                                   annotations = "SummarizedExperiment"),
           function(object,
                    annotations,
                    background_peaks,
-                   expectation = compute_expectations(object)) {
+                   expectation = computeExpectations(object)) {
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(annotation_matches(annotations))
+            peak_indices <- convert_to_ix_list(annotationMatches(annotations))
             compute_deviations_core(object, peak_indices, background_peaks,
                                     expectation,
                                     rowData = colData(annotations))
           })
 
-#' @describeIn compute_deviations object is SummarizedExperiment,
+#' @describeIn computeDeviations object is SummarizedExperiment,
 #' annotations are Matrix
 #' @export
-setMethod("compute_deviations", c(object = "MatrixOrmatrix",
+setMethod("computeDeviations", c(object = "MatrixOrmatrix",
                                   annotations = "MatrixOrmatrix"),
           function(object, annotations, background_peaks,
-                   expectation = compute_expectations(object)) {
+                   expectation = computeExpectations(object)) {
             stopifnot(canCoerce(annotations, "lMatrix"))
             annotations <- as(annotations, "lMatrix")
             peak_indices <- convert_to_ix_list(annotations)
@@ -354,25 +323,25 @@ setMethod("compute_deviations", c(object = "MatrixOrmatrix",
           })
 
 
-#' @describeIn compute_deviations object is SummarizedExperiment,
+#' @describeIn computeDeviations object is SummarizedExperiment,
 #' annotations are list
 #' @export
-setMethod("compute_deviations", c(object = "MatrixOrmatrix",
+setMethod("computeDeviations", c(object = "MatrixOrmatrix",
                                   annotations = "list"),
           function(object, annotations, background_peaks,
-                   expectation = compute_expectations(object)) {
+                   expectation = computeExpectations(object)) {
             compute_deviations_core(object, annotations,
                                     background_peaks, expectation)
           })
 
-#' @describeIn compute_deviations object is SummarizedExperiment,
+#' @describeIn computeDeviations object is SummarizedExperiment,
 #' annotations are missing
 #' @export
-setMethod("compute_deviations", c(object = "MatrixOrmatrix",
+setMethod("computeDeviations", c(object = "MatrixOrmatrix",
                                   annotations = "missingOrNULL"),
           function(object, annotations,
                    background_peaks,
-                   expectation = compute_expectations(object)) {
+                   expectation = computeExpectations(object)) {
             message(paste0("Annotations not provided, ",
                            "so chromVAR being run on individual peaks..."))
             peak_indices <- split(seq_len(nrow(object)), seq_len(nrow(object)))
@@ -387,7 +356,7 @@ compute_deviations_core <- function(counts_mat,
                                     rowData = NULL,
                                     colData = NULL) {
 
-  if (min(get_fragments_per_peak(counts_mat)) <= 0)
+  if (min(getFragmentsPerPeak(counts_mat)) <= 0)
     stop("All peaks must have at least one fragment in one sample")
 
   stopifnot(nrow(counts_mat) == nrow(background_peaks))
@@ -423,6 +392,10 @@ compute_deviations_core <- function(counts_mat,
 
   colnames(z) <- colnames(dev) <- sample_names
 
+  rowData$fractionMatches <- vapply(results, function(x) x[["matches"]], 0)
+  rowData$fractionBackgroundOverlap <- vapply(results, function(x) x[["overlap"]], 
+                                              0)
+  
   out <- SummarizedExperiment(assays = list(deviations = dev, z = z),
                               colData = colData,
                               rowData = rowData)
@@ -439,13 +412,13 @@ compute_expectations_core <- function(object, norm = FALSE, group = NULL) {
 
   if (is.null(group)) {
     if (norm) {
-      expectation <- rowSums(object/matrix(get_fragments_per_sample(object),
+      expectation <- rowSums(object/matrix(getFragmentsPerSample(object),
                                            nrow = nrow(object),
                                            ncol = ncol(object),
                                            byrow = TRUE))
     } else {
-      expectation <- get_fragments_per_peak(object) /
-        get_total_fragments(object)
+      expectation <- getFragmentsPerPeak(object) /
+        getTotalFragments(object)
     }
   } else {
     n_anno <- length(levels(group))
@@ -454,7 +427,7 @@ compute_expectations_core <- function(object, norm = FALSE, group = NULL) {
       for (i in seq_len(n_anno)) {
         ix <- which(group == levels(group)[i])
         mat[, i] <- rowSums(object[, ix] /
-                              matrix(get_fragments_per_sample(object)[ix],
+                              matrix(getFragmentsPerSample(object)[ix],
                                      nrow = nrow(object),
                                      ncol = length(ix),
                                      byrow = TRUE))
@@ -496,29 +469,36 @@ compute_deviations_single <- function(peak_set,
     sampled_expected <- outer(expectation[background_peaks[peak_set, ]],
                               fragments_per_sample)
     sampled_deviation <- (sampled - sampled_expected)/sampled_expected
+    bg_overlap <- sum(background_peaks[peak_set,] == peak_set[1]) / 
+      ncol(background_peaks)
   } else {
     tf_vec <- sparseMatrix(j = peak_set,
                            i = rep(1, tf_count),
                            x = 1,
                            dims = c(1,
                                     nrow(counts_mat)))
-
+    
     observed <- as.vector(tf_vec %*% counts_mat)
-
+    
     expected <- as.vector(tf_vec %*% expectation %*% fragments_per_sample)
     observed_deviation <- (observed - expected)/expected
-
+    
     niterations <- ncol(background_peaks)
-    sample_mat <- sparseMatrix(j = as.vector(background_peaks[peak_set, seq_len(niterations)]),
-                               i = rep(seq_len(niterations), each = tf_count),
-                               x = 1,
-                               dims = c(niterations,
-                                        nrow(counts_mat)))
-
+    sample_mat <-
+      sparseMatrix(j = 
+                     as.vector(background_peaks[peak_set, 
+                                                seq_len(niterations)]),
+                   i = rep(seq_len(niterations), each = tf_count),
+                   x = 1,
+                   dims = c(niterations,
+                            nrow(counts_mat)))
+    
     sampled <- as.matrix(sample_mat %*% counts_mat)
-    sampled_expected <- as.matrix(sample_mat %*% expectation %*% fragments_per_sample)
+    sampled_expected <- as.matrix(sample_mat %*% expectation %*% 
+                                    fragments_per_sample)
     sampled_deviation <- (sampled - sampled_expected)/sampled_expected
 
+    bg_overlap <- mean(sample_mat %*% t(tf_vec)) / tf_count
   }
 
   fail_filter <- which(expected < threshold)
@@ -541,9 +521,12 @@ compute_deviations_single <- function(peak_set,
                 expected = expected,
                 sampled_expected = sampled_expected,
                 observed_deviation = observed_deviation,
-                sampled_deviation = sampled_deviation)
+                sampled_deviation = sampled_deviation,
+                matches = tf_count / nrow(counts_mat),
+                overlap = bg_overlap)
   } else {
-    out <- list(z = z, dev = normdev)
+    out <- list(z = z, dev = normdev, matches = tf_count / nrow(counts_mat),
+                overlap = bg_overlap)
   }
   return(out)
 }

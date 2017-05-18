@@ -1,4 +1,4 @@
-#' get_cis_groups
+#' getCisGroups
 #' 
 #' Function for grouping peaks based on proximity along chromosomes
 #' @param object GenomicRanges or RangedSummarizedExperiment
@@ -7,28 +7,28 @@
 #' @param ... additional arguments
 #' @export
 #' @author Alicia Schep
-#' @return SummarizedExperiment with annotation_matches assay storing which peaks 
+#' @return SummarizedExperiment with annotationMatches assay storing which peaks 
 #' belong to which groups
 #' @examples 
 #' 
 #' # Load very small example counts (already filtered)
 #' data(mini_counts, package = "chromVAR")
 #' mini_counts <- sort(mini_counts)
-#' cisg <- get_cis_groups(mini_counts)
-setGeneric("get_cis_groups", 
-           function(object, ...) standardGeneric("get_cis_groups"))
+#' cisg <- getCisGroups(mini_counts)
+setGeneric("getCisGroups", 
+           function(object, ...) standardGeneric("getCisGroups"))
 
 
-#' @describeIn get_cis_groups method for RangedSummarizedExperiment
+#' @describeIn getCisGroups method for RangedSummarizedExperiment
 #' @export
-setMethod("get_cis_groups", c(object = "RangedSummarizedExperiment"), 
+setMethod("getCisGroups", c(object = "RangedSummarizedExperiment"), 
           function(object, grpsize = 25, stepsize = 10) {
             get_cis_groups_core(rowRanges(object), grpsize, stepsize)
           })
 
-#' @describeIn get_cis_groups method for GenomicRanges
+#' @describeIn getCisGroups method for GenomicRanges
 #' @export
-setMethod("get_cis_groups", c(object = "GenomicRanges"), 
+setMethod("getCisGroups", c(object = "GenomicRanges"), 
           function(object, grpsize = 25, stepsize = 10) {
             get_cis_groups_core(object, grpsize, stepsize)
           })
@@ -53,7 +53,7 @@ get_cis_groups_core <- function(peaks, grpsize = 25, stepsize = 10) {
       return(list())
     }
   }))
-  out <- get_annotations(out, rowRanges = peaks)
+  out <- getAnnotations(out, rowRanges = peaks)
   return(out)
 }
 

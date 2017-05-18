@@ -1,4 +1,4 @@
-#' make_bias_bins
+#' makeBiasBins
 #'
 #' Makes bins based on fragment counts
 #' @param object fragment counts stored as RangedSummarizedExperiment, 
@@ -16,40 +16,40 @@
 #' @examples
 #' # Load very small example counts (already filtered)
 #' data(mini_counts, package = "chromVAR")
-#' bb <- make_bias_bins(mini_counts)
-setGeneric("make_bias_bins", 
-           function(object, ...) standardGeneric("make_bias_bins"))
+#' bb <- makeBiasBins(mini_counts)
+setGeneric("makeBiasBins", 
+           function(object, ...) standardGeneric("makeBiasBins"))
 
-#' @describeIn make_bias_bins method for SummarizedExperiment
+#' @describeIn makeBiasBins method for SummarizedExperiment
 #' @export
-setMethod(make_bias_bins, c(object = "SummarizedExperiment"), 
+setMethod(makeBiasBins, c(object = "SummarizedExperiment"), 
           function(object, 
                    bias = rowData(object)$bias, nbins = 25, frac = 0.3) {
             object <- counts_check(object)
-            make_bias_bins_core(object, bias, nbins, frac)
+            makeBiasBins_core(object, bias, nbins, frac)
           })
 
-#' @describeIn make_bias_bins method for RangedSummarizedExperiment
+#' @describeIn makeBiasBins method for RangedSummarizedExperiment
 #' @export
-setMethod(make_bias_bins, c(object = "RangedSummarizedExperiment"), 
+setMethod(makeBiasBins, c(object = "RangedSummarizedExperiment"), 
           function(object, 
                    bias = rowRanges(object)$bias, nbins = 25, frac = 0.3) {
             object <- counts_check(object)
-            make_bias_bins_core(object, bias, nbins, frac)
+            makeBiasBins_core(object, bias, nbins, frac)
           })
 
-#' @describeIn make_bias_bins method for Matrix or matrix
+#' @describeIn makeBiasBins method for Matrix or matrix
 #' @export
-setMethod(make_bias_bins, c(object = "MatrixOrmatrix"), 
+setMethod(makeBiasBins, c(object = "MatrixOrmatrix"), 
           function(object, 
                    bias, nbins = 25, frac = 0.3) {
-            make_bias_bins_core(object, bias, nbins, frac)
+            makeBiasBins_core(object, bias, nbins, frac)
           })
 
 
-make_bias_bins_core <- function(object, bias, nbins = 25, frac = 0.3) {
+makeBiasBins_core <- function(object, bias, nbins = 25, frac = 0.3) {
   npeaks <- nrow(object)
-  fragments_per_peak <- get_fragments_per_peak(object)
+  fragments_per_peak <- getFragmentsPerPeak(object)
   # make bias bins
   bias_quantiles <- quantile(bias, seq(0, 1, 1/nbins))
   bias_cut <- cut(bias, breaks = bias_quantiles)
@@ -91,7 +91,7 @@ make_bias_bins_core <- function(object, bias, nbins = 25, frac = 0.3) {
   mean_bias <- sapply(sets, function(x) mean(bias[x]))
   mean_counts <- sapply(sets, function(x) mean(fragments_per_peak[x]))
   rd <- DataFrame(bias = mean_bias, counts = mean_counts)
-  out <- SummarizedExperiment(assays = list(annotation_matches = 
+  out <- SummarizedExperiment(assays = list(annotationMatches = 
                                               convert_from_ix_list(sets, 
                                                                    nrow(object))),
                               colData = rd)
@@ -99,7 +99,7 @@ make_bias_bins_core <- function(object, bias, nbins = 25, frac = 0.3) {
 }
 
 
-#' make_permuted_sets
+#' makePermutedSets
 #'
 #' Makes annotations sets with similar bias to input sets
 #' @param object fragment counts stored as RangedSummarizedExperiment, 
@@ -117,111 +117,111 @@ make_bias_bins_core <- function(object, bias, nbins = 25, frac = 0.3) {
 #' @examples
 #' # Load very small example counts (already filtered)
 #' data(mini_counts, package = "chromVAR")
-#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
+#' data(example_motifs, package = "motifmatchr")
 #' library(motifmatchr)
 #' library(BSgenome.Hsapiens.UCSC.hg19)
-#' motif_ix <- match_motifs(motifs, mini_counts, 
+#' motif_ix <- matchMotifs(example_motifs, mini_counts, 
 #'                          genome = BSgenome.Hsapiens.UCSC.hg19)
 #'
-#' perm_sets <- make_permuted_sets(mini_counts, motif_ix)
-setGeneric("make_permuted_sets", 
-           function(object, annotations, ...) standardGeneric("make_permuted_sets"))
+#' perm_sets <- makePermutedSets(mini_counts, motif_ix)
+setGeneric("makePermutedSets", 
+           function(object, annotations, ...) standardGeneric("makePermutedSets"))
 
-#' @describeIn make_permuted_sets method for SummarizedExperiment and SummarizedExperiment
+#' @describeIn makePermutedSets method for SummarizedExperiment and SummarizedExperiment
 #' @export
-setMethod(make_permuted_sets, c(object = "SummarizedExperiment", annotations = "SummarizedExperiment"), 
+setMethod(makePermutedSets, c(object = "SummarizedExperiment", annotations = "SummarizedExperiment"), 
           function(object,  annotations,
                    bias = rowData(object)$bias, window = 10) {
             object <- counts_check(object)
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(annotation_matches(annotations))
-            make_permuted_sets_core(object, peak_indices, bias, window = window, 
+            peak_indices <- convert_to_ix_list(annotationMatches(annotations))
+            makePermutedSets_core(object, peak_indices, bias, window = window, 
                                     colData = colData(annotations))
           })
 
-#' @describeIn make_permuted_sets method for RangedSummarizedExperiment and SummarizedExperiment
+#' @describeIn makePermutedSets method for RangedSummarizedExperiment and SummarizedExperiment
 #' @export
-setMethod(make_permuted_sets, c(object = "RangedSummarizedExperiment", annotations = "SummarizedExperiment"), 
+setMethod(makePermutedSets, c(object = "RangedSummarizedExperiment", annotations = "SummarizedExperiment"), 
           function(object,  annotations,
                    bias = rowRanges(object)$bias, window = 10) {
             object <- counts_check(object)
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(annotation_matches(annotations))
-            make_permuted_sets_core(object, peak_indices, bias, window = window, 
+            peak_indices <- convert_to_ix_list(annotationMatches(annotations))
+            makePermutedSets_core(object, peak_indices, bias, window = window, 
                                     colData = colData(annotations))
           })
 
-#' @describeIn make_permuted_sets method for Matrix or matrix and SummarizedExperiment
+#' @describeIn makePermutedSets method for Matrix or matrix and SummarizedExperiment
 #' @export
-setMethod(make_permuted_sets, c(object = "MatrixOrmatrix", annotation = "SummarizedExperiment"), 
+setMethod(makePermutedSets, c(object = "MatrixOrmatrix", annotation = "SummarizedExperiment"), 
           function(object, annotations,
                    bias, window = 10) {
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(annotation_matches(assays(annotations)))
-            make_permuted_sets_core(object, peak_indices, bias, window = window, 
+            peak_indices <- convert_to_ix_list(annotationMatches(assays(annotations)))
+            makePermutedSets_core(object, peak_indices, bias, window = window, 
                                     colData = colData(annotations))
           })
 
 
-#' @describeIn make_permuted_sets method for SummarizedExperiment and MatrixOrmatrix
+#' @describeIn makePermutedSets method for SummarizedExperiment and MatrixOrmatrix
 #' @export
-setMethod(make_permuted_sets, c(object = "SummarizedExperiment", annotations = "MatrixOrmatrix"), 
+setMethod(makePermutedSets, c(object = "SummarizedExperiment", annotations = "MatrixOrmatrix"), 
           function(object,  annotations,
                    bias = rowData(object)$bias, window = 10) {
             object <- counts_check(object)
             peak_indices <- convert_to_ix_list(annotations)
-            make_permuted_sets_core(object, peak_indices, bias, window = window)
+            makePermutedSets_core(object, peak_indices, bias, window = window)
           })
 
-#' @describeIn make_permuted_sets method for RangedSummarizedExperiment and MatrixOrmatrix
+#' @describeIn makePermutedSets method for RangedSummarizedExperiment and MatrixOrmatrix
 #' @export
-setMethod(make_permuted_sets, c(object = "RangedSummarizedExperiment", annotations = "MatrixOrmatrix"), 
+setMethod(makePermutedSets, c(object = "RangedSummarizedExperiment", annotations = "MatrixOrmatrix"), 
           function(object,  annotations,
                    bias = rowRanges(object)$bias, window = 10) {
             object <- counts_check(object)
             peak_indices <- convert_to_ix_list(annotations)
-            make_permuted_sets_core(object, peak_indices, bias, window = window)
+            makePermutedSets_core(object, peak_indices, bias, window = window)
           })
 
-#' @describeIn make_permuted_sets method for Matrix/matrix and Matrix/matrix
+#' @describeIn makePermutedSets method for Matrix/matrix and Matrix/matrix
 #' @export
-setMethod(make_permuted_sets, c(object = "MatrixOrmatrix", annotation = "MatrixOrmatrix"), 
+setMethod(makePermutedSets, c(object = "MatrixOrmatrix", annotation = "MatrixOrmatrix"), 
           function(object, annotations,
                    bias, window = 10) {
             peak_indices <- convert_to_ix_list(annotations)
-            make_permuted_sets_core(object, peak_indices, bias, window = window)
+            makePermutedSets_core(object, peak_indices, bias, window = window)
           })
 
 
-#' @describeIn make_permuted_sets method for SummarizedExperiment and list
+#' @describeIn makePermutedSets method for SummarizedExperiment and list
 #' @export
-setMethod(make_permuted_sets, c(object = "SummarizedExperiment", annotations = "list"), 
+setMethod(makePermutedSets, c(object = "SummarizedExperiment", annotations = "list"), 
           function(object,  annotations,
                    bias = rowData(object)$bias, window = 10) {
             object <- counts_check(object)
-            make_permuted_sets_core(object, annotations, bias, window = window)
+            makePermutedSets_core(object, annotations, bias, window = window)
           })
 
-#' @describeIn make_permuted_sets method for RangedSummarizedExperiment and list
+#' @describeIn makePermutedSets method for RangedSummarizedExperiment and list
 #' @export
-setMethod(make_permuted_sets, c(object = "RangedSummarizedExperiment", annotations = "list"), 
+setMethod(makePermutedSets, c(object = "RangedSummarizedExperiment", annotations = "list"), 
           function(object,  annotations,
                    bias = rowRanges(object)$bias, window = 10) {
             object <- counts_check(object)
-            make_permuted_sets_core(object, annotations, bias, window = window)
+            makePermutedSets_core(object, annotations, bias, window = window)
           })
 
-#' @describeIn make_permuted_sets method for Matrix or matrix and list
+#' @describeIn makePermutedSets method for Matrix or matrix and list
 #' @export
-setMethod(make_permuted_sets, c(object = "MatrixOrmatrix", annotation = "list"), 
+setMethod(makePermutedSets, c(object = "MatrixOrmatrix", annotation = "list"), 
           function(object, annotations,
                    bias, window = 10) {
-            make_permuted_sets_core(object, annotations, bias, window = window)
+            makePermutedSets_core(object, annotations, bias, window = window)
           })
 
 
 
-make_permuted_sets_core <- function(object, peak_indices, bias, window = 10, colData = NULL) {
+makePermutedSets_core <- function(object, peak_indices, bias, window = 10, colData = NULL) {
   
   
   
@@ -253,7 +253,7 @@ make_permuted_sets_core <- function(object, peak_indices, bias, window = 10, col
 get_background_peaks_alternative <- function(object, bias, niterations = 50,
                                              window = 500) {
   
-  fragments_per_peak <- get_fragments_per_peak(object)
+  fragments_per_peak <- getFragmentsPerPeak(object)
   if (min(fragments_per_peak) <= 0) 
     stop("All peaks must have at least one fragment in one sample")
   npeak <- nrow(object)

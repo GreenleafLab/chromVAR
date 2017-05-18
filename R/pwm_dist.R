@@ -69,7 +69,7 @@ pwm_to_prob <- function(pwms) {
 
 
 
-#' pwm_distance
+#' pwmDistance
 #'
 #' computes distance between every pwm in a list or between pwms in one list
 #' with pwms in another
@@ -85,10 +85,10 @@ pwm_to_prob <- function(pwms) {
 #' @export
 #' @examples 
 #' 
-#' motifs <- get_jaspar_motifs()
+#' motifs <- getJasparMotifs()
 #' library(TFBSTools)
-#' pwm_distance(toPWM(motifs[[1]]), toPWM(motifs[[2]]))
-pwm_distance <- function(x, y = NULL, min_overlap = 5) {
+#' pwmDistance(toPWM(motifs[[1]]), toPWM(motifs[[2]]))
+pwmDistance <- function(x, y = NULL, min_overlap = 5) {
   if (is.null(y)) {
     mats <- pwm_to_prob(x)
     compute_pwm_dist(mats, min_overlap)

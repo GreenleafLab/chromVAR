@@ -16,4 +16,7 @@ Tiny sample data set for chromVAR funtion examples
 \examples{
 data(mini_counts)
 }
+\seealso{
+\code{\link{mini_dev}}, \code{\link{mini_ix}}
+}
 \keyword{datasets}

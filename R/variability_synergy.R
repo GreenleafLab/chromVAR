@@ -1,10 +1,10 @@
 
-#' get_annotation_synergy
+#' getAnnotationSynergy
 #'
-#' @param object result from compute_deviations
+#' @param object result from computeDeviations
 #' @param annotations SummarizedExperiment of annotation matches
 #' @param background_peaks optional, matrix of background peaks
-#' @param variabilities optional, variabilities computed from compute_variability
+#' @param variabilities optional, variabilities computed from computeVariability
 #' @param expectation optional, expected fraction of reads per peak, as computed
 #' by compute_expectations
 #' @param nbg number of background iterations
@@ -15,24 +15,24 @@
 #' @return synergy matrix
 #'
 #' @export
-setGeneric("get_annotation_synergy", 
-           function(object, annotations, ...) standardGeneric("get_annotation_synergy"))
+setGeneric("getAnnotationSynergy", 
+           function(object, annotations, ...) standardGeneric("getAnnotationSynergy"))
 
 
 
-#' @describeIn get_annotation_synergy object and annotations are 
+#' @describeIn getAnnotationSynergy object and annotations are 
 #' SummarizedExperiment 
 #' @export
-setMethod("get_annotation_synergy", c(object = "SummarizedExperiment", 
+setMethod("getAnnotationSynergy", c(object = "SummarizedExperiment", 
                                       annotations = "SummarizedExperiment"), 
           function(object, annotations, 
-                   background_peaks = get_background_peaks(object), 
-                   expectation = compute_expectations(object), 
+                   background_peaks = getBackgroundPeaks(object), 
+                   expectation = computeExpectations(object), 
                    variabilities = NULL, nbg = 25) {
             object <- counts_check(object)
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(annotation_matches(annotations))
-            get_annotation_synergy_core(counts(object), 
+            peak_indices <- convert_to_ix_list(annotationMatches(annotations))
+            getAnnotationSynergy_core(counts(object), 
                                         peak_indices,
                                         background_peaks, 
                                         expectation, 
@@ -40,20 +40,20 @@ setMethod("get_annotation_synergy", c(object = "SummarizedExperiment",
                                         nbg = nbg)
           })
 
-#' @describeIn get_annotation_synergy object is SummarizedExperiment, 
+#' @describeIn getAnnotationSynergy object is SummarizedExperiment, 
 #' annotations are Matrix
 #' @export
-setMethod("get_annotation_synergy", c(object = "SummarizedExperiment", 
+setMethod("getAnnotationSynergy", c(object = "SummarizedExperiment", 
                                       annotations = "MatrixOrmatrix"), 
           function(object, annotations, 
-                   background_peaks = get_background_peaks(object), 
-                   expectation = compute_expectations(object), 
+                   background_peaks = getBackgroundPeaks(object), 
+                   expectation = computeExpectations(object), 
                    variabilities = NULL, nbg = 25) {
             stopifnot(canCoerce(annotations, "lMatrix"))
             annotations <- as(annotations, "lMatrix")
             object <- counts_check(object)
             peak_indices <- convert_to_ix_list(annotations)
-            get_annotation_synergy_core(counts(object), 
+            getAnnotationSynergy_core(counts(object), 
                                         peak_indices, 
                                         background_peaks, 
                                         expectation, 
@@ -62,18 +62,18 @@ setMethod("get_annotation_synergy", c(object = "SummarizedExperiment",
           })
 
 
-#' @describeIn get_annotation_synergy object is SummarizedExperiment, 
+#' @describeIn getAnnotationSynergy object is SummarizedExperiment, 
 #' annotations are list
 #' @export
-setMethod("get_annotation_synergy", c(object = "SummarizedExperiment",
+setMethod("getAnnotationSynergy", c(object = "SummarizedExperiment",
                                       annotations = "list"), 
           function(object, 
                    annotations, 
-                   background_peaks = get_background_peaks(object), 
-                   expectation = compute_expectations(object),
+                   background_peaks = getBackgroundPeaks(object), 
+                   expectation = computeExpectations(object),
                    variabilities = NULL, nbg = 25) {
             object <- counts_check(object)
-            get_annotation_synergy_core(counts(object),
+            getAnnotationSynergy_core(counts(object),
                                         annotations,
                                         background_peaks, 
                                         expectation, 
@@ -82,20 +82,20 @@ setMethod("get_annotation_synergy", c(object = "SummarizedExperiment",
           })
 
 
-#' @describeIn get_annotation_synergy object and annotations are 
+#' @describeIn getAnnotationSynergy object and annotations are 
 #' SummarizedExperiment 
 #' @export
-setMethod("get_annotation_synergy", c(object = "MatrixOrmatrix", 
+setMethod("getAnnotationSynergy", c(object = "MatrixOrmatrix", 
                                       annotations = "SummarizedExperiment"), 
           function(object, 
                    annotations, 
                    background_peaks, 
-                   expectation = compute_expectations(object),
+                   expectation = computeExpectations(object),
                    variabilities = NULL, 
                    nbg = 25) {
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(annotation_matches(annotations))
-            get_annotation_synergy_core(object, 
+            peak_indices <- convert_to_ix_list(annotationMatches(annotations))
+            getAnnotationSynergy_core(object, 
                                         peak_indices, 
                                         background_peaks, 
                                         expectation, 
@@ -103,10 +103,10 @@ setMethod("get_annotation_synergy", c(object = "MatrixOrmatrix",
                                         nbg = nbg)
           })
 
-#' @describeIn get_annotation_synergy object is SummarizedExperiment, 
+#' @describeIn getAnnotationSynergy object is SummarizedExperiment, 
 #' annotations are Matrix
 #' @export
-setMethod("get_annotation_synergy", c(object = "MatrixOrmatrix", 
+setMethod("getAnnotationSynergy", c(object = "MatrixOrmatrix", 
                                       annotations = "MatrixOrmatrix"), 
           function(object, annotations, background_peaks, 
                    expectation = compute_expectations(object), 
@@ -114,7 +114,7 @@ setMethod("get_annotation_synergy", c(object = "MatrixOrmatrix",
             stopifnot(canCoerce(annotations, "lMatrix"))
             annotations <- as(annotations, "lMatrix")
             peak_indices <- convert_to_ix_list(annotations)
-            get_annotation_synergy_core(object, 
+            getAnnotationSynergy_core(object, 
                                         peak_indices, 
                                         background_peaks,
                                         expectation, 
@@ -123,15 +123,15 @@ setMethod("get_annotation_synergy", c(object = "MatrixOrmatrix",
           })
 
 
-#' @describeIn get_annotation_synergy object is SummarizedExperiment, 
+#' @describeIn getAnnotationSynergy object is SummarizedExperiment, 
 #' annotations are list
 #' @export
-setMethod("get_annotation_synergy", c(object = "MatrixOrmatrix", 
+setMethod("getAnnotationSynergy", c(object = "MatrixOrmatrix", 
                                       annotations = "list"), 
           function(object, annotations, background_peaks, 
                    expectation = compute_expectations(object),
                    variabilities = NULL, nbg = 25) {
-            get_annotation_synergy_core(object, annotations, 
+            getAnnotationSynergy_core(object, annotations, 
                                         background_peaks, 
                                         expectation, 
                                         variabilities = variabilities,
@@ -140,7 +140,7 @@ setMethod("get_annotation_synergy", c(object = "MatrixOrmatrix",
 
 
 
-get_annotation_synergy_core <- function(counts_mat,
+getAnnotationSynergy_core <- function(counts_mat,
                                         peak_indices, 
                                         background_peaks, 
                                         expectation , 
@@ -148,7 +148,7 @@ get_annotation_synergy_core <- function(counts_mat,
                                         nbg = 25) {
   
   
-  if (min(get_fragments_per_peak(counts_mat)) <= 0) 
+  if (min(getFragmentsPerPeak(counts_mat)) <= 0) 
     stop("All peaks must have at least one fragment in one sample")
   
   stopifnot(nrow(counts_mat) == nrow(background_peaks))
@@ -202,13 +202,13 @@ get_annotation_synergy_core <- function(counts_mat,
   outmat
 }
 
-#' get_annotation_correlation
+#' getAnnotationCorrelation
 #'
-#' @param object result from compute_deviations
+#' @param object result from computeDeviations
 #' @param annotations SummarizedExperiment of annotation matches
 #' @param background_peaks optional, matrix of background peaks
 #' @param variabilities optional, variabilities computed from 
-#' compute_variability
+#' computeVariability
 #' @param expectation optional, expected fraction of reads per peak, as computed
 #' by compute_expectations
 #' @param ... additional arguments
@@ -218,16 +218,16 @@ get_annotation_synergy_core <- function(counts_mat,
 #' @return correlation matrix
 #'
 #'@export
-setGeneric("get_annotation_correlation", 
+setGeneric("getAnnotationCorrelation", 
            function(object, annotations, ...) 
-             standardGeneric("get_annotation_correlation"))
+             standardGeneric("getAnnotationCorrelation"))
 
 
 
-#' @describeIn get_annotation_correlation object and annotations are 
+#' @describeIn getAnnotationCorrelation object and annotations are 
 #' SummarizedExperiment 
 #' @export
-setMethod("get_annotation_correlation", c(object = "SummarizedExperiment", 
+setMethod("getAnnotationCorrelation", c(object = "SummarizedExperiment", 
                                           annotations = "SummarizedExperiment"), 
           function(object, annotations, 
                    background_peaks = get_background_peaks(object), 
@@ -235,18 +235,18 @@ setMethod("get_annotation_correlation", c(object = "SummarizedExperiment",
                    variabilities = NULL) {
             object <- counts_check(object)
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(annotation_matches(annotations))
-            get_annotation_correlation_core(counts(object), 
+            peak_indices <- convert_to_ix_list(annotationMatches(annotations))
+            getAnnotationCorrelation_core(counts(object), 
                                             peak_indices,
                                             background_peaks, 
                                             expectation, 
                                             variabilities = variabilities)
           })
 
-#' @describeIn get_annotation_correlation object is SummarizedExperiment, 
+#' @describeIn getAnnotationCorrelation object is SummarizedExperiment, 
 #' annotations are Matrix
 #' @export
-setMethod("get_annotation_correlation", c(object = "SummarizedExperiment", 
+setMethod("getAnnotationCorrelation", c(object = "SummarizedExperiment", 
                                           annotations = "MatrixOrmatrix"), 
           function(object, annotations, 
                    background_peaks = get_background_peaks(object), 
@@ -256,7 +256,7 @@ setMethod("get_annotation_correlation", c(object = "SummarizedExperiment",
             annotations <- as(annotations, "lMatrix")
             object <- counts_check(object)
             peak_indices <- convert_to_ix_list(annotations)
-            get_annotation_correlation_core(counts(object), 
+            getAnnotationCorrelation_core(counts(object), 
                                             peak_indices, 
                                             background_peaks, 
                                             expectation, 
@@ -264,10 +264,10 @@ setMethod("get_annotation_correlation", c(object = "SummarizedExperiment",
           })
 
 
-#' @describeIn get_annotation_correlation object is SummarizedExperiment, 
+#' @describeIn getAnnotationCorrelation object is SummarizedExperiment, 
 #' annotations are list
 #' @export
-setMethod("get_annotation_correlation", c(object = "SummarizedExperiment",
+setMethod("getAnnotationCorrelation", c(object = "SummarizedExperiment",
                                           annotations = "list"), 
           function(object, 
                    annotations, 
@@ -275,7 +275,7 @@ setMethod("get_annotation_correlation", c(object = "SummarizedExperiment",
                    expectation = compute_expectations(object), 
                    variabilities = NULL) {
             object <- counts_check(object)
-            get_annotation_correlation_core(counts(object),
+            getAnnotationCorrelation_core(counts(object),
                                             annotations,
                                             background_peaks, 
                                             expectation, 
@@ -283,10 +283,10 @@ setMethod("get_annotation_correlation", c(object = "SummarizedExperiment",
           })
 
 
-#' @describeIn get_annotation_correlation object and annotations are 
+#' @describeIn getAnnotationCorrelation object and annotations are 
 #' SummarizedExperiment 
 #' @export
-setMethod("get_annotation_correlation", c(object = "MatrixOrmatrix", 
+setMethod("getAnnotationCorrelation", c(object = "MatrixOrmatrix", 
                                           annotations = "SummarizedExperiment"), 
           function(object, 
                    annotations, 
@@ -294,18 +294,18 @@ setMethod("get_annotation_correlation", c(object = "MatrixOrmatrix",
                    expectation = compute_expectations(object), 
                    variabilities = NULL) {
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(annotation_matches(annotations))
-            get_annotation_correlation_core(object, 
+            peak_indices <- convert_to_ix_list(annotationMatches(annotations))
+            getAnnotationCorrelation_core(object, 
                                             peak_indices, 
                                             background_peaks, 
                                             expectation, 
                                             variabilities = variabilities)
           })
 
-#' @describeIn get_annotation_correlation object is SummarizedExperiment, 
+#' @describeIn getAnnotationCorrelation object is SummarizedExperiment, 
 #' annotations are Matrix
 #' @export
-setMethod("get_annotation_correlation", c(object = "MatrixOrmatrix", 
+setMethod("getAnnotationCorrelation", c(object = "MatrixOrmatrix", 
                                           annotations = "MatrixOrmatrix"), 
           function(object, annotations, background_peaks, 
                    expectation = compute_expectations(object), 
@@ -313,7 +313,7 @@ setMethod("get_annotation_correlation", c(object = "MatrixOrmatrix",
             stopifnot(canCoerce(annotations, "lMatrix"))
             annotations <- as(annotations, "lMatrix")
             peak_indices <- convert_to_ix_list(annotations)
-            get_annotation_correlation_core(object, 
+            getAnnotationCorrelation_core(object, 
                                             peak_indices, 
                                             background_peaks,
                                             expectation, 
@@ -321,28 +321,28 @@ setMethod("get_annotation_correlation", c(object = "MatrixOrmatrix",
           })
 
 
-#' @describeIn get_annotation_correlation object is SummarizedExperiment, 
+#' @describeIn getAnnotationCorrelation object is SummarizedExperiment, 
 #' annotations are list
 #' @export
-setMethod("get_annotation_correlation", c(object = "MatrixOrmatrix", 
+setMethod("getAnnotationCorrelation", c(object = "MatrixOrmatrix", 
                                           annotations = "list"), 
           function(object, annotations, background_peaks, 
                    expectation = compute_expectations(object), 
                    variabilities = NULL) {
-            get_annotation_correlation_core(object, annotations, 
+            getAnnotationCorrelation_core(object, annotations, 
                                             background_peaks, expectation, 
                                             variabilities = variabilities)
           })
 
 
-get_annotation_correlation_core <- function(counts_mat, 
+getAnnotationCorrelation_core <- function(counts_mat, 
                                             peak_indices, 
                                             background_peaks,
                                             expectation, 
                                             variabilities) {
   
   
-  if (min(get_fragments_per_peak(counts_mat)) <= 0) 
+  if (min(getFragmentsPerPeak(counts_mat)) <= 0) 
     stop("All peaks must have at least one fragment in one sample")
   
   stopifnot(nrow(counts_mat) == nrow(background_peaks))

@@ -1,6 +1,6 @@
 # Plotting ---------------------------------------------------------------------
 
-#' plot_variability
+#' plotVariability
 #'
 #' plot variability of motifs/etc
 #' @param variability output from \code{\link{compute_variability}}
@@ -14,21 +14,11 @@
 #' @return ggplot or plotly object, depending on whether use_plotly is TRUE
 #' @author Alicia Schep
 #' @examples
-#' # Load very small example counts (already filtered)
-#' data(mini_counts, package = "chromVAR")
-#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
-#' library(motifmatchr)
-#' library(BSgenome.Hsapiens.UCSC.hg19)
-#' motif_ix <- match_motifs(motifs, mini_counts, 
-#'                          genome = BSgenome.Hsapiens.UCSC.hg19)
-#'
-#' # computing deviations
-#' dev <- compute_deviations(object = mini_counts, 
-#'                          annotations = motif_ix)
-
-#' variability <- compute_variability(dev)
-#' var_plot <- plot_variability(variability, use_plotly = FALSE)                        
-plot_variability <- function(variability, xlab = "Sorted TFs", n = 3, 
+#' # Load very small example results from computeDeviations
+#' data(mini_dev, package = "chromVAR")
+#' variability <- computeVariability(mini_dev)
+#' var_plot <- plotVariability(variability, use_plotly = FALSE)                        
+plotVariability <- function(variability, xlab = "Sorted TFs", n = 3, 
                              labels = variability$name, 
   use_plotly = interactive()) {
 
@@ -82,6 +72,7 @@ plot_variability <- function(variability, xlab = "Sorted TFs", n = 3,
 
 #' chromVAR_theme
 #'
+#' theme for use with ggplot2, used by chromVAR plotting functions
 #' @param base_size base font size
 #' @param base_family base font family
 #'
@@ -116,7 +107,7 @@ variability_table <- function(var_df) {
 }
 
 
-#' plot_deviations_tsne
+#' plotDeviationsTsne
 #'
 #' plots sample similarity tsne
 #' @param object deviations result object
@@ -129,7 +120,7 @@ variability_table <- function(var_df) {
 #' @return shiny app or plots
 #' @export
 #' @author Alicia Schep
-plot_deviations_tsne <- function(object, 
+plotDeviationsTsne <- function(object, 
                                  tsne, 
                                  var_df = NULL, 
                                  sample_column = NULL, 
@@ -143,7 +134,7 @@ plot_deviations_tsne <- function(object,
   
   if (nrow(tsne) != ncol(object)){
     stop(paste("Number of rows of tsne do not match number of columns of object",
-               "plot_deviations_tsne takes result of deviations_tsne for samples",
+               "plotDeviationsTsne takes result of deviations_tsne for samples",
                sep="\n"))
   }
   
@@ -190,7 +181,7 @@ plot_deviations_tsne <- function(object,
         stop("annotation_name invalid")
       }
       out[[i]] <- ggplot(data.frame(x = tsne[, 1], y = tsne[, 2], 
-                                    color = deviation_scores(object)[ix,], 
+                                    color = deviationScores(object)[ix,], 
                                     text = colnames(object)), 
                          aes_string(x = "x", y = "y", col = "color", 
                                     text = "text")) + 
@@ -275,7 +266,7 @@ plot_deviations_tsne_shiny <- function(object, tsne, var_df,
       if (length(s) == 0) 
         return(NULL)
       p2 <- ggplot(data.frame(x = tsne[, 1], y = tsne[, 2],
-                              color = deviation_scores(object)[s,], 
+                              color = deviationScores(object)[s,], 
                               text = colnames(object)), 
                    aes_string(x = "x", y = "y", col = "color", text = "text")) + 
         geom_point(size = 2) + 

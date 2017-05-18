@@ -25,7 +25,7 @@ seq_to_pwm <- function(in_seq, mismatch = 0) {
 
 
 
-#' deviations_covariability
+#' deviationsCovariability
 #'
 #' @param object deviations result
 #'
@@ -37,17 +37,17 @@ seq_to_pwm <- function(in_seq, mismatch = 0) {
 #' @examples
 #' # load very small example data
 #' data(mini_counts, package = "chromVAR")
-#' motifs <- get_jaspar_motifs()
+#' motifs <- getJasparMotifs()
 #' library(motifmatchr)
-#' motif_ix <- match_motifs(motifs, mini_counts)
+#' motif_ix <- matchMotifs(motifs, mini_counts, genome = "hg19")
 #'
 #' # computing deviations
-#' dev <- compute_deviations(object = mini_counts, 
+#' dev <- computeDeviations(object = mini_counts, 
 #'                          annotations = motif_ix)
 #'                          
 #' # get covariability for just first three motifs                         
-#' devcov <- deviations_covariability(dev[1:3,])                         
-deviations_covariability <- function(object) {
+#' devcov <- deviationsCovariability(dev[1:3,])                         
+deviationsCovariability <- function(object) {
   covs <- cov(t(assays(object)$z))
   vars <- row_sds(assays(object)$z)
   normed_covs <- covs/matrix(vars^2, nrow = nrow(covs), ncol = ncol(covs), 
@@ -167,7 +167,7 @@ get_null_kmer_dist <- function(kmer, cov_mat, max_extend = 2) {
 
 get_covariable_kmers <- function(kmer, cov_mat, max_extend = 2) {
   
-  # cov_mat <- deviations_covariability(object)
+  # cov_mat <- deviationsCovariability(object)
   kmers <- colnames(cov_mat)
   kmer <- kmers_to_names(kmer, kmers)
   # Get Null Dist
@@ -299,7 +299,7 @@ kmer_group_to_pwm <- function(kgroup, p = 0.01, threshold = 0.25) {
 
 
 
-#' assemble_kmers
+#' assembleKmers
 #'
 #' function to create de novo motifs from kmers based on deviations
 #' @param object kmer chromVARDeviations object
@@ -310,8 +310,8 @@ kmer_group_to_pwm <- function(kgroup, p = 0.01, threshold = 0.25) {
 #' @return list with (1) motifs: de novo motif matrices, (2) seed: seed kmer for de novo motif 
 #' @importFrom TFBSTools PWMatrix
 #' @export
-assemble_kmers <- function(object, threshold = 1.5, p = 0.01, progress = TRUE) {
-  devco <- deviations_covariability(object)
+assembleKmers <- function(object, threshold = 1.5, p = 0.01, progress = TRUE) {
+  devco <- deviationsCovariability(object)
   vars <- row_sds(assays(object)$z)
   cands <- rownames(object)[order(vars, decreasing = TRUE)[1:sum(vars > threshold, 
                                                                  na.rm = TRUE)]]
@@ -328,7 +328,7 @@ assemble_kmers <- function(object, threshold = 1.5, p = 0.01, progress = TRUE) {
     nd <- get_null_kmer_dist(cands[1], devco)
     z <- (devco[cands[1], cands] - mean(nd, na.rm = TRUE)) / sd(nd, na.rm = TRUE)
     pval <- pnorm(z, lower.tail = FALSE)
-    d <- pwm_distance(kmotif, lapply(cands, seq_to_pwm))$d[1, ]
+    d <- pwmDistance(kmotif, lapply(cands, seq_to_pwm))$d[1, ]
     exc <- intersect(which(d < 0.25), which(pval < p))
     cands <- cands[-exc]
     if (progress) setTxtProgressBar(pb, nc - length(cands))
@@ -344,20 +344,20 @@ assemble_kmers <- function(object, threshold = 1.5, p = 0.01, progress = TRUE) {
   return(denovo_motifs)
 }
 
-#' plot_kmer_mismatch
+#' plotKmerMismatch
 #'
 #' @param kmer kmer, e.g. 'AAAAAAA'
-#' @param cov_mat result from \code{\link{deviations_covariability}}
+#' @param cov_mat result from \code{\link{deviationsCovariability}}
 #' @param pval p value threshold
 #'
 #' @return A plot
 #' @export
-plot_kmer_mismatch <- function(kmer, cov_mat, pval = 0.01) {
+plotKmerMismatch <- function(kmer, cov_mat, pval = 0.01) {
   
   kgroup <- get_covariable_kmers(kmer, cov_mat, max_extend = 0)
   ix <- which(!is.na(kgroup$mismatch))
   
-  mm_df <- rbind(data.frame(val = ifelse(kgroup$pval.adj[ix] < 0.01, 
+  mm_df <- rbind(data.frame(val = ifelse(kgroup$covariability[ix] > 0, 
                                          kgroup$covariability[ix]^2, 
                                          0), pos = kgroup$mismatch[ix], 
                             Nucleotide = substr(kgroup$kmer[ix], kgroup$mismatch[ix], 

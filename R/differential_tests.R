@@ -1,4 +1,4 @@
-#' differential_deviations
+#' differentialDeviations
 #'
 #' Function to see whether deviations differ between groups
 #' @param object chromVARDeviations object
@@ -9,19 +9,10 @@
 #' @export
 #' @author Alicia Schep
 #' @examples
-#' # Load very small example counts (already filtered)
-#' data(mini_counts, package = "chromVAR")
-#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
-#' library(motifmatchr)
-#' library(BSgenome.Hsapiens.UCSC.hg19)
-#' motif_ix <- match_motifs(motifs, mini_counts, 
-#'                          genome = BSgenome.Hsapiens.UCSC.hg19)
-#'
-#' # computing deviations
-#' dev <- compute_deviations(object = mini_counts, 
-#'                          annotations = motif_ix)
-#' difdev <- differential_deviations(dev, "Cell_Type")
-differential_deviations <- function(object, groups,
+#' # Load very small example results from computeDeviations
+#' data(mini_dev, package = "chromVAR")
+#' difdev <- differentialDeviations(mini_dev, "Cell_Type")
+differentialDeviations <- function(object, groups,
                                        alternative = c("two.sided", "less",
                                                        "greater"), parametric = TRUE) {
   stopifnot(is(object,"chromVARDeviations"))
@@ -94,7 +85,7 @@ anova_helper <- function(...) {
 }
 
 
-#' differential_variability
+#' differentialVariability
 #'
 #' Function to determine whether groups differ in variability
 #' @param object chromVARDeviations object
@@ -104,19 +95,10 @@ anova_helper <- function(...) {
 #' @author Alicia Schep
 #' @export
 #' @examples
-#' # Load very small example counts (already filtered)
-#' data(mini_counts, package = "chromVAR")
-#' motifs <- get_jaspar_motifs()[c(1,2,4,298)] # only use a few for demo 
-#' library(motifmatchr)
-#' library(BSgenome.Hsapiens.UCSC.hg19)
-#' motif_ix <- match_motifs(motifs, mini_counts, 
-#'                          genome = BSgenome.Hsapiens.UCSC.hg19)
-#'
-#' # computing deviations
-#' dev <- compute_deviations(object = mini_counts, 
-#'                          annotations = motif_ix)
-#' difvar <- differential_variability(dev, "Cell_Type")
-differential_variability <- function(object, groups, parametric = TRUE) {
+#' # Load very small example results from computeDeviations
+#' data(mini_dev, package = "chromVAR")
+#' difvar <- differentialVariability(mini_dev, "Cell_Type")
+differentialVariability <- function(object, groups, parametric = TRUE) {
   stopifnot(is(object,"chromVARDeviations"))
   if (length(groups) == 1 && groups %in% colnames(colData(object))){
     groups <- colData(object)[groups]
@@ -125,7 +107,7 @@ differential_variability <- function(object, groups, parametric = TRUE) {
   }
   # Brown-Forsythe test
   inputs <- lapply(split(1:ncol(object),groups),
-                   function(x) deviation_scores(object)[,x])
+                   function(x) deviationScores(object)[,x])
   reshaped <- lapply(1:nrow(inputs[[1]]),
                      function(x) lapply(inputs, function(y) y[x, ]))
   if (parametric) {

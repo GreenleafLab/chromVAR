@@ -121,17 +121,9 @@
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># Load very small example counts (already filtered)</span>
-<span class='fu'>data</span>(<span class='no'>mini_counts</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
-<span class='no'>motifs</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='get_jaspar_motifs.html'>get_jaspar_motifs</a></span>()[<span class='fu'>c</span>(<span class='fl'>1</span>,<span class='fl'>2</span>,<span class='fl'>4</span>,<span class='fl'>298</span>)] <span class='co'># only use a few for demo</span>
-<span class='fu'>library</span>(<span class='no'>motifmatchr</span>)
-<span class='fu'>library</span>(<span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)
-<span class='no'>motif_ix</span> <span class='kw'>&lt;-</span> <span class='fu'>match_motifs</span>(<span class='no'>motifs</span>, <span class='no'>mini_counts</span>,
-                         <span class='kw'>genome</span> <span class='kw'>=</span> <span class='no'>BSgenome.Hsapiens.UCSC.hg19</span>)
-
-<span class='co'># computing deviations</span>
-<span class='no'>dev</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='compute_deviations.html'>compute_deviations</a></span>(<span class='kw'>object</span> <span class='kw'>=</span> <span class='no'>mini_counts</span>,
-                         <span class='kw'>annotations</span> <span class='kw'>=</span> <span class='no'>motif_ix</span>)</div><div class='output co'>#&gt; <span class='error'>Error in compute_deviations_core(counts(object), peak_indices, background_peaks,     expectation, colData = colData(object), rowData = colData(annotations)): Annotations are not valid</span></div><div class='input'><span class='no'>bias_corrected_deviations</span> <span class='kw'>&lt;-</span> <span class='fu'>deviations</span>(<span class='no'>dev</span>)</div></pre>
+    <pre class="examples"><div class='input'><span class='co'># Load very small example results from computeDeviations</span>
+<span class='fu'>data</span>(<span class='no'>mini_dev</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"chromVAR"</span>)
+<span class='no'>bias_corrected_deviations</span> <span class='kw'>&lt;-</span> <span class='fu'>deviations</span>(<span class='no'>mini_dev</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

@@ -3,9 +3,6 @@
 .Rhistory
 .RData
 *.RData
-R/motif_crap.R
-R/experimental.R
-R/kmer_experimental.R
 src/*.o
 src/*.so
 inst/doc
