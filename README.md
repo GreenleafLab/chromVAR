@@ -1,4 +1,5 @@
 ---
+[![Build Status](https://travis-ci.org/GreenleafLab/chromVAR.svg?branch=master)](https://travis-ci.org/GreenleafLab/chromVAR)
 
 # chromVAR
 
@@ -13,7 +14,7 @@ The chromVAR (and related motifmatchr) function names recently changed to switch
 
 Installation is easiest using the devtools package. The function `install_github` will install the package.
 
-``` r
+```r
 devtools::install_github("GreenleafLab/chromVAR")
 ```
 
