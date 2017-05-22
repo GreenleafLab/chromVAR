@@ -112,8 +112,8 @@
 <span class="kw">register</span>(<span class="kw">MultiCoreParam</span>(<span class="dv">8</span>)) <span class="co"># Use 8 cores</span></code></pre></div>
 <p>For Windows, <code>MultiCoreParam</code> will not work, but you can use SnowParam:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">register</span>(<span class="kw">SnowParam</span>(<span class="kw">SnowParam</span>(<span class="dt">workers=</span><span class="dv">1</span>, <span class="dt">type =</span> <span class="st">"SOCK"</span>)))</code></pre></div>
-<p>Even if you don’t want to use more than one core, it is recommended to explicitly register that choice:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">register</span>()</code></pre></div>
+<p>Even if you don’t want to use more than one core, it is recommended to explicitly register that choice using SerialParam:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">register</span>(<span class="kw">SerialParam</span>())</code></pre></div>
 <p>Please see the documentation for <a href="https://bioconductor.org/packages/release/bioc/html/BiocParallel.html">BiocParallel</a> for more information about the <code>register</code> function and the various options for multi-processing.</p>
 </div>
 <div id="quickstart" class="section level2">

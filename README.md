@@ -46,9 +46,9 @@ For Windows, `MultiCoreParam` will not work, but you can use SnowParam:
 register(SnowParam(SnowParam(workers=1, type = "SOCK")))
 ```
 
-Even if you don't want to use more than one core, it is recommended to explicitly register that choice:
+Even if you don't want to use more than one core, it is recommended to explicitly register that choice using SerialParam:
 ```r
-register()
+register(SerialParam())
 ```
 
 Please see the documentation for [BiocParallel](https://bioconductor.org/packages/release/bioc/html/BiocParallel.html) for more information about the `register` function and the various options for multi-processing. 
