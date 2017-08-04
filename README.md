@@ -37,10 +37,10 @@ Before running chromVAR functions, it is advisable to use the `register` functio
 
 ```r
 library(BiocParallel)
-register(MultiCoreParam(8)) # Use 8 cores
+register(MulticoreParam(8)) # Use 8 cores
 ```
 
-For Windows, `MultiCoreParam` will not work, but you can use SnowParam:
+For Windows, `MulticoreParam` will not work, but you can use SnowParam:
 
 ```r
 register(SnowParam(SnowParam(workers=1, type = "SOCK")))

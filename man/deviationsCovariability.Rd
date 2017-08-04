@@ -25,7 +25,8 @@ of Z-scores for one motif/kmer/peakset (the row).
 data(mini_counts, package = "chromVAR")
 motifs <- getJasparMotifs()
 library(motifmatchr)
-motif_ix <- matchMotifs(motifs, mini_counts, genome = "hg19")
+motif_ix <- matchMotifs(motifs, mini_counts, 
+  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)
 
 # computing deviations
 dev <- computeDeviations(object = mini_counts, 
