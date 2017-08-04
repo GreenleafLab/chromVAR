@@ -2,42 +2,42 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 pwm_euclidean <- function(mat1, mat2) {
-    .Call('chromVAR_pwm_euclidean', PACKAGE = 'chromVAR', mat1, mat2)
+    .Call(`_chromVAR_pwm_euclidean`, mat1, mat2)
 }
 
 pwm_dist_single <- function(mat1, mat2, min_overlap) {
-    .Call('chromVAR_pwm_dist_single', PACKAGE = 'chromVAR', mat1, mat2, min_overlap)
+    .Call(`_chromVAR_pwm_dist_single`, mat1, mat2, min_overlap)
 }
 
 compute_pwm_dist <- function(pwms, min_overlap) {
-    .Call('chromVAR_compute_pwm_dist', PACKAGE = 'chromVAR', pwms, min_overlap)
+    .Call(`_chromVAR_compute_pwm_dist`, pwms, min_overlap)
 }
 
 compute_pwm_dist2 <- function(pwms, pwms2, min_overlap) {
-    .Call('chromVAR_compute_pwm_dist2', PACKAGE = 'chromVAR', pwms, pwms2, min_overlap)
+    .Call(`_chromVAR_compute_pwm_dist2`, pwms, pwms2, min_overlap)
 }
 
 col_sds <- function(X, na_rm = FALSE) {
-    .Call('chromVAR_col_sds', PACKAGE = 'chromVAR', X, na_rm)
+    .Call(`_chromVAR_col_sds`, X, na_rm)
 }
 
 row_sds <- function(X, na_rm = FALSE) {
-    .Call('chromVAR_row_sds', PACKAGE = 'chromVAR', X, na_rm)
+    .Call(`_chromVAR_row_sds`, X, na_rm)
 }
 
 row_sds_perm <- function(X, na_rm = FALSE) {
-    .Call('chromVAR_row_sds_perm', PACKAGE = 'chromVAR', X, na_rm)
+    .Call(`_chromVAR_row_sds_perm`, X, na_rm)
 }
 
 ProbSampleReplace <- function(size, prob) {
-    .Call('chromVAR_ProbSampleReplace', PACKAGE = 'chromVAR', size, prob)
+    .Call(`_chromVAR_ProbSampleReplace`, size, prob)
 }
 
 bg_sample_helper <- function(bin_membership, bin_p, bin_density, niterations) {
-    .Call('chromVAR_bg_sample_helper', PACKAGE = 'chromVAR', bin_membership, bin_p, bin_density, niterations)
+    .Call(`_chromVAR_bg_sample_helper`, bin_membership, bin_p, bin_density, niterations)
 }
 
 euc_dist <- function(x) {
-    .Call('chromVAR_euc_dist', PACKAGE = 'chromVAR', x)
+    .Call(`_chromVAR_euc_dist`, x)
 }
 
