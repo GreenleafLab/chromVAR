@@ -452,7 +452,8 @@ compute_deviations_single <- function(peak_set,
                                       threshold = 1) {
 
   if (length(peak_set) == 0) {
-    return(list(z = rep(NA, ncol(counts_mat)), dev = rep(NA, ncol(counts_mat))))
+    return(list(z = rep(NA, ncol(counts_mat)), dev = rep(NA, ncol(counts_mat)),
+                matches = 0, overlap = NA))
   }
 
   fragments_per_sample <- colSums(counts_mat)
