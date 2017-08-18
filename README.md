@@ -11,11 +11,11 @@ The chromVAR (and related motifmatchr) function names recently changed to switch
 
 ## Installation
 
-
-Installation is easiest using the devtools package. The function `install_github` will install the package.
+The recommended installation method for `chromVAR` is using the `biocLite` command from BiocInstaller. You will first have to have installed the [BiocInstaller package
+](https://bioconductor.org/packages/release/bioc/html/BiocInstaller.html).
 
 ```r
-devtools::install_github("GreenleafLab/chromVAR")
+BiocInstaller::biocLite("GreenleafLab/chromVAR")
 ```
 
 A number of needed packages are installed in this process. One of the dependencies has a system requirement for the gsl library, so if this is not installed already it may need to be installed separately.  
@@ -24,7 +24,7 @@ For Windows users, some have reported that the S4Vector dependency does not curr
 
 Two additional packages that are recommended and used in the vignettes:
 
-* motifmatchr - available on [GitHub](https://github.com/GreenleafLab/motifmatchr)
+* motifmatchr - available on [GitHub](https://github.com/GreenleafLab/motifmatchr) or [development version of Bioconductor](https://bioconductor.org/packages/devel/bioc/html/motifmatchr.html)
 * JASPAR2016  - available from Bioconductor
 
 Additionally, the package chromVARmotifs can be useful for loading additional motif collections:
