@@ -11,8 +11,8 @@
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/cerulean/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 <!-- Font Awesome icons -->
@@ -25,12 +25,14 @@
 <script src="../pkgdown.js"></script>
 
 <!-- mathjax -->
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+<script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -97,260 +99,324 @@
       <div class="row">
   <div class="col-md-9">
     <div class="page-header">
-      <h1>Function reference</h1>
-      <h4>version&nbsp;0.5.0</h4>
+      <h1>
+        Reference
+        <small>version&nbsp;0.5.2</small>
+      </h1>
     </div>
 
     <div class="contents">
-      <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
-      <p class="section-desc"></p>
+      <table class="ref-index">
 
-      
-      <p><a href="addGCBias.html">addGCBias</a></p>
-      <ul>
-        <li><code><a href="addGCBias.html">addGCBias</a></code></li><li><code><a href="addGCBias.html">addGCBias,RangedSummarizedExperiment-method</a></code></li><li><code><a href="addGCBias.html">addGCBias,SummarizedExperiment-method</a></code></li>
-      </ul>
-      
-      <p><a href="annotationMatches.html">annotationMatches</a></p>
-      <ul>
-        <li><code><a href="annotationMatches.html">annotationMatches</a></code></li><li><code><a href="annotationMatches.html">annotationMatches,SummarizedExperiment-method</a></code></li><li><code><a href="annotationMatches.html">annoation_matches&lt;-,SummarizedExperiment-method</a></code></li><li><code><a href="annotationMatches.html">annotationMatches&lt;-</a></code></li><li><code><a href="annotationMatches.html">annotationMatches,SummarizedExperiment-method</a></code></li><li><code><a href="annotationMatches.html">annotationMatches&lt;-,SummarizedExperiment-method</a></code></li>
-      </ul>
-      
-      <p><a href="assembleKmers.html">assembleKmers</a></p>
-      <ul>
-        <li><code><a href="assembleKmers.html">assembleKmers</a></code></li>
-      </ul>
-      
-      <p><a href="cbind-chromVARDeviations-method.html">cbind method for chromVARDeviations</a></p>
-      <ul>
-        <li><code><a href="cbind-chromVARDeviations-method.html">cbind,chromVARDeviations-method</a></code></li>
-      </ul>
-      
-      <p><a href="chromVAR_deprecated.html">Deprecated functions in chromVAR</a></p>
-      <ul>
-        <li><code><a href="chromVAR_deprecated.html">chromVAR_deprecated</a></code></li><li><code><a href="chromVAR_deprecated.html">assemble_kmers</a></code></li><li><code><a href="chromVAR_deprecated.html">get_annotation_synergy</a></code></li><li><code><a href="chromVAR_deprecated.html">get_annotation_correlation</a></code></li><li><code><a href="chromVAR_deprecated.html">make_bias_bins</a></code></li><li><code><a href="chromVAR_deprecated.html">make_permuted_sets</a></code></li><li><code><a href="chromVAR_deprecated.html">pwm_distance</a></code></li><li><code><a href="chromVAR_deprecated.html">plot_variability</a></code></li><li><code><a href="chromVAR_deprecated.html">plot_deviations_tsne</a></code></li><li><code><a href="chromVAR_deprecated.html">get_jaspar_motifs</a></code></li><li><code><a href="chromVAR_deprecated.html">match_kmers</a></code></li><li><code><a href="chromVAR_deprecated.html">deviations_covariability</a></code></li><li><code><a href="chromVAR_deprecated.html">plot_kmer_mismatch</a></code></li><li><code><a href="chromVAR_deprecated.html">get_total_fragments</a></code></li><li><code><a href="chromVAR_deprecated.html">get_fragments_per_peak</a></code></li><li><code><a href="chromVAR_deprecated.html">get_fragments_per_sample</a></code></li><li><code><a href="chromVAR_deprecated.html">get_peaks</a></code></li><li><code><a href="chromVAR_deprecated.html">get_counts</a></code></li><li><code><a href="chromVAR_deprecated.html">get_sample_depths</a></code></li><li><code><a href="chromVAR_deprecated.html">read_macs2_narrowpeaks</a></code></li><li><code><a href="chromVAR_deprecated.html">get_annotations</a></code></li><li><code><a href="chromVAR_deprecated.html">filter_samples</a></code></li><li><code><a href="chromVAR_deprecated.html">filter_samples_plot</a></code></li><li><code><a href="chromVAR_deprecated.html">filter_peaks</a></code></li><li><code><a href="chromVAR_deprecated.html">annotation_matches</a></code></li><li><code><a href="chromVAR_deprecated.html">deviations_tsne</a></code></li><li><code><a href="chromVAR_deprecated.html">differential_deviations</a></code></li><li><code><a href="chromVAR_deprecated.html">differential_variability</a></code></li><li><code><a href="chromVAR_deprecated.html">compute_variability</a></code></li><li><code><a href="chromVAR_deprecated.html">compute_expectations</a></code></li><li><code><a href="chromVAR_deprecated.html">compute_deviations</a></code></li><li><code><a href="chromVAR_deprecated.html">deviation_scores</a></code></li><li><code><a href="chromVAR_deprecated.html">get_sample_distance</a></code></li><li><code><a href="chromVAR_deprecated.html">get_sample_correlation</a></code></li><li><code><a href="chromVAR_deprecated.html">get_cis_groups</a></code></li><li><code><a href="chromVAR_deprecated.html">add_gc_bias</a></code></li><li><code><a href="chromVAR_deprecated.html">get_background_peaks</a></code></li><li><code><a href="chromVAR_deprecated.html">get_permuted_data</a></code></li>
-      </ul>
-      
-      <p><a href="chromVAR_theme.html">chromVAR_theme</a></p>
-      <ul>
-        <li><code><a href="chromVAR_theme.html">chromVAR_theme</a></code></li>
-      </ul>
-      
-      <p><a href="chromVAR.html">chromVAR: A package for computing variability across sets of peaks.</a></p>
-      <ul>
-        <li><code><a href="chromVAR.html">chromVAR</a></code></li><li><code><a href="chromVAR.html">chromVAR-package</a></code></li>
-      </ul>
-      
-      <p><a href="chromVARDeviations-class.html">chromVARDeviations</a></p>
-      <ul>
-        <li><code><a href="chromVARDeviations-class.html">chromVARDeviations-class</a></code></li>
-      </ul>
-      
-      <p><a href="computeDeviations.html">computeDeviations</a></p>
-      <ul>
-        <li><code><a href="computeDeviations.html">computeDeviations</a></code></li><li><code><a href="computeDeviations.html">computeDeviations,SummarizedExperiment,SummarizedExperiment-method</a></code></li><li><code><a href="computeDeviations.html">computeDeviations,SummarizedExperiment,MatrixOrmatrix-method</a></code></li><li><code><a href="computeDeviations.html">computeDeviations,SummarizedExperiment,list-method</a></code></li><li><code><a href="computeDeviations.html">computeDeviations,SummarizedExperiment,missingOrNULL-method</a></code></li><li><code><a href="computeDeviations.html">computeDeviations,MatrixOrmatrix,SummarizedExperiment-method</a></code></li><li><code><a href="computeDeviations.html">computeDeviations,MatrixOrmatrix,MatrixOrmatrix-method</a></code></li><li><code><a href="computeDeviations.html">computeDeviations,MatrixOrmatrix,list-method</a></code></li><li><code><a href="computeDeviations.html">computeDeviations,MatrixOrmatrix,missingOrNULL-method</a></code></li>
-      </ul>
-      
-      <p><a href="computeExpectations.html">computeExpectations</a></p>
-      <ul>
-        <li><code><a href="computeExpectations.html">computeExpectations</a></code></li><li><code><a href="computeExpectations.html">computeExpectations,MatrixOrmatrix-method</a></code></li><li><code><a href="computeExpectations.html">computeExpectations,SummarizedExperiment-method</a></code></li>
-      </ul>
-      
-      <p><a href="computeVariability.html">computeVariability</a></p>
-      <ul>
-        <li><code><a href="computeVariability.html">computeVariability</a></code></li>
-      </ul>
-      
-      <p><a href="counts.html">Accessors for the 'counts' slot of a SummarizedExperiment</a></p>
-      <ul>
-        <li><code><a href="counts.html">counts,SummarizedExperiment-method</a></code></li><li><code><a href="counts.html">counts&lt;-,SummarizedExperiment,MatrixOrmatrix-method</a></code></li><li><code><a href="counts.html">counts&lt;-,SummarizedExperiment-method</a></code></li>
-      </ul>
-      
-      <p><a href="deviations.html">deviations</a></p>
-      <ul>
-        <li><code><a href="deviations.html">deviations</a></code></li><li><code><a href="deviations.html">deviations,chromVARDeviations-method</a></code></li><li><code><a href="deviations.html">deviations,chromVARDeviations-method</a></code></li>
-      </ul>
-      
-      <p><a href="deviationScores.html">deviationScores</a></p>
-      <ul>
-        <li><code><a href="deviationScores.html">deviationScores</a></code></li><li><code><a href="deviationScores.html">deviationScores,chromVARDeviations-method</a></code></li><li><code><a href="deviationScores.html">deviationScores,chromVARDeviations-method</a></code></li>
-      </ul>
-      
-      <p><a href="deviationsCovariability.html">deviationsCovariability</a></p>
-      <ul>
-        <li><code><a href="deviationsCovariability.html">deviationsCovariability</a></code></li>
-      </ul>
-      
-      <p><a href="deviationsTsne.html">deviationsTsne</a></p>
-      <ul>
-        <li><code><a href="deviationsTsne.html">deviationsTsne</a></code></li>
-      </ul>
-      
-      <p><a href="differentialDeviations.html">differentialDeviations</a></p>
-      <ul>
-        <li><code><a href="differentialDeviations.html">differentialDeviations</a></code></li>
-      </ul>
-      
-      <p><a href="differentialVariability.html">differentialVariability</a></p>
-      <ul>
-        <li><code><a href="differentialVariability.html">differentialVariability</a></code></li>
-      </ul>
-      
-      <p><a href="example_counts.html">example_counts</a></p>
-      <ul>
-        <li><code><a href="example_counts.html">example_counts</a></code></li>
-      </ul>
-      
-      <p><a href="filterPeaks.html">filterPeaks</a></p>
-      <ul>
-        <li><code><a href="filterPeaks.html">filterPeaks</a></code></li>
-      </ul>
-      
-      <p><a href="filterSamples.html">filterSamples</a></p>
-      <ul>
-        <li><code><a href="filterSamples.html">filterSamples</a></code></li>
-      </ul>
-      
-      <p><a href="filterSamplesPlot.html">filterSamplesPlot</a></p>
-      <ul>
-        <li><code><a href="filterSamplesPlot.html">filterSamplesPlot</a></code></li>
-      </ul>
-      
-      <p><a href="getAnnotationCorrelation.html">getAnnotationCorrelation</a></p>
-      <ul>
-        <li><code><a href="getAnnotationCorrelation.html">getAnnotationCorrelation</a></code></li><li><code><a href="getAnnotationCorrelation.html">getAnnotationCorrelation,SummarizedExperiment,SummarizedExperiment-method</a></code></li><li><code><a href="getAnnotationCorrelation.html">getAnnotationCorrelation,SummarizedExperiment,MatrixOrmatrix-method</a></code></li><li><code><a href="getAnnotationCorrelation.html">getAnnotationCorrelation,SummarizedExperiment,list-method</a></code></li><li><code><a href="getAnnotationCorrelation.html">getAnnotationCorrelation,MatrixOrmatrix,SummarizedExperiment-method</a></code></li><li><code><a href="getAnnotationCorrelation.html">getAnnotationCorrelation,MatrixOrmatrix,MatrixOrmatrix-method</a></code></li><li><code><a href="getAnnotationCorrelation.html">getAnnotationCorrelation,MatrixOrmatrix,list-method</a></code></li>
-      </ul>
-      
-      <p><a href="getAnnotations.html">getAnnotations</a></p>
-      <ul>
-        <li><code><a href="getAnnotations.html">getAnnotations</a></code></li><li><code><a href="getAnnotations.html">getAnnotations,GRangesList-method</a></code></li><li><code><a href="getAnnotations.html">getAnnotations,MatrixOrmatrix-method</a></code></li><li><code><a href="getAnnotations.html">getAnnotations,data.frame-method</a></code></li><li><code><a href="getAnnotations.html">getAnnotations,list-method</a></code></li><li><code><a href="getAnnotations.html">getAnnotations,character-method</a></code></li>
-      </ul>
-      
-      <p><a href="getAnnotationSynergy.html">getAnnotationSynergy</a></p>
-      <ul>
-        <li><code><a href="getAnnotationSynergy.html">getAnnotationSynergy</a></code></li><li><code><a href="getAnnotationSynergy.html">getAnnotationSynergy,SummarizedExperiment,SummarizedExperiment-method</a></code></li><li><code><a href="getAnnotationSynergy.html">getAnnotationSynergy,SummarizedExperiment,MatrixOrmatrix-method</a></code></li><li><code><a href="getAnnotationSynergy.html">getAnnotationSynergy,SummarizedExperiment,list-method</a></code></li><li><code><a href="getAnnotationSynergy.html">getAnnotationSynergy,MatrixOrmatrix,SummarizedExperiment-method</a></code></li><li><code><a href="getAnnotationSynergy.html">getAnnotationSynergy,MatrixOrmatrix,MatrixOrmatrix-method</a></code></li><li><code><a href="getAnnotationSynergy.html">getAnnotationSynergy,MatrixOrmatrix,list-method</a></code></li>
-      </ul>
-      
-      <p><a href="getBackgroundPeaks.html">getBackgroundPeaks</a></p>
-      <ul>
-        <li><code><a href="getBackgroundPeaks.html">getBackgroundPeaks</a></code></li><li><code><a href="getBackgroundPeaks.html">getBackgroundPeaks,SummarizedExperiment-method</a></code></li><li><code><a href="getBackgroundPeaks.html">getBackgroundPeaks,RangedSummarizedExperiment-method</a></code></li><li><code><a href="getBackgroundPeaks.html">getBackgroundPeaks,MatrixOrmatrix-method</a></code></li>
-      </ul>
-      
-      <p><a href="getCisGroups.html">getCisGroups</a></p>
-      <ul>
-        <li><code><a href="getCisGroups.html">getCisGroups</a></code></li><li><code><a href="getCisGroups.html">getCisGroups,RangedSummarizedExperiment-method</a></code></li><li><code><a href="getCisGroups.html">getCisGroups,GenomicRanges-method</a></code></li>
-      </ul>
-      
-      <p><a href="getCounts.html">getCounts</a></p>
-      <ul>
-        <li><code><a href="getCounts.html">getCounts</a></code></li>
-      </ul>
-      
-      <p><a href="getFragmentsPerPeak.html">getFragmentsPerPeak</a></p>
-      <ul>
-        <li><code><a href="getFragmentsPerPeak.html">getFragmentsPerPeak</a></code></li><li><code><a href="getFragmentsPerPeak.html">getFragmentsPerPeak,SummarizedExperiment-method</a></code></li><li><code><a href="getFragmentsPerPeak.html">getFragmentsPerPeak,MatrixOrmatrix-method</a></code></li>
-      </ul>
-      
-      <p><a href="getFragmentsPerSample.html">getFragmentsPerSample</a></p>
-      <ul>
-        <li><code><a href="getFragmentsPerSample.html">getFragmentsPerSample</a></code></li><li><code><a href="getFragmentsPerSample.html">getFragmentsPerSample,SummarizedExperiment-method</a></code></li><li><code><a href="getFragmentsPerSample.html">getFragmentsPerSample,MatrixOrmatrix-method</a></code></li>
-      </ul>
-      
-      <p><a href="getJasparMotifs.html">getJasparMotifs</a></p>
-      <ul>
-        <li><code><a href="getJasparMotifs.html">getJasparMotifs</a></code></li>
-      </ul>
-      
-      <p><a href="getPeaks.html">getPeaks</a></p>
-      <ul>
-        <li><code><a href="getPeaks.html">getPeaks</a></code></li>
-      </ul>
-      
-      <p><a href="getPermutedData.html">getPermutedData</a></p>
-      <ul>
-        <li><code><a href="getPermutedData.html">getPermutedData</a></code></li>
-      </ul>
-      
-      <p><a href="getSampleCorrelation.html">getSampleCorrelation</a></p>
-      <ul>
-        <li><code><a href="getSampleCorrelation.html">getSampleCorrelation</a></code></li>
-      </ul>
-      
-      <p><a href="getSampleDepths.html">getSampleDepths</a></p>
-      <ul>
-        <li><code><a href="getSampleDepths.html">getSampleDepths</a></code></li>
-      </ul>
-      
-      <p><a href="getSampleDistance.html">getSampleDistance</a></p>
-      <ul>
-        <li><code><a href="getSampleDistance.html">getSampleDistance</a></code></li>
-      </ul>
-      
-      <p><a href="getTotalFragments.html">getTotalFragments</a></p>
-      <ul>
-        <li><code><a href="getTotalFragments.html">getTotalFragments</a></code></li><li><code><a href="getTotalFragments.html">getTotalFragments,SummarizedExperiment-method</a></code></li><li><code><a href="getTotalFragments.html">getTotalFragments,MatrixOrmatrix-method</a></code></li>
-      </ul>
-      
-      <p><a href="makeBiasBins.html">makeBiasBins</a></p>
-      <ul>
-        <li><code><a href="makeBiasBins.html">makeBiasBins</a></code></li><li><code><a href="makeBiasBins.html">makeBiasBins,SummarizedExperiment-method</a></code></li><li><code><a href="makeBiasBins.html">makeBiasBins,RangedSummarizedExperiment-method</a></code></li><li><code><a href="makeBiasBins.html">makeBiasBins,MatrixOrmatrix-method</a></code></li>
-      </ul>
-      
-      <p><a href="makePermutedSets.html">makePermutedSets</a></p>
-      <ul>
-        <li><code><a href="makePermutedSets.html">makePermutedSets</a></code></li><li><code><a href="makePermutedSets.html">makePermutedSets,SummarizedExperiment,SummarizedExperiment-method</a></code></li><li><code><a href="makePermutedSets.html">makePermutedSets,RangedSummarizedExperiment,SummarizedExperiment-method</a></code></li><li><code><a href="makePermutedSets.html">makePermutedSets,MatrixOrmatrix,SummarizedExperiment-method</a></code></li><li><code><a href="makePermutedSets.html">makePermutedSets,SummarizedExperiment,MatrixOrmatrix-method</a></code></li><li><code><a href="makePermutedSets.html">makePermutedSets,RangedSummarizedExperiment,MatrixOrmatrix-method</a></code></li><li><code><a href="makePermutedSets.html">makePermutedSets,MatrixOrmatrix,MatrixOrmatrix-method</a></code></li><li><code><a href="makePermutedSets.html">makePermutedSets,SummarizedExperiment,list-method</a></code></li><li><code><a href="makePermutedSets.html">makePermutedSets,RangedSummarizedExperiment,list-method</a></code></li><li><code><a href="makePermutedSets.html">makePermutedSets,MatrixOrmatrix,list-method</a></code></li>
-      </ul>
-      
-      <p><a href="matchKmers.html">matchKmers</a></p>
-      <ul>
-        <li><code><a href="matchKmers.html">matchKmers</a></code></li><li><code><a href="matchKmers.html">matchKmers,character,DNAStringSet-method</a></code></li><li><code><a href="matchKmers.html">matchKmers,character,character-method</a></code></li><li><code><a href="matchKmers.html">matchKmers,character,DNAString-method</a></code></li><li><code><a href="matchKmers.html">matchKmers,character,GenomicRanges-method</a></code></li><li><code><a href="matchKmers.html">matchKmers,character,RangedSummarizedExperiment-method</a></code></li><li><code><a href="matchKmers.html">matchKmers,numeric,ANY-method</a></code></li><li><code><a href="matchKmers.html">matchKmers,DNAStringSet,ANY-method</a></code></li><li><code><a href="matchKmers.html">matchKmers,DNAString,ANY-method</a></code></li>
-      </ul>
-      
-      <p><a href="mini_counts.html">mini_counts</a></p>
-      <ul>
-        <li><code><a href="mini_counts.html">mini_counts</a></code></li>
-      </ul>
-      
-      <p><a href="mini_dev.html">mini_dev</a></p>
-      <ul>
-        <li><code><a href="mini_dev.html">mini_dev</a></code></li>
-      </ul>
-      
-      <p><a href="mini_ix.html">mini_ix</a></p>
-      <ul>
-        <li><code><a href="mini_ix.html">mini_ix</a></code></li>
-      </ul>
-      
-      <p><a href="plotDeviationsTsne.html">plotDeviationsTsne</a></p>
-      <ul>
-        <li><code><a href="plotDeviationsTsne.html">plotDeviationsTsne</a></code></li>
-      </ul>
-      
-      <p><a href="plotKmerMismatch.html">plotKmerMismatch</a></p>
-      <ul>
-        <li><code><a href="plotKmerMismatch.html">plotKmerMismatch</a></code></li>
-      </ul>
-      
-      <p><a href="plotVariability.html">plotVariability</a></p>
-      <ul>
-        <li><code><a href="plotVariability.html">plotVariability</a></code></li>
-      </ul>
-      
-      <p><a href="pwmDistance.html">pwmDistance</a></p>
-      <ul>
-        <li><code><a href="pwmDistance.html">pwmDistance</a></code></li>
-      </ul>
-      
-      <p><a href="rbind-chromVARDeviations-method.html">rbind method chromVARDeviations</a></p>
-      <ul>
-        <li><code><a href="rbind-chromVARDeviations-method.html">rbind,chromVARDeviations-method</a></code></li>
-      </ul>
-      
-      <p><a href="readNarrowpeaks.html">readNarrowpeaks</a></p>
-      <ul>
-        <li><code><a href="readNarrowpeaks.html">readNarrowpeaks</a></code></li>
-      </ul>
-    
+      <colgroup>
+        <col class="alias" />
+        <col class="title" />
+      </colgroup>
+
+      <tbody>
+        <tr>
+          <th colspan="2">
+            <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
+            <p class="section-desc"></p>
+          </th>
+        </tr>
+        <tr>
+          <!--  -->
+          <td>
+            <p><code><a href="addGCBias.html">addGCBias</a></code> </p>
+          </td>
+          <td><p>addGCBias</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="annotationMatches.html">annotationMatches</a></code> <code><a href="annotationMatches.html">annotationMatches<-</a></code> </p>
+          </td>
+          <td><p>annotationMatches</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="assembleKmers.html">assembleKmers</a></code> </p>
+          </td>
+          <td><p>assembleKmers</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="cbind-chromVARDeviations-method.html">cbind</a></code> </p>
+          </td>
+          <td><p>cbind method for chromVARDeviations</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="chromVAR_deprecated.html">assemble_kmers</a></code> <code><a href="chromVAR_deprecated.html">get_annotation_synergy</a></code> <code><a href="chromVAR_deprecated.html">get_annotation_correlation</a></code> <code><a href="chromVAR_deprecated.html">make_bias_bins</a></code> <code><a href="chromVAR_deprecated.html">make_permuted_sets</a></code> <code><a href="chromVAR_deprecated.html">pwm_distance</a></code> <code><a href="chromVAR_deprecated.html">plot_variability</a></code> <code><a href="chromVAR_deprecated.html">plot_deviations_tsne</a></code> <code><a href="chromVAR_deprecated.html">get_jaspar_motifs</a></code> <code><a href="chromVAR_deprecated.html">match_kmers</a></code> <code><a href="chromVAR_deprecated.html">deviations_covariability</a></code> <code><a href="chromVAR_deprecated.html">plot_kmer_mismatch</a></code> <code><a href="chromVAR_deprecated.html">get_total_fragments</a></code> <code><a href="chromVAR_deprecated.html">get_fragments_per_peak</a></code> <code><a href="chromVAR_deprecated.html">get_fragments_per_sample</a></code> <code><a href="chromVAR_deprecated.html">get_peaks</a></code> <code><a href="chromVAR_deprecated.html">get_counts</a></code> <code><a href="chromVAR_deprecated.html">get_sample_depths</a></code> <code><a href="chromVAR_deprecated.html">read_macs2_narrowpeaks</a></code> <code><a href="chromVAR_deprecated.html">get_annotations</a></code> <code><a href="chromVAR_deprecated.html">filter_samples</a></code> <code><a href="chromVAR_deprecated.html">filter_samples_plot</a></code> <code><a href="chromVAR_deprecated.html">filter_peaks</a></code> <code><a href="chromVAR_deprecated.html">annotation_matches</a></code> <code><a href="chromVAR_deprecated.html">deviations_tsne</a></code> <code><a href="chromVAR_deprecated.html">differential_deviations</a></code> <code><a href="chromVAR_deprecated.html">differential_variability</a></code> <code><a href="chromVAR_deprecated.html">compute_variability</a></code> <code><a href="chromVAR_deprecated.html">compute_expectations</a></code> <code><a href="chromVAR_deprecated.html">compute_deviations</a></code> <code><a href="chromVAR_deprecated.html">deviation_scores</a></code> <code><a href="chromVAR_deprecated.html">get_sample_distance</a></code> <code><a href="chromVAR_deprecated.html">get_sample_correlation</a></code> <code><a href="chromVAR_deprecated.html">get_cis_groups</a></code> <code><a href="chromVAR_deprecated.html">add_gc_bias</a></code> <code><a href="chromVAR_deprecated.html">get_background_peaks</a></code> <code><a href="chromVAR_deprecated.html">get_permuted_data</a></code> </p>
+          </td>
+          <td><p>Deprecated functions in chromVAR</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="chromVARDeviations-class.html">chromVARDeviations-class</a></code> </p>
+          </td>
+          <td><p>chromVARDeviations</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="chromVAR.html">chromVAR</a></code> </p>
+          </td>
+          <td><p>chromVAR: A package for computing variability across sets of peaks.</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="chromVAR_theme.html">chromVAR_theme</a></code> </p>
+          </td>
+          <td><p>chromVAR_theme</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="computeDeviations.html">computeDeviations</a></code> </p>
+          </td>
+          <td><p>computeDeviations</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="computeExpectations.html">computeExpectations</a></code> </p>
+          </td>
+          <td><p>computeExpectations</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="computeVariability.html">computeVariability</a></code> </p>
+          </td>
+          <td><p>computeVariability</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="counts.html">counts</a></code> <code><a href="counts.html">counts<-</a></code> </p>
+          </td>
+          <td><p>Accessors for the 'counts' slot of a SummarizedExperiment</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="deviationScores.html">deviationScores</a></code> </p>
+          </td>
+          <td><p>deviationScores</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="deviationsCovariability.html">deviationsCovariability</a></code> </p>
+          </td>
+          <td><p>deviationsCovariability</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="deviations.html">deviations</a></code> </p>
+          </td>
+          <td><p>deviations</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="deviationsTsne.html">deviationsTsne</a></code> </p>
+          </td>
+          <td><p>deviationsTsne</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="differentialDeviations.html">differentialDeviations</a></code> </p>
+          </td>
+          <td><p>differentialDeviations</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="differentialVariability.html">differentialVariability</a></code> </p>
+          </td>
+          <td><p>differentialVariability</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="example_counts.html">data</a></code> </p>
+          </td>
+          <td><p>example_counts</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="filterPeaks.html">filterPeaks</a></code> </p>
+          </td>
+          <td><p>filterPeaks</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="filterSamplesPlot.html">filterSamplesPlot</a></code> </p>
+          </td>
+          <td><p>filterSamplesPlot</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="filterSamples.html">filterSamples</a></code> </p>
+          </td>
+          <td><p>filterSamples</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getAnnotationCorrelation.html">getAnnotationCorrelation</a></code> </p>
+          </td>
+          <td><p>getAnnotationCorrelation</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getAnnotations.html">getAnnotations</a></code> </p>
+          </td>
+          <td><p>getAnnotations</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getAnnotationSynergy.html">getAnnotationSynergy</a></code> </p>
+          </td>
+          <td><p>getAnnotationSynergy</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getBackgroundPeaks.html">getBackgroundPeaks</a></code> </p>
+          </td>
+          <td><p>getBackgroundPeaks</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getCisGroups.html">getCisGroups</a></code> </p>
+          </td>
+          <td><p>getCisGroups</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getCounts.html">getCounts</a></code> </p>
+          </td>
+          <td><p>getCounts</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getFragmentsPerPeak.html">getFragmentsPerPeak</a></code> </p>
+          </td>
+          <td><p>getFragmentsPerPeak</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getFragmentsPerSample.html">getFragmentsPerSample</a></code> </p>
+          </td>
+          <td><p>getFragmentsPerSample</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getJasparMotifs.html">getJasparMotifs</a></code> </p>
+          </td>
+          <td><p>getJasparMotifs</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getPeaks.html">getPeaks</a></code> </p>
+          </td>
+          <td><p>getPeaks</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getPermutedData.html">getPermutedData</a></code> </p>
+          </td>
+          <td><p>getPermutedData</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getSampleCorrelation.html">getSampleCorrelation</a></code> </p>
+          </td>
+          <td><p>getSampleCorrelation</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getSampleDepths.html">getSampleDepths</a></code> </p>
+          </td>
+          <td><p>getSampleDepths</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getSampleDistance.html">getSampleDistance</a></code> </p>
+          </td>
+          <td><p>getSampleDistance</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="getTotalFragments.html">getTotalFragments</a></code> </p>
+          </td>
+          <td><p>getTotalFragments</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="makeBiasBins.html">makeBiasBins</a></code> </p>
+          </td>
+          <td><p>makeBiasBins</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="makePermutedSets.html">makePermutedSets</a></code> </p>
+          </td>
+          <td><p>makePermutedSets</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="matchKmers.html">matchKmers</a></code> </p>
+          </td>
+          <td><p>matchKmers</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="mini_counts.html">data</a></code> </p>
+          </td>
+          <td><p>mini_counts</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="mini_dev.html">data</a></code> </p>
+          </td>
+          <td><p>mini_dev</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="mini_ix.html">data</a></code> </p>
+          </td>
+          <td><p>mini_ix</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="plotDeviationsTsne.html">plotDeviationsTsne</a></code> </p>
+          </td>
+          <td><p>plotDeviationsTsne</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="plotKmerMismatch.html">plotKmerMismatch</a></code> </p>
+          </td>
+          <td><p>plotKmerMismatch</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="plotVariability.html">plotVariability</a></code> </p>
+          </td>
+          <td><p>plotVariability</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="pwmDistance.html">pwmDistance</a></code> </p>
+          </td>
+          <td><p>pwmDistance</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="rbind-chromVARDeviations-method.html">rbind</a></code> </p>
+          </td>
+          <td><p>rbind method chromVARDeviations</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="readNarrowpeaks.html">readNarrowpeaks</a></code> </p>
+          </td>
+          <td><p>readNarrowpeaks</p></td>
+        </tr>
+      </tbody>
+      </table>
     </div>
   </div>
 
