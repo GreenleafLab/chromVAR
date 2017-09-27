@@ -3,7 +3,7 @@
 
 # chromVAR
 
-chromVAR is an R package for the analysis of sparse chromatin accessibility data from single cell or bulk ATAC or DNAse-seq data. 
+chromVAR is an R package for the analysis of sparse chromatin accessibility data from single cell or bulk ATAC or DNAse-seq data. The package aims to identify motifs or other genomic annotations associated with variability in chromatin accessibility between individual cells or samples.  
 
 ## Note on recent function name changes
 
@@ -18,9 +18,11 @@ The recommended installation method for `chromVAR` is using the `biocLite` comma
 BiocInstaller::biocLite("GreenleafLab/chromVAR")
 ```
 
-A number of needed packages are installed in this process. One of the dependencies has a system requirement for the gsl library, so if this is not installed already it may need to be installed separately.  
+A number of needed packages are installed in this process. One of the dependencies has a system requirement for the gsl library, so if this is not installed already it may need to be installed separately. Several people have reported issues with the GO.db package (a dependency of one of the dependencies) not being installed automatically -- if you see an error relating to that package, try installing it separately first (`biocLite("GO.db")`).
 
-For Windows users, some have reported that the S4Vector dependency does not currently function on windows R 3.3.3, but that installation was successful on R 3.3.2
+For Windows users, some have reported that the S4Vector dependency does not currently function on windows R 3.3.3, but that installation was successful on R 3.3.2.
+
+For Mac users, some have encountered installation difficulties relating to compiling the C++ code. If you encounter problems, please see the threads and advice in Issues [11](https://github.com/GreenleafLab/chromVAR/issues/11) and [20](https://github.com/GreenleafLab/chromVAR/issues/20).  
 
 Two additional packages that are recommended and used in the vignettes:
 
@@ -47,6 +49,7 @@ register(SnowParam(SnowParam(workers=1, type = "SOCK")))
 ```
 
 Even if you don't want to use more than one core, it is recommended to explicitly register that choice using SerialParam:
+
 ```r
 register(SerialParam())
 ```

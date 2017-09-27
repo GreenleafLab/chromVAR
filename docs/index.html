@@ -79,7 +79,7 @@
 <div id="chromvar" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#chromvar" class="anchor"></a>chromVAR</h1></div>
-<p>chromVAR is an R package for the analysis of sparse chromatin accessibility data from single cell or bulk ATAC or DNAse-seq data.</p>
+<p>chromVAR is an R package for the analysis of sparse chromatin accessibility data from single cell or bulk ATAC or DNAse-seq data. The package aims to identify motifs or other genomic annotations associated with variability in chromatin accessibility between individual cells or samples.</p>
 <div id="note-on-recent-function-name-changes" class="section level2">
 <h2 class="hasAnchor">
 <a href="#note-on-recent-function-name-changes" class="anchor"></a>Note on recent function name changes</h2>
@@ -90,8 +90,9 @@
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>The recommended installation method for <code>chromVAR</code> is using the <code>biocLite</code> command from BiocInstaller. You will first have to have installed the <a href="https://bioconductor.org/packages/release/bioc/html/BiocInstaller.html">BiocInstaller package</a>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">BiocInstaller::<span class="kw">biocLite</span>(<span class="st">"GreenleafLab/chromVAR"</span>)</code></pre></div>
-<p>A number of needed packages are installed in this process. One of the dependencies has a system requirement for the gsl library, so if this is not installed already it may need to be installed separately.</p>
-<p>For Windows users, some have reported that the S4Vector dependency does not currently function on windows R 3.3.3, but that installation was successful on R 3.3.2</p>
+<p>A number of needed packages are installed in this process. One of the dependencies has a system requirement for the gsl library, so if this is not installed already it may need to be installed separately. Several people have reported issues with the GO.db package (a dependency of one of the dependencies) not being installed automatically – if you see an error relating to that package, try installing it separately first (<code>biocLite("GO.db")</code>).</p>
+<p>For Windows users, some have reported that the S4Vector dependency does not currently function on windows R 3.3.3, but that installation was successful on R 3.3.2.</p>
+<p>For Mac users, some have encountered installation difficulties relating to compiling the C++ code. If you encounter problems, please see the threads and advice in Issues <a href="https://github.com/GreenleafLab/chromVAR/issues/11">11</a> and <a href="https://github.com/GreenleafLab/chromVAR/issues/20">20</a>.</p>
 <p>Two additional packages that are recommended and used in the vignettes:</p>
 <ul>
 <li>motifmatchr - available on <a href="https://github.com/GreenleafLab/motifmatchr">GitHub</a> or <a href="https://bioconductor.org/packages/devel/bioc/html/motifmatchr.html">development version of Bioconductor</a>
