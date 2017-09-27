@@ -10,7 +10,7 @@
 addGCBias(object, ...)
 
 \S4method{addGCBias}{RangedSummarizedExperiment}(object,
-  genome = GenomeInfoDb::genome(subject))
+  genome = GenomeInfoDb::genome(object))
 
 \S4method{addGCBias}{SummarizedExperiment}(object, peaks,
   genome = GenomeInfoDb::genome(peaks))

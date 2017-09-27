@@ -22,7 +22,7 @@ setGeneric("addGCBias", function(object, ...) standardGeneric("addGCBias"))
 #' @export
 setMethod(addGCBias, c(object = "RangedSummarizedExperiment"), 
           function(object, 
-                   genome = GenomeInfoDb::genome(subject)) {
+                   genome = GenomeInfoDb::genome(object)) {
             genome <- validate_genome_input(genome)
             peaks <- rowRanges(object)
             seqs <- getSeq(genome, peaks)
