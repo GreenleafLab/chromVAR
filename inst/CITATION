@@ -1,0 +1,13 @@
+citEntry(entry="article",
+         title = "chromVAR: inferring transcription-factor-associated accessibility from single-cell epigenomic data",
+         author = personList( as.person("Alicia N Schep"),
+                              as.person("Beijing Wu"),
+                              as.person("Jason D Buenrostro"),
+                              as.person("William J Greenleaf")),
+         year = 2017,
+         journal = "Nature Methods",
+         doi = "10.1038/nmeth.4401",
+         textVersion = 
+         paste("Schep, A.N., Wu, B., Buenrostro, J.D., Greenleaf W.J.", 
+               "chromVAR: inferring transcription-factor-associated accessibility from single-cell epigenomic data",
+                "Nature Methods (2017)" ) )

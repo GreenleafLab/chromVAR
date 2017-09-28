@@ -87,11 +87,6 @@
 <a href="#chromvar" class="anchor"></a>chromVAR</h1>
 <p>chromVAR is an R package for the analysis of sparse chromatin accessibility. chromVAR takes as inputs aligned fragments (filtered for duplicates and low quality) from ATAC-seq or DNAse-seq experiments as well as genomic annotations such as motif positions. chromVAR computes for each annotation and each cell or sample a bias corrected “deviation” in accessibility from the expected accessibility based on the average of all the cells or samples.</p>
 <p>This vignette covers basic usage of chromVAR with standard inputs. For more detailed documentation covering different options for various inputs and additional applications, view the additional vignettes on the <a href="https://greenleaflab.github.io/chromVAR/">documentation website</a>.</p>
-<div id="note-on-recent-function-name-changes" class="section level2">
-<h2 class="hasAnchor">
-<a href="#note-on-recent-function-name-changes" class="anchor"></a>Note on recent function name changes</h2>
-<p>The chromVAR (and related motifmatchr) function names recently changed to switch over to camelCase from snake_case. All exported functions now use camelCase, e.g. <code>compute_deviations</code> is now <code>computeDeviations</code>. If following the current documentation but using an earlier version of the package, either update the package or be aware of the discrepancy. This change was made to comply with Bioconductor naming preferences, as chromVAR will soon be submitted to Bioconductor.</p>
-</div>
 <div id="loading-the-package" class="section level2">
 <h2 class="hasAnchor">
 <a href="#loading-the-package" class="anchor"></a>Loading the package</h2>
@@ -255,7 +250,7 @@ tsne_plots[[<span class="dv">1</span>]]</code></pre></div>
 <h1 class="hasAnchor">
 <a href="#session-info" class="anchor"></a>Session Info</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Sys.Date</span>()</code></pre></div>
-<pre><code>## [1] "2017-08-18"</code></pre>
+<pre><code>## [1] "2017-09-28"</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre></div>
 <pre><code>## R version 3.4.1 (2017-06-30)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
@@ -278,20 +273,20 @@ tsne_plots[[<span class="dv">1</span>]]</code></pre></div>
 ## [8] methods   base     
 ## 
 ## other attached packages:
-##  [1] BSgenome.Hsapiens.UCSC.hg19_1.4.0 BSgenome_1.44.0                  
+##  [1] BSgenome.Hsapiens.UCSC.hg19_1.4.0 BSgenome_1.44.2                  
 ##  [3] rtracklayer_1.36.4                Biostrings_2.44.2                
 ##  [5] XVector_0.16.0                    BiocParallel_1.10.1              
-##  [7] SummarizedExperiment_1.6.3        DelayedArray_0.2.7               
+##  [7] SummarizedExperiment_1.6.4        DelayedArray_0.2.7               
 ##  [9] matrixStats_0.52.2                Biobase_2.36.2                   
-## [11] GenomicRanges_1.28.4              GenomeInfoDb_1.12.2              
-## [13] IRanges_2.10.2                    S4Vectors_0.14.3                 
+## [11] GenomicRanges_1.28.5              GenomeInfoDb_1.12.2              
+## [13] IRanges_2.10.3                    S4Vectors_0.14.4                 
 ## [15] BiocGenerics_0.22.0               Matrix_1.2-10                    
-## [17] motifmatchr_0.99.8                chromVAR_0.5.2                   
+## [17] motifmatchr_0.99.8                chromVAR_0.99.0                  
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] bitops_1.0-6                DirichletMultinomial_1.18.0
-##  [3] TFBSTools_1.14.1            bit64_0.9-7                
-##  [5] RColorBrewer_1.1-2          httr_1.3.0                 
+##  [3] TFBSTools_1.14.2            bit64_0.9-7                
+##  [5] RColorBrewer_1.1-2          httr_1.3.1                 
 ##  [7] rprojroot_1.2               tools_3.4.1                
 ##  [9] backports_1.1.0             R6_2.2.2                   
 ## [11] DT_0.2                      seqLogo_1.42.0             
@@ -299,12 +294,12 @@ tsne_plots[[<span class="dv">1</span>]]</code></pre></div>
 ## [15] colorspace_1.3-2            bit_1.1-12                 
 ## [17] compiler_3.4.1              plotly_4.7.1               
 ## [19] labeling_0.3                caTools_1.17.1             
-## [21] scales_0.4.1                readr_1.1.1                
+## [21] scales_0.5.0                readr_1.1.1                
 ## [23] nabor_0.4.7                 stringr_1.2.0              
 ## [25] digest_0.6.12               Rsamtools_1.28.0           
 ## [27] rmarkdown_1.6               R.utils_2.5.0              
 ## [29] pkgconfig_2.0.1             htmltools_0.3.6            
-## [31] htmlwidgets_0.9             rlang_0.1.1.9000           
+## [31] htmlwidgets_0.9             rlang_0.1.2                
 ## [33] RSQLite_2.0                 VGAM_1.0-4                 
 ## [35] shiny_1.0.3                 bindr_0.1                  
 ## [37] jsonlite_1.5                gtools_3.5.0               
@@ -319,18 +314,18 @@ tsne_plots[[<span class="dv">1</span>]]</code></pre></div>
 ## [55] miniUI_0.1.1                CNEr_1.12.1                
 ## [57] lattice_0.20-35             splines_3.4.1              
 ## [59] annotate_1.54.0             hms_0.3                    
-## [61] KEGGREST_1.16.0             knitr_1.16                 
+## [61] KEGGREST_1.16.1             knitr_1.16                 
 ## [63] JASPAR2016_1.4.0            codetools_0.2-15           
 ## [65] reshape2_1.4.2              TFMPvalue_0.0.6            
 ## [67] XML_3.98-1.9                glue_1.1.1                 
 ## [69] evaluate_0.10.1             data.table_1.10.4          
 ## [71] png_0.1-7                   httpuv_1.3.5               
 ## [73] tidyr_0.6.3                 purrr_0.2.3                
-## [75] gtable_0.2.0                poweRlaw_0.70.0            
+## [75] gtable_0.2.0                poweRlaw_0.70.1            
 ## [77] assertthat_0.2.0            ggplot2_2.2.1              
 ## [79] mime_0.5                    xtable_1.8-2               
-## [81] viridisLite_0.2.0           tibble_1.3.3               
-## [83] GenomicAlignments_1.12.1    AnnotationDbi_1.38.2       
+## [81] viridisLite_0.2.0           tibble_1.3.4               
+## [83] GenomicAlignments_1.12.2    AnnotationDbi_1.38.2       
 ## [85] memoise_1.1.0               bindrcpp_0.2</code></pre>
 </div>
 </div>
@@ -342,8 +337,7 @@ tsne_plots[[<span class="dv">1</span>]]</code></pre></div>
       <ul class="nav nav-pills nav-stacked">
 <li>
 <a href="#chromvar">chromVAR</a><ul class="nav nav-pills nav-stacked">
-<li><a href="#note-on-recent-function-name-changes">Note on recent function name changes</a></li>
-      <li><a href="#loading-the-package">Loading the package</a></li>
+<li><a href="#loading-the-package">Loading the package</a></li>
       <li><a href="#setting-multiprocessing-options">Setting multiprocessing options</a></li>
       <li><a href="#reading-in-inputs">Reading in inputs</a></li>
       <li><a href="#getting-gc-content-of-peaks">Getting GC content of peaks</a></li>

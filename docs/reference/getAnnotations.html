@@ -173,21 +173,8 @@ RangedSummarizedExperiment</p></td>
 
 <span class='co'># Get annotations from genomic ranges list</span>
 <span class='fu'>library</span>(<span class='no'>GenomicRanges</span>)
-<span class='fu'>library</span>(<span class='no'>SummarizedExperiment</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required package: Biobase</span></div><div class='output co'>#&gt; <span class='message'>Welcome to Bioconductor</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    Vignettes contain introductory material; view with</span>
-#&gt; <span class='message'>    'browseVignettes()'. To cite Bioconductor, see</span>
-#&gt; <span class='message'>    'citation("Biobase")', and for packages 'citation("pkgname")'.</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: DelayedArray</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: matrixStats</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>Attaching package: ‘matrixStats’</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from ‘package:Biobase’:</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    anyMissing, rowMedians</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>Attaching package: ‘DelayedArray’</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from ‘package:matrixStats’:</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from ‘package:Biostrings’:</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    type</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from ‘package:base’:</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    apply</span></div><div class='input'><span class='no'>my_annotation_granges</span> <span class='kw'>&lt;-</span> <span class='fu'>GRangesList</span>(<span class='fu'>GRanges</span>(<span class='st'>"chr1"</span>,
+<span class='fu'>library</span>(<span class='no'>SummarizedExperiment</span>)
+<span class='no'>my_annotation_granges</span> <span class='kw'>&lt;-</span> <span class='fu'>GRangesList</span>(<span class='fu'>GRanges</span>(<span class='st'>"chr1"</span>,
                                              <span class='kw'>ranges</span> <span class='kw'>=</span> <span class='fu'>IRanges</span>(<span class='kw'>start</span> <span class='kw'>=</span>
                                              <span class='fu'>c</span>(<span class='fl'>566763</span>,<span class='fl'>805090</span>), <span class='kw'>width</span> <span class='kw'>=</span> <span class='fl'>8</span>)),
                                      <span class='fu'>GRanges</span>(<span class='st'>"chr1"</span>, <span class='kw'>ranges</span> <span class='kw'>=</span> <span class='fu'>IRanges</span>(<span class='kw'>start</span> <span class='kw'>=</span>

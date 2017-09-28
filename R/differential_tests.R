@@ -2,7 +2,7 @@
 #'
 #' Function to see whether deviations differ between groups
 #' @param object chromVARDeviations object
-#' @param groups either vector of groups or name of column in colData of object with grouop information
+#' @param groups either vector of groups or name of column in colData of object with group information
 #' @param alternative only used if there are two groups -- two.sided or one sided test
 #' @param parametric use parametric test. alternatively will use kruskal wallace
 #' @return data.frame with p value and adjusted p value

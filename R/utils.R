@@ -5,6 +5,7 @@ counts_check <- function(object) {
   stopifnot("counts" %in% assayNames(object))
   stopifnot(min(assays(object)$counts) >= 0)
   stopifnot(canCoerce(assays(object)$counts, "Matrix"))
+  stopifnot(ncol(object) > 1)
   if (!is(assays(object)$counts, "Matrix")) 
     assays(object)$counts <- Matrix::Matrix(assays(object)$counts)
   return(object)

@@ -27,6 +27,6 @@ test_that("can read peaks file with several extra columns", {
 test_that("reduce peaks works as expected", {
   tmp = GenomicRanges::GRanges(c("chr1","chr1","chr1","chr1","chr2","chr2"),
                                IRanges::IRanges(start = c(1,10,20,30,10,11), end = c(9,23,33,42,18,14)))
-  tmp2 = SummarizedExperiment(assays = list(counts  = matrix(c(1,3,2,4,7,3), ncol = 1)), rowRanges = tmp)
+  tmp2 = SummarizedExperiment(assays = list(counts  = matrix(rep(c(1,3,2,4,7,3),2), ncol = 2)), rowRanges = tmp)
   expect_equal(filterPeaks(tmp2, ix_return = TRUE), c(1,2,4,5))
 })

@@ -12,10 +12,6 @@ chromVAR is an R package for the analysis of sparse chromatin accessibility. chr
 
 This vignette covers basic usage of chromVAR with standard inputs. For more detailed documentation covering different options for various inputs and additional applications, view the additional vignettes on the [documentation website](https://greenleaflab.github.io/chromVAR/).
 
-## Note on recent function name changes
-
-The chromVAR (and related motifmatchr) function names recently changed to switch over to camelCase from snake_case.  All exported functions now use camelCase, e.g. `compute_deviations` is now `computeDeviations`. If following the current documentation but using an earlier version of the package, either update the package or be aware of the discrepancy. This change was made to comply with Bioconductor naming preferences, as chromVAR will soon be submitted to Bioconductor.    
-
 ##Loading the package
 
 Use library or require to load the package and useful additional packages.
@@ -55,6 +51,7 @@ register(SerialParam())
 Please see the documentation for [BiocParallel](https://bioconductor.org/packages/release/bioc/html/BiocParallel.html) for more information about the `register` function and the various options for multi-processing. 
 
 ##Reading in inputs
+
 ```{r, eval = FALSE}
 # Not evaluated 
 peakfile <- "mypeaks.bed"
