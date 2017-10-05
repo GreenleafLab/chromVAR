@@ -135,12 +135,14 @@ setMethod("rbind", "chromVARDeviations",
                                                  function(x)
                                                    colnames(rowData(x)))))
 
-            common_colnames <- all_rowdata_colnames[sapply(all_rowdata_colnames,
+            common_colnames <- all_rowdata_colnames[vapply(all_rowdata_colnames,
                                       function(x){
-                                        all(sapply(inputs,
+                                        all(vapply(inputs,
                                                    function(y) {
                                                      x %in% colnames(rowData(y))
-                                                   }))})]
+                                                   },
+                                                   rep(TRUE, length(x))))},
+                                      TRUE)]
             inputs = lapply(inputs, function(x){
               rowData(x) <- rowData(x)[,common_colnames, drop = FALSE]
               x

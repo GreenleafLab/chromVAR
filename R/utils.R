@@ -57,10 +57,10 @@ mean_smooth <- function(X, window) {
       window >=  length(X)) {
     stop("window must be an integer between 2 and length(X)")
   }
-  pad_left <- rev(X[1:(window%/%2)])
+  pad_left <- rev(X[seq_len(window%/%2)])
   pad_right <- rev(X[(length(X) - ((window - 1)%/%2)):length(X)])
   cx <- c(0, cumsum(c(pad_left, X, pad_right)))
-  return((cx[(window + 1):(length(cx) - 1)] - cx[1:(length(cx) - 1 - window)])/
+  return((cx[(window + 1):(length(cx) - 1)] - cx[seq_len(length(cx) - 1 - window)])/
            window)
 }
 
@@ -111,13 +111,15 @@ all_whole <- function(x, tol = .Machine$double.eps^0.5) {
 merge_lists <- function(..., by = c("order", "name")) {
   by <- match.arg(by)
   if (by == "order") {
-    lx <- sapply(list(...), length)
+    lx <- vapply(list(...), length, 0)
     if (!all_true(lx == lx[1])) {
       max_lx <- max(lx)
       fixed_lx <- lapply(list(...), function(x) {
         tmp_lx <- length(x)
         if (tmp_lx < max_lx) {
-          return(c(x, sapply(1:(max_lx - tmp_lx), function(y) list(NULL))))
+          return(c(x, 
+                   vapply(seq_len(max_lx - tmp_lx), function(y) list(NULL),
+                          list())))
         } else {
           return(x)
         }
@@ -184,15 +186,15 @@ tabulate2 <- function(x, min_val, max_val) {
     stop("max_val must be greater than min_val")
   }
   if (min_val < 0 && max_val > 0) {
-    n <- rev(tabulate(-1 * (x))[1:(-min_val)])
-    p <- tabulate(x)[1:max_val]
+    n <- rev(tabulate(-1 * (x))[seq_len(-min_val)])
+    p <- tabulate(x)[seq_len(max_val)]
     z <- length(which(x == 0))
     out <- c(n, z, p)
     out[which(is.na(out))] <- 0
     names(out) <- min_val:max_val
     return(out)
   } else if (min_val == 0 && max_val > 0) {
-    p <- tabulate(x)[1:max_val]
+    p <- tabulate(x)[seq_len(max_val)]
     z <- length(which(x == 0))
     out <- c(z, p)
     out[which(is.na(out))] <- 0
@@ -204,14 +206,14 @@ tabulate2 <- function(x, min_val, max_val) {
     names(out) <- min_val:max_val
     return(out)
   } else if (min_val < 0 && max_val == 0) {
-    n <- rev(tabulate(-1 * (x))[1:(-min_val)])
+    n <- rev(tabulate(-1 * (x))[seq_len(-min_val)])
     z <- length(which(x == 0))
     out <- c(n, z)
     out[which(is.na(out))] <- 0
     names(out) <- min_val:max_val
     return(out)
   } else if (min_val < 0 && max_val < 0) {
-    n <- rev(tabulate(-1 * (x))[1:(-min_val)])
+    n <- rev(tabulate(-1 * (x))[seq_len(-min_val)])
     out <- n
     out[which(is.na(out))] <- 0
     names(out) <- min_val:max_val
@@ -235,7 +237,7 @@ split_alpha_numeric <- function(x) {
   is.nonnumeric <- function(x) {
     is.na(suppressWarnings(as.numeric(x)))
   }
-  y <- sapply(strsplit(x, "")[[1]], is.nonnumeric)
+  y <- vapply(strsplit(x, "")[[1]], is.nonnumeric,TRUE)
   diffs <- diff(c(TRUE, y))
   splitpoints <- which(diffs != 0)
   if (length(splitpoints) == 0) {
@@ -257,7 +259,7 @@ mxsort <- function(x) {
   which.nas <- which(is.na(x))
   which.blanks <- which(x == "")
   split_x <- lapply(x, split_alpha_numeric)
-  lx <- sapply(split_x, length)
+  lx <- vapply(split_x, length, 0)
   if (!all_true(lx == lx[1])) {
     max_lx <- max(lx)
     split_x <- lapply(split_x, function(y) {

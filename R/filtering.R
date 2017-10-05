@@ -212,7 +212,7 @@ bias_skew <- function(object, nbins = 10, expectation = NULL,
   bias_quantiles <- quantile(bias, seq(0, 1, 1/nbins))
   bias_cut <- cut(bias, breaks = bias_quantiles)
   
-  bias_bins <- split(1:nrow(object), bias_cut)
+  bias_bins <- split(seq_len(nrow(object)), bias_cut)
   
   if (is.null(expectation)) {
     expectation <- compute_expectations(object)
@@ -223,7 +223,7 @@ bias_skew <- function(object, nbins = 10, expectation = NULL,
   sample_names <- colnames(object)
   
   bias_mat <- sparseMatrix(j = unlist(bias_bins), 
-                           i = unlist(lapply(1:nbins,
+                           i = unlist(lapply(seq_len(nbins),
                                              function(x) 
                                                rep(x, length(bias_bins[[x]])))), 
                            x = 1, 
@@ -286,10 +286,10 @@ filterPeaks <- function(object,
       chr_names <- as.character(seqnames(peaks[keep_peaks]))
       starts <- start(peaks[keep_peaks])
       ends <- end(peaks[keep_peaks])
-      overlap_next <- intersect(which(chr_names[1:(length(keep_peaks) - 1)] == 
-                                        chr_names[2:(length(keep_peaks))]), 
-                                which(ends[1:(length(keep_peaks) - 1)] >= 
-                                        starts[2:(length(keep_peaks))]))
+      overlap_next <- intersect(which(chr_names[seq_len(length(keep_peaks) - 1)] == 
+                                        chr_names[seq_len(length(keep_peaks) - 1) + 1]), 
+                                which(ends[seq_len(length(keep_peaks) - 1)] >= 
+                                        starts[seq_len(length(keep_peaks) - 1) + 1]))
       overlap_previous <- overlap_next + 1
       overlap_comparison <- fragments_per_peak[keep_peaks[overlap_previous]] > 
         fragments_per_peak[keep_peaks[overlap_next]]

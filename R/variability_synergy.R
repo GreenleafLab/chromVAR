@@ -164,7 +164,7 @@ getAnnotationSynergy_core <- function(counts_mat,
   }
   
   if (is.null(names(peak_indices))) {
-    names(peak_indices) <- 1:length(peak_indices)
+    names(peak_indices) <- seq_along(peak_indices)
   }
   
   
@@ -187,7 +187,7 @@ getAnnotationSynergy_core <- function(counts_mat,
   stopifnot(l >= 2)
   outmat <- matrix(nrow = l, ncol = l)
   var_order <- order(variabilities, decreasing = TRUE)
-  for (i in 1:(l - 1)) {
+  for (i in seq_len(l - 1)) {
     outmat[i, (i + 1):l] <- 
       get_variability_boost_helper(peak_indices[[var_order[i]]], 
                                    counts_mat, 
@@ -358,7 +358,7 @@ getAnnotationCorrelation_core <- function(counts_mat,
   }
   
   if (is.null(names(peak_indices))) {
-    names(peak_indices) <- 1:length(peak_indices)
+    names(peak_indices) <- seq_along(peak_indices)
   }
   
   
@@ -413,10 +413,10 @@ get_variability_boost_helper <- function(peak_set,
                                 background_peaks = background_peaks, 
                                 expectation = expectation))
   
-  setlen <- sapply(tmpsets, length)
+  setlen <- vapply(tmpsets, length, 0)
   
   bgsets <- unlist(lapply(setlen, 
-                          function(x) lapply(1:nbg, 
+                          function(x) lapply(seq_len(nbg), 
                                              function(y) sample(peak_set, 
                                                                 x, 
                                                                 replace = FALSE))), 
@@ -428,10 +428,11 @@ get_variability_boost_helper <- function(peak_set,
                                              background_peaks = background_peaks, 
                                              expectation = expectation))
   
-  var_boost <- sapply(seq_along(tmpvar), 
+  var_boost <- vapply(seq_along(tmpvar), 
                       function(x) 
                         (tmpvar[x] - mean(bgvar[((x -1) * nbg + 1):(x * nbg)])) /
-                        sd(bgvar[((x - 1) * nbg + 1):(x * nbg)]))
+                        sd(bgvar[((x - 1) * nbg + 1):(x * nbg)]),
+                      0)
   return(var_boost)
 }
 

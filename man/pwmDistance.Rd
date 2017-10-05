@@ -23,7 +23,8 @@ computes distance between every pwm in a list or between pwms in one list
 with pwms in another
 }
 \details{
-The format of x and y should be a \code{\link[TFBSTools]{PWMatrixList}} 
+The format of x and y should be a 
+\code{\link[TFBSTools]{PWMatrixList}} 
 or \code{\link[TFBSTools]{PFMatrixList}} or a list of matrices with rows 
 corresponding to "A","C","G","T" and columns summing to 1.
 }

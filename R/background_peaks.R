@@ -136,7 +136,7 @@ get_background_peaks_core <- function(object,
   bins2 <- seq(min(trans_norm_mat[, 2]), max(trans_norm_mat[, 2]), 
                length.out = bs)
   
-  bin_data <- do.call(rbind, lapply(1:bs, 
+  bin_data <- do.call(rbind, lapply(seq_len(bs), 
                                     function(x) matrix(c(rep(bins1[x], bs), 
                                                          bins2), ncol = 2, 
                                                        byrow = FALSE)))
@@ -177,11 +177,11 @@ get_background_peaks_core <- function(object,
 #' 
 getPermutedData <- function(object, niterations = 10, w = 0.1, bs = 50) {
   
-  out <- bplapply(1:niterations, 
+  out <- bplapply(seq_len(niterations), 
                                 function(x) get_permuted_data_helper(object, 
                                                                      w = w, 
                                                                      bs = bs))
-  names(out) <- paste("perm", 1:niterations, sep = "_")
+  names(out) <- paste("perm", seq_len(niterations), sep = "_")
   
   assays(object) <- c(assays(object), out)
   
@@ -196,8 +196,9 @@ get_permuted_data_helper <- function(object, w, bs) {
 }
 
 reorder_columns <- function(mat, colixmat) {
-  reordered <- lapply(1:ncol(mat), function(x) mat[colixmat[, x], x, 
-                                                   drop = FALSE])
+  reordered <- lapply(seq_len(ncol(mat)), 
+                      function(x) 
+                        mat[colixmat[, x], x, drop = FALSE])
   return(do.call(cBind, reordered))
 }
 

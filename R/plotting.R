@@ -133,9 +133,8 @@ plotDeviationsTsne <- function(object,
   } 
   
   if (nrow(tsne) != ncol(object)){
-    stop(paste("Number of rows of tsne do not match number of columns of object",
-               "plotDeviationsTsne takes result of deviations_tsne for samples",
-               sep="\n"))
+    stop("Number of rows of tsne do not match number of columns of object. ", 
+         " plotDeviationsTsne takes result of deviations_tsne for samples")
   }
   
   if (shiny) 

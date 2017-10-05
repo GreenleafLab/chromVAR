@@ -53,47 +53,53 @@ makeBiasBins_core <- function(object, bias, nbins = 25, frac = 0.3) {
   # make bias bins
   bias_quantiles <- quantile(bias, seq(0, 1, 1/nbins))
   bias_cut <- cut(bias, breaks = bias_quantiles)
-  bias_bins <- split(1:npeaks, bias_cut)
-  names(bias_bins) <- sapply(1:nbins, 
+  bias_bins <- split(seq_len(npeaks), bias_cut)
+  names(bias_bins) <- vapply(seq_len(nbins), 
                              function(x) paste("bias_bin_", x, sep = "", 
-                                               collapse = ""))
+                                               collapse = ""),
+                             "")
   # make count bins
   pseudo_counts <- fragments_per_peak + runif(npeaks, min = 0, max = 0.1)
   count_quantiles <- quantile(pseudo_counts, seq(0, 1, 1/nbins))
   count_cut <- cut(pseudo_counts, breaks = count_quantiles)
-  count_bins <- split(1:npeaks, count_cut)
-  names(count_bins) <- sapply(1:nbins, 
+  count_bins <- split(seq_len(npeaks), count_cut)
+  names(count_bins) <- vapply(seq_len(nbins), 
                               function(x) paste("count_bin_", x, sep = "", 
-                                                collapse = ""))
+                                                collapse = ""),
+                              "")
   # make bias / count bins
   nbins <- round(sqrt(nbins))
   bias_quantiles <- quantile(bias, seq(0, 1, 1/nbins))
   bias_cut <- cut(bias, breaks = bias_quantiles)
-  tmp_bias_bins <- split(1:npeaks, bias_cut)
+  tmp_bias_bins <- split(seq_len(npeaks), bias_cut)
   count_quantiles <- quantile(pseudo_counts, seq(0, 1, 1/nbins))
   count_cut <- cut(pseudo_counts, breaks = count_quantiles)
-  tmp_count_bins <- split(1:npeaks, count_cut)
-  bias_count_bins <- sapply(1:nbins, 
+  tmp_count_bins <- split(seq_len(npeaks), count_cut)
+  bias_count_bins <- unlist(lapply(seq_len(nbins), 
                             function(x) 
-                              sapply(1:nbins, 
+                              lapply(seq_len(nbins), 
                                      function(y)
                                        intersect(tmp_bias_bins[[y]], 
-                                                 tmp_count_bins[[x]])))
-  names(bias_count_bins) <- sapply(1:nbins, 
+                                                 tmp_count_bins[[x]]))),
+                            recursive = FALSE)
+  names(bias_count_bins) <- vapply(seq_len(nbins), 
                                    function(x) 
-                                     sapply(1:nbins, 
+                                     vapply(seq_len(nbins), 
                                             function(y) 
                                               paste("bias_count_bin_", 
                                                     x, "_", y, sep = "", 
-                                                    collapse = "")))
+                                                    collapse = ""),
+                                            ""),
+                                   rep("",nbins))
   tmp <- c(bias_bins, count_bins, bias_count_bins)
   sets <- lapply(tmp, function(x) sample(x, size = length(x) * frac))
-  mean_bias <- sapply(sets, function(x) mean(bias[x]))
-  mean_counts <- sapply(sets, function(x) mean(fragments_per_peak[x]))
+  mean_bias <- vapply(sets, function(x) mean(bias[x]),0)
+  mean_counts <- vapply(sets, function(x) mean(fragments_per_peak[x]),0)
   rd <- DataFrame(bias = mean_bias, counts = mean_counts)
-  out <- SummarizedExperiment(assays = list(annotationMatches = 
-                                              convert_from_ix_list(sets, 
-                                                                   nrow(object))),
+  out <- SummarizedExperiment(assays = 
+                                list(annotationMatches = 
+                                       convert_from_ix_list(sets, 
+                                                            nrow(object))),
                               colData = rd)
   return(out)
 }
@@ -125,11 +131,14 @@ makeBiasBins_core <- function(object, bias, nbins = 25, frac = 0.3) {
 #'
 #' perm_sets <- makePermutedSets(mini_counts, motif_ix)
 setGeneric("makePermutedSets", 
-           function(object, annotations, ...) standardGeneric("makePermutedSets"))
+           function(object, annotations, ...) 
+             standardGeneric("makePermutedSets"))
 
-#' @describeIn makePermutedSets method for SummarizedExperiment and SummarizedExperiment
+#' @describeIn makePermutedSets method for SummarizedExperiment and 
+#' SummarizedExperiment
 #' @export
-setMethod(makePermutedSets, c(object = "SummarizedExperiment", annotations = "SummarizedExperiment"), 
+setMethod(makePermutedSets, c(object = "SummarizedExperiment", 
+                              annotations = "SummarizedExperiment"), 
           function(object,  annotations,
                    bias = rowData(object)$bias, window = 10) {
             object <- counts_check(object)
@@ -139,9 +148,11 @@ setMethod(makePermutedSets, c(object = "SummarizedExperiment", annotations = "Su
                                     colData = colData(annotations))
           })
 
-#' @describeIn makePermutedSets method for RangedSummarizedExperiment and SummarizedExperiment
+#' @describeIn makePermutedSets method for RangedSummarizedExperiment and 
+#' SummarizedExperiment
 #' @export
-setMethod(makePermutedSets, c(object = "RangedSummarizedExperiment", annotations = "SummarizedExperiment"), 
+setMethod(makePermutedSets, c(object = "RangedSummarizedExperiment", 
+                              annotations = "SummarizedExperiment"), 
           function(object,  annotations,
                    bias = rowRanges(object)$bias, window = 10) {
             object <- counts_check(object)
@@ -151,9 +162,11 @@ setMethod(makePermutedSets, c(object = "RangedSummarizedExperiment", annotations
                                     colData = colData(annotations))
           })
 
-#' @describeIn makePermutedSets method for Matrix or matrix and SummarizedExperiment
+#' @describeIn makePermutedSets method for Matrix or matrix and 
+#' SummarizedExperiment
 #' @export
-setMethod(makePermutedSets, c(object = "MatrixOrmatrix", annotation = "SummarizedExperiment"), 
+setMethod(makePermutedSets, c(object = "MatrixOrmatrix", 
+                              annotation = "SummarizedExperiment"), 
           function(object, annotations,
                    bias, window = 10) {
             annotations <- matches_check(annotations)
@@ -163,9 +176,11 @@ setMethod(makePermutedSets, c(object = "MatrixOrmatrix", annotation = "Summarize
           })
 
 
-#' @describeIn makePermutedSets method for SummarizedExperiment and MatrixOrmatrix
+#' @describeIn makePermutedSets method for SummarizedExperiment and 
+#' MatrixOrmatrix
 #' @export
-setMethod(makePermutedSets, c(object = "SummarizedExperiment", annotations = "MatrixOrmatrix"), 
+setMethod(makePermutedSets, c(object = "SummarizedExperiment", 
+                              annotations = "MatrixOrmatrix"), 
           function(object,  annotations,
                    bias = rowData(object)$bias, window = 10) {
             object <- counts_check(object)
@@ -173,9 +188,11 @@ setMethod(makePermutedSets, c(object = "SummarizedExperiment", annotations = "Ma
             makePermutedSets_core(object, peak_indices, bias, window = window)
           })
 
-#' @describeIn makePermutedSets method for RangedSummarizedExperiment and MatrixOrmatrix
+#' @describeIn makePermutedSets method for RangedSummarizedExperiment and 
+#' MatrixOrmatrix
 #' @export
-setMethod(makePermutedSets, c(object = "RangedSummarizedExperiment", annotations = "MatrixOrmatrix"), 
+setMethod(makePermutedSets, c(object = "RangedSummarizedExperiment", 
+                              annotations = "MatrixOrmatrix"), 
           function(object,  annotations,
                    bias = rowRanges(object)$bias, window = 10) {
             object <- counts_check(object)
@@ -185,7 +202,8 @@ setMethod(makePermutedSets, c(object = "RangedSummarizedExperiment", annotations
 
 #' @describeIn makePermutedSets method for Matrix/matrix and Matrix/matrix
 #' @export
-setMethod(makePermutedSets, c(object = "MatrixOrmatrix", annotation = "MatrixOrmatrix"), 
+setMethod(makePermutedSets, c(object = "MatrixOrmatrix", 
+                              annotation = "MatrixOrmatrix"), 
           function(object, annotations,
                    bias, window = 10) {
             peak_indices <- convert_to_ix_list(annotations)
@@ -195,7 +213,8 @@ setMethod(makePermutedSets, c(object = "MatrixOrmatrix", annotation = "MatrixOrm
 
 #' @describeIn makePermutedSets method for SummarizedExperiment and list
 #' @export
-setMethod(makePermutedSets, c(object = "SummarizedExperiment", annotations = "list"), 
+setMethod(makePermutedSets, c(object = "SummarizedExperiment", 
+                              annotations = "list"), 
           function(object,  annotations,
                    bias = rowData(object)$bias, window = 10) {
             object <- counts_check(object)
@@ -221,21 +240,27 @@ setMethod(makePermutedSets, c(object = "MatrixOrmatrix", annotation = "list"),
 
 
 
-makePermutedSets_core <- function(object, peak_indices, bias, window = 10, colData = NULL) {
+makePermutedSets_core <- function(object, peak_indices, bias, window = 10, 
+                                  colData = NULL) {
   
   
   
-  bg <- get_background_peaks_alternative(object, bias, niterations = 1, window = window)
+  bg <- get_background_peaks_alternative(object, bias, niterations = 1, 
+                                         window = window)
   sets <- lapply(seq_along(peak_indices), function(x) bg[peak_indices[[x]], 1])
-  names(sets) <- sapply(names(peak_indices), function(x) paste("permuted.", x, 
-                                                               collapse = "", sep = ""))
+  names(sets) <- vapply(names(peak_indices), 
+                        function(x) 
+                          paste("permuted.", x, collapse = "", sep = ""),
+                        "")
   
   if (is.null(colData)) {
     colData <- DataFrame(name = names(sets))
   } else{
     if ("name" %in% colnames(colData)) {
-      colData$name <- sapply(colData$name, function(x) paste("permuted.", x, collapse = "", 
-                                                        sep = ""))
+      colData$name <- vapply(colData$name, 
+                             function(x) 
+                               paste("permuted.", x, collapse = "", sep = ""),
+                             "")
     } else {
       colData$name <- names(sets)
     }}
@@ -243,8 +268,9 @@ makePermutedSets_core <- function(object, peak_indices, bias, window = 10, colDa
   rownames(colData) <- names(sets)
 
   out <- SummarizedExperiment(assays = 
-                                list(matches = convert_from_ix_list(sets, 
-                                                                    nrow(object))), 
+                                list(matches = 
+                                       convert_from_ix_list(sets, 
+                                                            nrow(object))), 
                               colData = colData)
   
   return(out)
@@ -264,21 +290,25 @@ get_background_peaks_alternative <- function(object, bias, niterations = 50,
   tmp_vals <- t(forwardsolve(t(chol_cov_mat), t(norm_mat)))
   
   grpsize <- 2000
-  grps <- lapply(1:(npeak%/%grpsize + ((npeak%%grpsize) != 0)), 
+  grps <- lapply(seq_len(npeak%/%grpsize + ((npeak%%grpsize) != 0)), 
                  function(x) ((x - 
                                  1) * grpsize + 1):(min(x * grpsize, npeak)))
   
   bghelper <- function(grp, tmp_vals, niterations) {
     tmp_nns <- nabor::knn(tmp_vals, tmp_vals[grp, ], window + 1, eps = 0)$nn.idx
     if (niterations == 1) {
-      return(matrix(sapply(1:nrow(tmp_nns), 
-                           function(x) sample(tmp_nns[x, ][tmp_nns[x,] != grp[x]],
-                                              niterations, replace = TRUE)), 
+      return(matrix(vapply(seq_len(nrow(tmp_nns)), 
+                           function(x){
+                             sample(tmp_nns[x, ][tmp_nns[x,] != grp[x]],
+                                    niterations, replace = TRUE)}, 
+                           0),
                     ncol = 1))
     } else {
-      return(t(sapply(1:nrow(tmp_nns), 
-                      function(x) sample(tmp_nns[x, ][tmp_nns[x, ] != grp[x]], 
-                                         niterations, replace = TRUE))))
+      return(t(vapply(seq_len(nrow(tmp_nns)), 
+                      function(x) {
+                        sample(tmp_nns[x, ][tmp_nns[x, ] != grp[x]], 
+                               niterations, replace = TRUE)},
+                      rep(0, niterations))))
     }
   }
   

@@ -36,7 +36,7 @@ getSampleDistance <- function(object,
                                      vars[ix])]
   if (initial_dims < length(ix2)) {
     pc_res <- prcomp(t(deviations(object)[ix2, ]))
-    mat <- pc_res$x[, 1:initial_dims]
+    mat <- pc_res$x[, seq_len(initial_dims)]
   } else {
     mat <- t(deviations(object)[ix2, , drop = FALSE])
   }

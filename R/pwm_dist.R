@@ -58,7 +58,8 @@ pwm_to_prob <- function(pwms) {
   } else if (inherits(pwms, "PFMatrixList")) {
     out <- lapply(pwms, pfm_to_prob_helper)
   }else if (inherits(pwms, "list")) {
-    stopifnot(all_true(sapply(pwms, function(x) all.equal(colSums(x), rep(1, ncol(x))))))
+    stopifnot(all(vapply(pwms, function(x) all(colSums(x) == ncol(x)),
+                              TRUE)))
     out <- pwms
   } else {
     stop("incorrect input format, must be PWMatrix,PWMatrixList, matrix, 
@@ -76,7 +77,8 @@ pwm_to_prob <- function(pwms) {
 #' @param x list of pwms or pfms, see Details
 #' @param y list of pwms or pfms, see Details
 #' @param min_overlap minimum number of basepairs overlapping between motifs
-#' @details The format of x and y should be a \code{\link[TFBSTools]{PWMatrixList}} 
+#' @details The format of x and y should be a 
+#' \code{\link[TFBSTools]{PWMatrixList}} 
 #' or \code{\link[TFBSTools]{PFMatrixList}} or a list of matrices with rows 
 #' corresponding to "A","C","G","T" and columns summing to 1. 
 #' @return a list with three matrices- 'dist' has the distance between each pair 

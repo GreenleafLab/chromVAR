@@ -109,9 +109,11 @@ setMethod(getAnnotations,
                                                    rowRanges, ...) {
             if (is(rowRanges, "RangedSummarizedExperiment")) 
               rowRanges <- rowRanges(rowRanges)
-            matches <- sapply(annotations, 
-                              function(x) overlapsAny(rowRanges, x))
-            SummarizedExperiment(assays = list(annotationMatches = Matrix(matches)),
+            matches <- vapply(annotations, 
+                              function(x) overlapsAny(rowRanges, x),
+                              rep(TRUE,length(rowRanges)))
+            SummarizedExperiment(assays = 
+                                   list(annotationMatches = Matrix(matches)),
                                  rowRanges = rowRanges, ...)
           })
 
