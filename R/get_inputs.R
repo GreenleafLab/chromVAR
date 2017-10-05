@@ -294,13 +294,13 @@ readAlignmentFromBed <- function(filename, paired) {
     tmp <- tmp[, c(1:3, strand_col)]
     colnames(tmp) <- c("chr", "start", "end", "strand")
     tmp[, "start"] <- tmp[, "start"] + 1
-    tmp <- with(tmp, GRanges(tmp$chr, ranges = IRanges(tmp$start, tmp$end), 
-                             strand = strand))
+    tmp <- GRanges(tmp$chr, ranges = IRanges(tmp$start, tmp$end), 
+                             strand = tmp$strand)
   } else {
     tmp <- tmp[, 1:6]
     colnames(tmp) <- c("chr", "start", "end")
     tmp[, "start"] <- tmp[, "start"] + 1
-    tmp <- with(tmp, GRanges(tmp$chr, ranges = IRanges(tmp$start, tmp$end)))
+    tmp <- GRanges(tmp$chr, ranges = IRanges(tmp$start, tmp$end))
   }
   if (paired) {
     left <- resize(tmp, width = 1, fix = "start", ignore.strand = TRUE)
