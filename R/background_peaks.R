@@ -27,7 +27,7 @@ setMethod(addGCBias, c(object = "RangedSummarizedExperiment"),
             peaks <- rowRanges(object)
             seqs <- getSeq(genome, peaks)
             nucfreqs <- letterFrequency(seqs, c("A", "C", "G", "T"))
-            gc <- apply(nucfreqs, 1, function(x) sum(x[2:3])/sum(x))
+            gc <- rowSums(nucfreqs[, 2:3]) / rowSums(nucfreqs)
             rowRanges(object)$bias <- gc
             return(object)
           })
@@ -42,7 +42,7 @@ setMethod(addGCBias, c(object = "SummarizedExperiment"),
             genome <- validate_genome_input(genome)
             seqs <- getSeq(genome, peaks)
             nucfreqs <- letterFrequency(seqs, c("A", "C", "G", "T"))
-            gc <- apply(nucfreqs, 1, function(x) sum(x[2:3])/sum(x))
+            gc <- rowSums(nucfreqs[, 2:3]) / rowSums(nucfreqs)
             rowData(object)$bias <- gc
             return(object)
           })
