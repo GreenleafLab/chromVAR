@@ -134,32 +134,28 @@ setMethod("rbind", "chromVARDeviations",
             all_rowdata_colnames <- unique(do.call(c,lapply(inputs,
                                                  function(x)
                                                    colnames(rowData(x)))))
-
-            common_colnames <- all_rowdata_colnames[vapply(all_rowdata_colnames,
-                                      function(x){
-                                        all(vapply(inputs,
-                                                   function(y) {
-                                                     x %in% colnames(rowData(y))
-                                                   },
-                                                   rep(TRUE, length(x))))},
-                                      TRUE)]
+            in_common <- vapply(all_rowdata_colnames, function(x) {
+              all(vapply(inputs,
+                         function(y) {
+                           x %in% colnames(rowData(y))
+                         },
+                         rep(TRUE, length(x))))
+              },
+              TRUE)
+            common_colnames <- all_rowdata_colnames[in_common]
             inputs = lapply(inputs, function(x){
               rowData(x) <- rowData(x)[,common_colnames, drop = FALSE]
               x
             })
-            out <- SummarizedExperiment(assays =
-                                          list(z = do.call(rbind,
-                                                           lapply(inputs,
-                                                                  function(x)
-                                                                    assays(x)$z)),
-                                               deviations = do.call(rbind,
-                                                                    lapply(inputs,
-                                                                           function(x)
-                                                                             assays(x)$deviations))),
+            z <- do.call(rbind,
+                         lapply(inputs, function(x) assays(x)$z))
+            dev <- do.call(rbind,
+                           lapply(inputs, function(x) assays(x)$deviations))
+            rd <- do.call(rbind, lapply(inputs,rowData))
+            out <- SummarizedExperiment(assays = list(z = z,
+                                                      deviations = dev),
                                         colData = colData(inputs[[1]]),
-                                        rowData = do.call(rbind, lapply(inputs,
-                                                                        function(x)
-                                                                          rowData(x))) )
+                                        rowData =  rd)
 
             return(new("chromVARDeviations", out))
           })
