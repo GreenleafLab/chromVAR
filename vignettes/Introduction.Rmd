@@ -1,12 +1,13 @@
 ---
 output: rmarkdown::html_vignette
+author: Alicia Schep
+title: chromVAR
 vignette: >
   %\VignetteIndexEntry{Introduction}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-# chromVAR
 
 chromVAR is an R package for the analysis of sparse chromatin accessibility. chromVAR takes as inputs aligned fragments (filtered for duplicates and low quality) from ATAC-seq or DNAse-seq experiments as well as genomic annotations such as motif positions. chromVAR computes for each annotation and each cell or sample a bias corrected "deviation" in accessibility from the expected accessibility based on the average of all the cells or samples. 
 
@@ -53,12 +54,12 @@ Please see the documentation for [BiocParallel](https://bioconductor.org/package
 ##Reading in inputs
 
 ```{r, eval = FALSE}
-# Not evaluated 
+# Not evaluated; fake file names 
 peakfile <- "mypeaks.bed"
 peaks <- getPeaks(peakfile)
 
 bamfiles <- c("mybam1.bam","mybam2.bam")
-fragment_counts <- getDounts(bamfiles, peaks, paired =  TRUE, 
+fragment_counts <- getCounts(bamfiles, peaks, paired =  TRUE, 
                              by_rg = TRUE, format = "bam", 
                              colData = DataFrame(celltype = c("GM","K562")))
 ```
@@ -106,8 +107,7 @@ filtering_plot
 
 
 To instead return the indexes of the samples to keep instead of a new SummarizedExperiment object, use ix_return = TRUE.
-```{r, eval = FALSE}
-# Not evaluated 
+```{r}
 ix <- filterSamples(example_counts, ix_return = TRUE, shiny = FALSE)
 ```
 
@@ -125,14 +125,13 @@ The function `getJasparMotifs` fetches motifs from the JASPAR database.
 motifs <- getJasparMotifs()
 ```
 
-The function get_motifs() by default gets human motifs from JASPAR core database.  For other species motifs, change the species argument.  
-```{r, eval = FALSE}
-# Not evaluated 
-motifs <- getJasparMotifs(species = "Saccharomyces cerevisiae")
+The function getJasparMotifs() by default gets human motifs from JASPAR core database.  For other species motifs, change the species argument.  
+```{r}
+yeast_motifs <- getJasparMotifs(species = "Saccharomyces cerevisiae")
 ```
 For using a collection other than core, use the `collection` argument.  Options include: "CORE", "CNE", "PHYLOFACTS", "SPLICE", "POLII", "FAM", "PBM", "PBM_HOMEO", "PBM_HLH".
 
-The `getMotifs` function is simply a wrapper around `getMatrixSet` from TFBSTools-- you can also use that function to fetch motifs from JASPAR if you prefer, and/or check out the documentation for that function for more information.  
+The `getJasparMotifs` function is simply a wrapper around `getMatrixSet` from TFBSTools-- you can also use that function to fetch motifs from JASPAR if you prefer, and/or check out the documentation for that function for more information.  
 
 
 The function `matchMotifs` from the motifmatchr package finds which peaks contain which motifs. By default, it returns a SummarizedExperiment object, which contains  a sparse matrix indicating motif match or not.The function requires an input of a genome sequence, which can be provided as a BSgenome, FaFile, or DNAStringSet object. 
@@ -149,8 +148,9 @@ Instead of returning just motif matches, the function can also return additional
 
 If instead of using known motifs, you want to use all kmers of a certain length, the `matchKmers` function can be used.  For more about using kmers as inputs, see the Annotations vignette on the documentation website. 
 
-```{r, eval = FALSE}
-kmer_ix <- matchKmers(7, counts_filtered)
+```{r}
+kmer_ix <- matchKmers(6, counts_filtered, 
+                      genome = BSgenome.Hsapiens.UCSC.hg19)
 ```
 
 ## Compute deviations
@@ -176,8 +176,7 @@ The result from `getBackgroundPeaks` is a matrix of indices, where each column r
 
 To use the background peaks computed, simply add those to the call to computeDeviations:
 
-```{r, eval = FALSE}
-# Not evaluated 
+```{r}
 dev <- computeDeviations(object = counts_filtered, annotations = motif_ix,
                          background_peaks = bg)
 ```
