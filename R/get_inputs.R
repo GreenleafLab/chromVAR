@@ -224,7 +224,7 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE,
     depths <- vector("numeric", length(bams))
     
     for (i in seq_along(bams)) {
-      message(paste("Reading in file: ", bams[i], sep = "", collapse = ""))
+      message("Reading in file: ", bams[i])
       fragments <- bamToFragments(bams[i], paired = paired)
       depths[i] <- length(fragments)
       mat[, i] <- countOverlaps(peaks, fragments, type = "any", 
@@ -402,7 +402,7 @@ bamToFragments <- function(bamfile, paired) {
 }
 
 getFragmentCountsByRG <- function(bam, peaks, paired) {
-  message(paste("Reading in file: ", bam, sep = "", collapse = ""))
+  message("Reading in file: ", bam)
   rg_fragments <- bamToFragmentsByRG(bam, paired)
   
   tmpfun <- function(frags) {

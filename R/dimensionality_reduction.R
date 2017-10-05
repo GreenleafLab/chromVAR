@@ -55,20 +55,20 @@ deviationsTsne <- function(object,
     if (ncol(object)/3 <= perplexity) {
       message("Perplexity given too high")
       perplexity <- floor((ncol(object) - 1)/3)
-      message(paste0("Setting perplexity to ", perplexity))
+      message("Setting perplexity to ", perplexity)
     }
     vars <- row_sds(deviationScores(object), FALSE)
     if (threshold > max(vars, na.rm = TRUE)) 
       stop("Threshold too high")
     if (sum(vars > threshold, na.rm = TRUE) < 2)
       stop("Threshold too high, and/or too few non/NA")
-    if (shiny){
+    if (shiny) {
       res <- deviations_tsne_shiny(object, threshold, perplexity, max_iter, 
                                    theta)
-      message(paste("Variability threshold used is:",res$threshold,sep=" "))
-      message(paste("Perplexity used is:",res$perplexity,sep=" "))
+      message("Variability threshold used is: ", res$threshold)
+      message("Perplexity used is: ", res$perplexity)
       tsne_res <- res$tsne
-    } else{
+    } else {
       ix <- which(vars > threshold)
       mat <- deviations(object)[ix, , drop = FALSE]
       ix2 <- remove_correlated_helper(mat, vars[ix])
@@ -80,25 +80,27 @@ deviationsTsne <- function(object,
     out <- tsne_res$Y
     rownames(out) <- colnames(object)
     return(out)
-  } else{
+  } else {
     vars <- row_sds(deviationScores(object), FALSE)
     if (threshold > max(vars, na.rm = TRUE)) 
       stop("threshold too high")
     if (sum(vars > threshold, na.rm = TRUE) < 2)
       stop("Threshold too high, and/or too few non/NA")
-    if (shiny){
+    if (shiny) {
       res <- deviations_tsne_inv_shiny(object, threshold, perplexity, max_iter, 
                                    theta)
-      message(paste("Variability threshold used is:",res$threshold,sep=" "))
-      message(paste("Perplexity used is:",res$perplexity,sep=" "))
+      message("Variability threshold used is: ",res$threshold)
+      message("Perplexity used is: ", res$perplexity)
       ix <- which(vars > res$threshold)
       tsne_res <- res$tsne
-    } else{
+    } else {
       mat <- deviations(object)
       ix <- which(vars > threshold)
-      tsne_res <- Rtsne::Rtsne(mat[ix ,, drop = FALSE], perplexity = perplexity, 
+      tsne_res <- Rtsne::Rtsne(mat[ix ,, drop = FALSE], 
+                               perplexity = perplexity, 
                                check_duplicates = FALSE,
-                               max_iter = max_iter, theta = theta)
+                               max_iter = max_iter, 
+                               theta = theta)
     }
     out <- as.data.frame(tsne_res$Y)
     rownames(out) <- rownames(object)[ix]

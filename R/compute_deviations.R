@@ -278,8 +278,8 @@ setMethod("computeDeviations", c(object = "SummarizedExperiment",
                    annotations,
                    background_peaks = getBackgroundPeaks(object),
                    expectation = computeExpectations(object)) {
-            message(paste0("Annotations not provided, ",
-                           "so chromVAR being run on individual peaks..."))
+            message("Annotations not provided, ",
+                    "so chromVAR being run on individual peaks...")
             object <- counts_check(object)
             peak_indices <- split(seq_len(nrow(object)), seq_len(nrow(object)))
             compute_deviations_core(counts(object),
@@ -340,8 +340,8 @@ setMethod("computeDeviations", c(object = "MatrixOrmatrix",
           function(object, annotations,
                    background_peaks,
                    expectation = computeExpectations(object)) {
-            message(paste0("Annotations not provided, ",
-                           "so chromVAR being run on individual peaks..."))
+            message("Annotations not provided, ",
+                    "so chromVAR being run on individual peaks...")
             peak_indices <- split(seq_len(nrow(object)), seq_len(nrow(object)))
             compute_deviations_core(object, peak_indices, background_peaks,
                                     expectation)

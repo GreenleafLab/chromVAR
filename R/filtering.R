@@ -34,19 +34,18 @@ filterSamples <- function(object, min_in_peaks = NULL, min_depth = NULL, shiny =
   if (is.null(min_in_peaks)) {
     min_in_peaks <- round(median(fragments_per_sample/depths) * 0.5, digits = 3)
     if (!shiny) 
-      message(paste("min_in_peaks set to ", min_in_peaks, sep = "", collapse = ""))
+      message("min_in_peaks set to ", min_in_peaks)
   }
   if (is.null(min_depth)) {
     min_depth <- max(500, median(depths) * 0.1)
     if (!shiny) 
-      message(paste("min_depth set to ", min_depth, sep = "", collapse = ""))
+      message("min_depth set to ", min_depth)
   }
   if (shiny) {
     shiny_returned <- filter_samples_gadget(depths, fragments_per_sample, min_in_peaks, 
       min_depth, colnames(object))
-    message(paste("min_in_peaks set to ", shiny_returned$min_in_peaks, sep = "", 
-      collapse = ""))
-    message(paste("min_depth set to ", shiny_returned$min_depth, sep = "", collapse = ""))
+    message("min_in_peaks set to ", shiny_returned$min_in_peaks)
+    message("min_depth set to ", shiny_returned$min_depth)
     keep_samples <- shiny_returned$keep
   } else {
     keep_samples <- intersect(which(depths >= min_depth), which(fragments_per_sample/depths >= 
@@ -92,11 +91,11 @@ filterSamplesPlot <- function(object, min_in_peaks = NULL, min_depth = NULL,
   fragments_per_sample <- getFragmentsPerSample(object)
   if (is.null(min_in_peaks)) {
     min_in_peaks <- round(median(fragments_per_sample/depths) * 0.5, digits = 3)
-    message(paste("min_in_peaks set to ", min_in_peaks, sep = "", collapse = ""))
+    message("min_in_peaks set to ", min_in_peaks)
   }
   if (is.null(min_depth)) {
     min_depth <- max(500, median(depths) * 0.1)
-    message(paste("min_depth set to ", min_depth, sep = "", collapse = ""))
+    message("min_depth set to ", min_depth)
   }
   keep_samples <- intersect(which(depths >= min_depth), which(fragments_per_sample/depths >= 
     min_in_peaks))
@@ -133,20 +132,24 @@ filter_samples_gadget <- function(depths,
                                   min_depth, 
                                   sample_names) {
   
-  ui <- miniPage(gadgetTitleBar("Adjust parameters to change filtering"), 
-                 fillCol(flex = c(1,3), 
-                         fillRow(flex = c(1, 1), 
-                                 sliderInput("min_in_peaks", 
-                                             "Minimum fraction of fragments in peaks:", 
-                                             min = 0,
-                                             max = 1, 
-                                             value = min_in_peaks), 
-                                 numericInput("min_depth", 
-                                              "Minimum total reads:", 
-                                              min = 0, 
-                                              max = max(depths), 
-                                              value = min_depth)), 
-                         plotlyOutput("plot", height = "100%")))
+  ui <- miniPage(
+    gadgetTitleBar("Adjust parameters to change filtering"), 
+    fillCol(
+      flex = c(1,3), 
+      fillRow(flex = c(1, 1), 
+              sliderInput("min_in_peaks", 
+                          "Minimum fraction of fragments in peaks:", 
+                          min = 0,
+                          max = 1, 
+                          value = min_in_peaks), 
+              numericInput("min_depth", 
+                           "Minimum total reads:", 
+                           min = 0, 
+                           max = max(depths), 
+                           value = min_depth)), 
+      plotlyOutput("plot", height = "100%")
+      )
+    )
   
   server <- function(input, output, session) {
     
@@ -279,8 +282,8 @@ filterPeaks <- function(object,
   if (non_overlapping) {
     strand(peaks) <- "*"
     if (!isDisjoint(peaks) && !isSorted(peaks)) {
-      stop(paste("Peaks must be sorted to be able to filter overlapping peaks!",
-                 "Please use 'sort' function to filter peaks",sep="\n"))
+      stop("Peaks must be sorted to be able to filter overlapping peaks!\n",
+           "Please use 'sort' function to filter peaks")
     }
     while (!(isDisjoint(peaks[keep_peaks]))) {
       chr_names <- as.character(seqnames(peaks[keep_peaks]))
