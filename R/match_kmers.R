@@ -91,7 +91,7 @@ match_kmers_helper <- function(seqs, kmers, out, ranges) {
 #' @param ranges if subject is not GenomicRanges, ranges to use when out is
 #' positions
 #' @param ... additional arguments
-#' @seealso \code{\link{get_annotations}}, \code{\link{computeDeviations}}
+#' @seealso \code{\link{getAnnotations}}, \code{\link{computeDeviations}}
 #' @details  Can either return a SummarizedExperiment with just sparse matrix
 #' with values set to 1 for a match (if return == 'matches'),  or a
 #' GenomicRanges  object with all the positions of matches

@@ -94,5 +94,5 @@ kmer_ix <- matchKmers(6, mini_counts,
                        genome = BSgenome.Hsapiens.UCSC.hg19)
 }
 \seealso{
-\code{\link{get_annotations}}, \code{\link{computeDeviations}}
+\code{\link{getAnnotations}}, \code{\link{computeDeviations}}
 }

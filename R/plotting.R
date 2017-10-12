@@ -3,7 +3,7 @@
 #' plotVariability
 #'
 #' plot variability of motifs/etc
-#' @param variability output from \code{\link{compute_variability}}
+#' @param variability output from \code{\link{computeVariability}}
 #' @param xlab label for x-axis (default is 'Sorted TFs')
 #' @param n  number of toppoints to label?
 #' @param labels names of sets. if not given, uses rownames of variability
@@ -111,7 +111,7 @@ variability_table <- function(var_df) {
 #'
 #' plots sample similarity tsne
 #' @param object deviations result object
-#' @param tsne result from \code{\link{deviations_tsne}}
+#' @param tsne result from \code{\link{deviationsTsne}}
 #' @param var_df variability result
 #' @param sample_column column name for sample data -- colData(object) -- to be
 #'  used for coloring points
@@ -134,7 +134,7 @@ plotDeviationsTsne <- function(object,
   
   if (nrow(tsne) != ncol(object)){
     stop("Number of rows of tsne do not match number of columns of object. ", 
-         " plotDeviationsTsne takes result of deviations_tsne for samples")
+         " plotDeviationsTsne takes result of deviationsTsne for samples")
   }
   
   if (shiny) 
@@ -200,7 +200,7 @@ plot_deviations_tsne_shiny <- function(object, tsne, var_df,
                                        annotation_column) {
   
   if (is.null(var_df)) 
-    var_df <- compute_variability(object)
+    var_df <- computeVariability(object)
   
   if ("tsne" %in% names(tsne)) 
     tsne <- tsne$tsne

@@ -89,6 +89,13 @@ get_mm_kmers <- function(kmer) {
   return(out)
 }
 
+expected_n_overlap_kmers <- function(max_extend){
+  if (max_extend == 0){
+    return(0)
+  } else{
+    return(4**(max_extend) + expected_n_overlap_kmers(max_extend - 1))
+  }
+}
 
 get_overlap_kmers <- function(kmer, max_extend, dir = "both") {
   out <- c()
@@ -140,12 +147,12 @@ get_overlap_kmers <- function(kmer, max_extend, dir = "both") {
       return(c(out1, out2, 
                vapply(out1, 
                       get_overlap_kmers, 
-                      rep("",4**(max_extend -1)),
+                      rep("", expected_n_overlap_kmers(max_extend - 1)),
                       max_extend = max_extend - 1, 
                       dir = "left"), 
                vapply(out2, 
                       get_overlap_kmers, 
-                      rep("",4**(max_extend -1)),
+                      rep("", expected_n_overlap_kmers(max_extend - 1)),
                       max_extend = max_extend - 1, 
                       dir = "right")))
     } else if (dir == "left") {
@@ -157,7 +164,7 @@ get_overlap_kmers <- function(kmer, max_extend, dir = "both") {
                      USE.NAMES = FALSE)
       return(c(out1, vapply(out1, 
                             get_overlap_kmers, 
-                            rep("",4 ** (max_extend -1)),
+                            rep("", expected_n_overlap_kmers(max_extend - 1)),
                             max_extend = max_extend - 1, 
                             dir = "left")))
     } else if (dir == "right") {
@@ -169,7 +176,7 @@ get_overlap_kmers <- function(kmer, max_extend, dir = "both") {
       return(c(out2, 
                vapply(out2, 
                       get_overlap_kmers, 
-                      rep("", 4 ** (max_extend - 1)),
+                      rep("", expected_n_overlap_kmers(max_extend - 1)),
                       max_extend = max_extend - 1, 
                       dir = "right")))
     }

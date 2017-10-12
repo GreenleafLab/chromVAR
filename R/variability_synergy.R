@@ -6,7 +6,7 @@
 #' @param background_peaks optional, matrix of background peaks
 #' @param variabilities optional, variabilities computed from computeVariability
 #' @param expectation optional, expected fraction of reads per peak, as computed
-#' by compute_expectations
+#' by computeExpectations
 #' @param nbg number of background iterations
 #' @param ... additional arguments
 #' @details should only be run on small number of motifs/kmers/peaksets 
@@ -109,7 +109,7 @@ setMethod("getAnnotationSynergy", c(object = "MatrixOrmatrix",
 setMethod("getAnnotationSynergy", c(object = "MatrixOrmatrix", 
                                       annotations = "MatrixOrmatrix"), 
           function(object, annotations, background_peaks, 
-                   expectation = compute_expectations(object), 
+                   expectation = computeExpectations(object), 
                    variabilities = NULL, nbg = 25) {
             stopifnot(canCoerce(annotations, "lMatrix"))
             annotations <- as(annotations, "lMatrix")
@@ -129,7 +129,7 @@ setMethod("getAnnotationSynergy", c(object = "MatrixOrmatrix",
 setMethod("getAnnotationSynergy", c(object = "MatrixOrmatrix", 
                                       annotations = "list"), 
           function(object, annotations, background_peaks, 
-                   expectation = compute_expectations(object),
+                   expectation = computeExpectations(object),
                    variabilities = NULL, nbg = 25) {
             getAnnotationSynergy_core(object, annotations, 
                                         background_peaks, 
@@ -210,7 +210,7 @@ getAnnotationSynergy_core <- function(counts_mat,
 #' @param variabilities optional, variabilities computed from 
 #' computeVariability
 #' @param expectation optional, expected fraction of reads per peak, as computed
-#' by compute_expectations
+#' by computeExpectations
 #' @param ... additional arguments
 #' @details should only be run on small number of motifs/kmers/peaksets 
 #' (very slow!)
@@ -230,8 +230,8 @@ setGeneric("getAnnotationCorrelation",
 setMethod("getAnnotationCorrelation", c(object = "SummarizedExperiment", 
                                           annotations = "SummarizedExperiment"), 
           function(object, annotations, 
-                   background_peaks = get_background_peaks(object), 
-                   expectation = compute_expectations(object), 
+                   background_peaks = getBackgroundPeaks(object), 
+                   expectation = computeExpectations(object), 
                    variabilities = NULL) {
             object <- counts_check(object)
             annotations <- matches_check(annotations)
@@ -249,8 +249,8 @@ setMethod("getAnnotationCorrelation", c(object = "SummarizedExperiment",
 setMethod("getAnnotationCorrelation", c(object = "SummarizedExperiment", 
                                           annotations = "MatrixOrmatrix"), 
           function(object, annotations, 
-                   background_peaks = get_background_peaks(object), 
-                   expectation = compute_expectations(object), 
+                   background_peaks = getBackgroundPeaks(object), 
+                   expectation = computeExpectations(object), 
                    variabilities = NULL) {
             stopifnot(canCoerce(annotations, "lMatrix"))
             annotations <- as(annotations, "lMatrix")
@@ -271,8 +271,8 @@ setMethod("getAnnotationCorrelation", c(object = "SummarizedExperiment",
                                           annotations = "list"), 
           function(object, 
                    annotations, 
-                   background_peaks = get_background_peaks(object), 
-                   expectation = compute_expectations(object), 
+                   background_peaks = getBackgroundPeaks(object), 
+                   expectation = computeExpectations(object), 
                    variabilities = NULL) {
             object <- counts_check(object)
             getAnnotationCorrelation_core(counts(object),
@@ -291,7 +291,7 @@ setMethod("getAnnotationCorrelation", c(object = "MatrixOrmatrix",
           function(object, 
                    annotations, 
                    background_peaks, 
-                   expectation = compute_expectations(object), 
+                   expectation = computeExpectations(object), 
                    variabilities = NULL) {
             annotations <- matches_check(annotations)
             peak_indices <- convert_to_ix_list(annotationMatches(annotations))
@@ -308,7 +308,7 @@ setMethod("getAnnotationCorrelation", c(object = "MatrixOrmatrix",
 setMethod("getAnnotationCorrelation", c(object = "MatrixOrmatrix", 
                                           annotations = "MatrixOrmatrix"), 
           function(object, annotations, background_peaks, 
-                   expectation = compute_expectations(object), 
+                   expectation = computeExpectations(object), 
                    variabilities = NULL) {
             stopifnot(canCoerce(annotations, "lMatrix"))
             annotations <- as(annotations, "lMatrix")
@@ -327,7 +327,7 @@ setMethod("getAnnotationCorrelation", c(object = "MatrixOrmatrix",
 setMethod("getAnnotationCorrelation", c(object = "MatrixOrmatrix", 
                                           annotations = "list"), 
           function(object, annotations, background_peaks, 
-                   expectation = compute_expectations(object), 
+                   expectation = computeExpectations(object), 
                    variabilities = NULL) {
             getAnnotationCorrelation_core(object, annotations, 
                                             background_peaks, expectation, 

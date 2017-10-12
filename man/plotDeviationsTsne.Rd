@@ -10,7 +10,7 @@ plotDeviationsTsne(object, tsne, var_df = NULL, sample_column = NULL,
 \arguments{
 \item{object}{deviations result object}
 
-\item{tsne}{result from \code{\link{deviations_tsne}}}
+\item{tsne}{result from \code{\link{deviationsTsne}}}
 
 \item{var_df}{variability result}
 

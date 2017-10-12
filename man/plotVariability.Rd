@@ -8,7 +8,7 @@ plotVariability(variability, xlab = "Sorted TFs", n = 3,
   labels = variability$name, use_plotly = interactive())
 }
 \arguments{
-\item{variability}{output from \code{\link{compute_variability}}}
+\item{variability}{output from \code{\link{computeVariability}}}
 
 \item{xlab}{label for x-axis (default is 'Sorted TFs')}
 

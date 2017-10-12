@@ -58,8 +58,9 @@ pwm_to_prob <- function(pwms) {
   } else if (inherits(pwms, "PFMatrixList")) {
     out <- lapply(pwms, pfm_to_prob_helper)
   }else if (inherits(pwms, "list")) {
-    stopifnot(all(vapply(pwms, function(x) all(colSums(x) == ncol(x)),
-                              TRUE)))
+    stopifnot(all(vapply(pwms, function(x){
+      all(abs(colSums(x) - 1) < 10e-5)},
+      TRUE)))
     out <- pwms
   } else {
     stop("incorrect input format, must be PWMatrix,PWMatrixList, matrix, 

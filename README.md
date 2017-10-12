@@ -3,7 +3,7 @@
 
 # chromVAR
 
-chromVAR is an R package for the analysis of sparse chromatin accessibility data from single cell or bulk ATAC or DNAse-seq data. The package aims to identify motifs or other genomic annotations associated with variability in chromatin accessibility between individual cells or samples.  For a more detail overview of the method, please see the [publication](https://www.nature.com/nmeth/journal/vaop/ncurrent/full/nmeth.4401.html) or [preprint](https://www.biorxiv.org/content/early/2017/02/21/110346). 
+chromVAR is an R package for the analysis of sparse chromatin accessibility data from single cell or bulk ATAC or DNAse-seq data. The package aims to identify motifs or other genomic annotations associated with variability in chromatin accessibility between individual cells or samples.  For a more detail overview of the method, please see the [publication](https://www.nature.com/nmeth/journal/vaop/ncurrent/full/nmeth.4401.html) ([pdf](http://greenleaf.stanford.edu/assets/pdf/nmeth.4401.pdf), [supplement](https://drive.google.com/file/d/0B8eUn6ZURmqvUjBCbE5Hc0p4UFU/view?usp=sharing)). 
 
 ## Note on recent function name changes
 

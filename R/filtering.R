@@ -218,7 +218,7 @@ bias_skew <- function(object, nbins = 10, expectation = NULL,
   bias_bins <- split(seq_len(nrow(object)), bias_cut)
   
   if (is.null(expectation)) {
-    expectation <- compute_expectations(object)
+    expectation <- computeExpectations(object)
   } else {
     stopifnot(length(expectation) == nrow(object))
   }
