@@ -18,7 +18,7 @@ library(Matrix)
 library(ggplot2)
 library(BiocParallel)
 library(BSgenome.Hsapiens.UCSC.hg19)
-register(MulticoreParam(8))
+register(SerialParam())
 data(example_counts, package = "chromVAR")
 set.seed(2017)
 example_counts <- addGCBias(example_counts, genome = BSgenome.Hsapiens.UCSC.hg19)
@@ -154,8 +154,7 @@ chromVAR includes a function for computing the "synergy" between pairs of annota
 ## Function for computing synergy
 
 ```{r}
-data(example_ix, package = "chromVAR")
-get_annotation_synergy(counts_filtered, motif_ix[,c(83,24,20)])
+getAnnotationSynergy(counts_filtered, motif_ix[,c(83,24,20)])
 ```
 
 The result is a matrix with Z-scores for the variability synergy of each possible pairing.  Note that this function is pretty slow and should only be performed with a limited selection of motifs and not the full collection!  

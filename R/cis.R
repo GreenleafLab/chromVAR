@@ -7,7 +7,7 @@
 #' @param ... additional arguments
 #' @export
 #' @author Alicia Schep
-#' @return SummarizedExperiment with annotationMatches assay storing which peaks 
+#' @return SummarizedExperiment with annotationMatches assay storing which peaks
 #' belong to which groups
 #' @examples 
 #' 
@@ -44,10 +44,16 @@ get_cis_groups_core <- function(peaks, grpsize = 25, stepsize = 10) {
   out <- do.call(c, bplapply(seq_along(chrs), function(i) {
     chr_ix <- which(as.character(seqnames(peaks)) == chrs[i])
     if (length(chr_ix) > stepsize) {
-      tmp <- lapply(1:(length(chr_ix)%/%stepsize), function(x) chr_ix[((x - 
-        1) * stepsize + 1):(min((x - 1) * stepsize + grpsize, length(chr_ix)))])
-      names(tmp) <- sapply(1:length(tmp), function(x) paste(chrs[i], x, sep = "_", 
-        collapse = ""))
+      tmp <- lapply(seq_len(length(chr_ix)%/%stepsize),  function(x) { 
+          start_ix <- ((x - 1) * stepsize + 1)
+          end_ix <- min((x - 1) * stepsize + grpsize, length(chr_ix))
+          chr_ix[start_ix:end_ix]
+          }
+        )
+      names(tmp) <- vapply(seq_along(tmp), 
+                           function(x) 
+                             paste(chrs[i], x, sep = "_", collapse = ""), 
+                           "")
       return(tmp)
     } else {
       return(list())

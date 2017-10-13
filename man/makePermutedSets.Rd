@@ -69,15 +69,20 @@ a certain fragment count, fragment count, or fragment count & bias.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{object = SummarizedExperiment,annotations = SummarizedExperiment}: method for SummarizedExperiment and SummarizedExperiment
+\item \code{object = SummarizedExperiment,annotations = SummarizedExperiment}: method for SummarizedExperiment and 
+SummarizedExperiment
 
-\item \code{object = RangedSummarizedExperiment,annotations = SummarizedExperiment}: method for RangedSummarizedExperiment and SummarizedExperiment
+\item \code{object = RangedSummarizedExperiment,annotations = SummarizedExperiment}: method for RangedSummarizedExperiment and 
+SummarizedExperiment
 
-\item \code{object = MatrixOrmatrix,annotations = SummarizedExperiment}: method for Matrix or matrix and SummarizedExperiment
+\item \code{object = MatrixOrmatrix,annotations = SummarizedExperiment}: method for Matrix or matrix and 
+SummarizedExperiment
 
-\item \code{object = SummarizedExperiment,annotations = MatrixOrmatrix}: method for SummarizedExperiment and MatrixOrmatrix
+\item \code{object = SummarizedExperiment,annotations = MatrixOrmatrix}: method for SummarizedExperiment and 
+MatrixOrmatrix
 
-\item \code{object = RangedSummarizedExperiment,annotations = MatrixOrmatrix}: method for RangedSummarizedExperiment and MatrixOrmatrix
+\item \code{object = RangedSummarizedExperiment,annotations = MatrixOrmatrix}: method for RangedSummarizedExperiment and 
+MatrixOrmatrix
 
 \item \code{object = MatrixOrmatrix,annotations = MatrixOrmatrix}: method for Matrix/matrix and Matrix/matrix
 

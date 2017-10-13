@@ -8,8 +8,8 @@ filterSamples(object, min_in_peaks = NULL, min_depth = NULL,
   shiny = interactive(), ix_return = FALSE)
 }
 \arguments{
-\item{object}{SummarizedExperiment with matrix of fragment counts per peak per sample, as computed 
-by \code{\link{getCounts}}}
+\item{object}{SummarizedExperiment with matrix of fragment counts per peak
+per sample, as computed by \code{\link{getCounts}}}
 
 \item{min_in_peaks}{minimum fraction of samples within peaks}
 
@@ -17,7 +17,8 @@ by \code{\link{getCounts}}}
 
 \item{shiny}{make shiny gadget?}
 
-\item{ix_return}{return indices of sample to keep instead of subsetted counts object}
+\item{ix_return}{return indices of sample to keep instead of subsetted counts
+object}
 }
 \value{
 indices of samples to keep
@@ -26,9 +27,10 @@ indices of samples to keep
 function to get indices of samples that pass filtters
 }
 \details{
-If unspecified, min_in_peaks and min_depth cutoffs will be estimated based on data.
-min_in_peaks is set to 0.5 times the median proportion of fragments in peaks.  min_depth is 
-set to the maximum of 500 or 10% of the median library size.
+If unspecified, min_in_peaks and min_depth cutoffs will be estimated
+ based on data. min_in_peaks is set to 0.5 times the median proportion of
+ fragments in peaks. min_depth is set to the maximum of 500 or 10% of the
+ median library size.
 }
 \examples{
         
@@ -38,5 +40,6 @@ counts_filtered <- filterSamples(example_counts, min_depth = 1500,
                                   min_in_peaks = 0.15, shiny = FALSE)
 }
 \seealso{
-\code{\link{getCounts}},  \code{\link{getPeaks}}, \code{\link{filterPeaks}}
+\code{\link{getCounts}},  \code{\link{getPeaks}}, 
+\code{\link{filterPeaks}}
 }

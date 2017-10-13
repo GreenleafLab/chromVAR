@@ -16,7 +16,7 @@ library(motifmatchr)
 library(SummarizedExperiment)
 library(Matrix)
 library(BiocParallel)
-register(MulticoreParam(8))
+register(SerialParam())
 ```
 
 ## Motifs or kmers

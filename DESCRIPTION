@@ -1,7 +1,7 @@
 Package: chromVAR
 Type: Package
 Title: Chromatin Variation Across Regions
-Version: 0.99.0
+Version: 0.99.1
 Date: 2016-12-20
 Authors@R: c(
     person("Alicia", "Schep", email = "aschep@gmail.com", role = c("aut","cre")),
@@ -52,8 +52,6 @@ Suggests:
     rmarkdown,
     pheatmap,
     motifmatchr
-Remotes:
-    GreenleafLab/motifmatchr
 biocViews: SingleCell, Sequencing, GeneRegulation
 LazyData: TRUE
 LinkingTo: Rcpp, RcppArmadillo

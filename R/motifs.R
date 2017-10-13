@@ -4,7 +4,8 @@
 #' @param species Which species?  use eithe jaspar code or latin name. 
 #' default is 'Homo sapiens'
 #' @param collection Which collection to use?  default is 'CORE'
-#' @param ... additional arguments to opts for \code{\link[TFBSTools]{getMatrixSet}}
+#' @param ... additional arguments to opts for 
+#' \code{\link[TFBSTools]{getMatrixSet}}
 #' @details Simply a wrapper function for \code{\link[TFBSTools]{getMatrixSet}}
 #'  that calls JASPAR2016 database using \code{\link[JASPAR2016]{JASPAR2016}}
 #' @return \code{\link[TFBSTools]{PFMatrixList}}

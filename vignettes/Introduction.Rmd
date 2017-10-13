@@ -11,7 +11,7 @@ vignette: >
 
 chromVAR is an R package for the analysis of sparse chromatin accessibility. chromVAR takes as inputs aligned fragments (filtered for duplicates and low quality) from ATAC-seq or DNAse-seq experiments as well as genomic annotations such as motif positions. chromVAR computes for each annotation and each cell or sample a bias corrected "deviation" in accessibility from the expected accessibility based on the average of all the cells or samples. 
 
-This vignette covers basic usage of chromVAR with standard inputs. For more detailed documentation covering different options for various inputs and additional applications, view the additional vignettes on the [documentation website](https://greenleaflab.github.io/chromVAR/).
+This vignette covers basic usage of chromVAR with standard inputs. For more detailed documentation covering different options for various inputs and additional applications, view the additional vignettes on the [documentation website](https://greenleaflab.github.io/chromVAR/). For more description of the method and applications, please see the [publication](https://www.nature.com/nmeth/journal/vaop/ncurrent/full/nmeth.4401.html) ([pdf](http://greenleaf.stanford.edu/assets/pdf/nmeth.4401.pdf), [supplement](https://drive.google.com/file/d/0B8eUn6ZURmqvUjBCbE5Hc0p4UFU/view?usp=sharing)).
 
 ##Loading the package
 
@@ -79,7 +79,8 @@ The GC content will be used for determining background peaks.  The function `add
 
 ```{r}
 library(BSgenome.Hsapiens.UCSC.hg19)
-example_counts <- addGCBias(example_counts, genome = BSgenome.Hsapiens.UCSC.hg19)
+example_counts <- addGCBias(example_counts, 
+                            genome = BSgenome.Hsapiens.UCSC.hg19)
 head(rowData(example_counts))
 ```
 
@@ -93,7 +94,8 @@ Unless `plot = FALSE` given as argument to function `filterSamples`, a plot will
 
 ```{r}
 #find indices of samples to keep
-counts_filtered <- filterSamples(example_counts, min_depth = 1500, min_in_peaks = 0.15, shiny = FALSE)
+counts_filtered <- filterSamples(example_counts, min_depth = 1500, 
+                                 min_in_peaks = 0.15, shiny = FALSE)
 ```
 If shiny argument is set to TRUE (the default), a shiny gadget will pop up which allows you to play with the filtering parameters and see which cells pass filters or not.  
 
@@ -101,7 +103,8 @@ To get just the plot of what is filtered, use `filterSamplesPlot`.  By default, 
 
 ```{r filter_plot, fig.width = 6, fig.height = 6}
 #find indices of samples to keep
-filtering_plot <- filterSamplesPlot(example_counts, min_depth = 1500, min_in_peaks = 0.15, use_plotly = FALSE)
+filtering_plot <- filterSamplesPlot(example_counts, min_depth = 1500, 
+                                    min_in_peaks = 0.15, use_plotly = FALSE)
 filtering_plot
 ```
 

@@ -34,11 +34,11 @@ getAnnotationSynergy(object, annotations, ...)
   variabilities = NULL, nbg = 25)
 
 \S4method{getAnnotationSynergy}{MatrixOrmatrix,MatrixOrmatrix}(object,
-  annotations, background_peaks, expectation = compute_expectations(object),
+  annotations, background_peaks, expectation = computeExpectations(object),
   variabilities = NULL, nbg = 25)
 
 \S4method{getAnnotationSynergy}{MatrixOrmatrix,list}(object, annotations,
-  background_peaks, expectation = compute_expectations(object),
+  background_peaks, expectation = computeExpectations(object),
   variabilities = NULL, nbg = 25)
 }
 \arguments{
@@ -51,7 +51,7 @@ getAnnotationSynergy(object, annotations, ...)
 \item{background_peaks}{optional, matrix of background peaks}
 
 \item{expectation}{optional, expected fraction of reads per peak, as computed
-by compute_expectations}
+by computeExpectations}
 
 \item{variabilities}{optional, variabilities computed from computeVariability}
 

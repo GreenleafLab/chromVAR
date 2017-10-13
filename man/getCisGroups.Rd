@@ -24,7 +24,7 @@ getCisGroups(object, ...)
 \item{stepsize}{number of peaks between each new set of groups}
 }
 \value{
-SummarizedExperiment with annotationMatches assay storing which peaks 
+SummarizedExperiment with annotationMatches assay storing which peaks
 belong to which groups
 }
 \description{

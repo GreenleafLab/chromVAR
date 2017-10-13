@@ -9,12 +9,12 @@
 #' @param extra_cols extra columns to read in beyond first three
 #' @param sort_peaks sort the peaks?
 #' @return \code{\link[GenomicRanges]{GenomicRanges}} containing peaks from file
-#' @details As in standard definition of bed file, first column is assumed to be 
-#' chromosome, second is assumed to be start of peak (0-based), and third is 
-#' assumed to be end of peak (1-based). Note that in output GenomicRanges 
-#' output, start and end indices are both 1-based. Extra columns can be added as
-#' metadata or strand information if provided, but the user must indicate column
-#' index and name using named vector for extra_cols.
+#' @details As in standard definition of bed file, first column is assumed to be
+#'  chromosome, second is assumed to be start of peak (0-based), and third is
+#'  assumed to be end of peak (1-based). Note that in output GenomicRanges
+#'  output, start and end indices are both 1-based. Extra columns can be added
+#'  as metadata or strand information if provided, but the user must indicate 
+#'  column index and name using named vector for extra_cols.
 #' @seealso \code{\link{getCounts}}, \code{\link{filterPeaks}}, 
 #' \code{\link{readNarrowpeaks}}
 #' @export
@@ -23,24 +23,25 @@
 #' peaks <- getPeaks(peaks_file, sort = TRUE)
 getPeaks <- function(filename, extra_cols = c(), sort_peaks = FALSE) {
   if (is.installed("readr")) {
-    bed <- as.data.frame(suppressMessages(readr::read_tsv(file = filename, col_names = FALSE)[, 
-                                                                                              c(1:3, extra_cols)]))
+    bed <- as.data.frame(
+      suppressMessages(readr::read_tsv(file = filename, 
+                                       col_names = FALSE)[,c(1:3, extra_cols)]))
   } else {
-    bed <- read.delim(file = filename, header = FALSE, sep = "\t", stringsAsFactors = FALSE)[, 
-                                                                                             c(1:3, extra_cols)]
+    bed <- read.delim(file = filename, header = FALSE, sep = "\t", 
+                      stringsAsFactors = FALSE)[, c(1:3, extra_cols)]
   }
   colnames(bed) <- c("chr", "start", "end", names(extra_cols))
   bed[, "start"] <- bed[, "start"] + 1
   bed <- makeGRangesFromDataFrame(bed, keep.extra.columns = TRUE)
   if (!isDisjoint(bed)) {
-    warning("Peaks are overlapping!
-      After getting peak counts, peaks can be reduced to non-overlapping set
-        using filterPeaks function")
+    warning("Peaks are overlapping!",
+      "After getting peak counts, peaks can be reduced to non-overlapping set",
+      " using filterPeaks function")
   }
   if (sum(width(bed) == width(bed[1])) != length(bed)) {
-    warning("Peaks are not equal width!
-      Use resize(peaks, width = x, fix = \"center\") to make peaks equal in size,
-      where x is the desired size of the peaks)")
+    warning("Peaks are not equal width!",
+      "Use resize(peaks, width = x, fix = \"center\") to make peaks equal in ",
+      "size, where x is the desired size of the peaks)")
   }
   #sorted_bed <- sortSeqlevels(bed)
   #sorted_bed <- sort(sorted_bed, ignore.strand = TRUE)
@@ -93,15 +94,16 @@ readNarrowpeaks <- function(filename,
   if (non_overlapping) {
     bed <- sortSeqlevels(bed)
     bed <- sort(bed)
-    keep_peaks <- 1:length(bed)
+    keep_peaks <- seq_along(bed)
     while (!(isDisjoint(bed[keep_peaks]))) {
       chr_names <- as.character(seqnames(bed[keep_peaks]))
       starts <- start(bed[keep_peaks])
       ends <- end(bed[keep_peaks])
-      overlap_next <- intersect(which(chr_names[1:(length(keep_peaks) - 1)] == 
-                                        chr_names[2:(length(keep_peaks))]),
-                                which(ends[1:(length(keep_peaks) - 1)] >= 
-                                        starts[2:(length(keep_peaks))]))
+      overlap_next <- 
+        intersect(which(chr_names[seq_len(length(keep_peaks) - 1)] == 
+                          chr_names[seq_len(length(keep_peaks) - 1) + 1]),
+                  which(ends[seq_len(length(keep_peaks) - 1)] >= 
+                          starts[seq_len(length(keep_peaks) - 1) + 1]))
       overlap_previous <- overlap_next + 1
       overlap_comparison <- bed[keep_peaks[overlap_previous]]$qval > 
         bed[keep_peaks[overlap_next]]$qval
@@ -128,7 +130,8 @@ readNarrowpeaks <- function(filename,
 #' @examples 
 #' data(mini_counts, package = "chromVAR")
 #' fragment_counts <- counts(mini_counts)
-setMethod("counts", signature(object = "SummarizedExperiment"), function(object) {
+setMethod("counts", signature(object = "SummarizedExperiment"), 
+          function(object) {
   stopifnot("counts" %in% assayNames(object))
   assays(object)$counts
 })
@@ -151,14 +154,16 @@ setReplaceMethod("counts", signature(object = "SummarizedExperiment",
 
 #' getCounts
 #'
-#' makes matrix of fragment counts in peaks using one or multiple bam or bed files
+#' makes matrix of fragment counts in peaks using one or multiple bam or bed 
+#' files
 #' @param alignment_files filenames for bam or bed files with aligned reads
 #' @param peaks GRanges object with peaks
 #' @param by_rg use RG tags in bam to separate groups?
 #' @param paired paired end data?
 #' @param format bam or bed?  default is bam
 #' @param colData sample annotation DataFrame
-#' @return \code{\link[SummarizedExperiment]{RangedSummarizedExperiment-class}} object
+#' @return \code{\link[SummarizedExperiment]{RangedSummarizedExperiment-class}}
+#'  object
 #' @seealso \code{\link{getSampleDepths}},  \code{\link{getPeaks}}, 
 #' \code{\link{filterSamples}}
 #' @export
@@ -207,13 +212,14 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE,
   
   if (by_rg) {
     tmp <- lapply(bams, getFragmentCountsByRG, peaks = peaks, paired = paired)
-    if (!is.null(sample_annotation) && nrow(sample_annotation) == length(bams)) {
+    if (!is.null(sample_annotation) && nrow(sample_annotation) == length(bams)){
       sample_annotation <- as(sample_annotation, "DataFrame")
-      l <- sapply(tmp, function(x) length(x$depths))
-      sample_annotation <- do.call(rbind, 
-                                   lapply(seq_along(l), 
-                                          function(x) rep(sample_annotation[x, 
-                                                                            , drop = FALSE], l[x])))
+      l <- vapply(tmp, function(x) length(x$depths), 0)
+      sample_annotation <- 
+        do.call(rbind, 
+                lapply(seq_along(l), 
+                       function(x){
+                         rep(sample_annotation[x, ,drop = FALSE], l[x])}))
     }
     counts_mat <- do.call(cBind, lapply(tmp, function(x) x$counts))
     depths <- do.call(c, lapply(tmp, function(x) x$depths))
@@ -222,7 +228,7 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE,
     depths <- vector("numeric", length(bams))
     
     for (i in seq_along(bams)) {
-      message(paste("Reading in file: ", bams[i], sep = "", collapse = ""))
+      message("Reading in file: ", bams[i])
       fragments <- bamToFragments(bams[i], paired = paired)
       depths[i] <- length(fragments)
       mat[, i] <- countOverlaps(peaks, fragments, type = "any", 
@@ -248,7 +254,7 @@ get_counts_from_beds <- function(beds, peaks, paired, colData = NULL) {
   
   results <- bplapply(seq_along(beds), function(i) {
     fragments <- readAlignmentFromBed(beds[i], paired = paired)
-    if (!isTRUE(all.equal(sort(seqlevels(fragments)), sort(seqlevels(peaks))))) {
+    if (!isTRUE(all.equal(sort(seqlevels(fragments)), sort(seqlevels(peaks))))){
       merged_seq <- unique(c(seqlevels(fragments), seqlevels(peaks)))
       seqlevels(fragments) <- merged_seq
       seqlevels(peaks) <- merged_seq
@@ -286,19 +292,19 @@ readAlignmentFromBed <- function(filename, paired) {
     tmp <- read.delim(file = filename, col.names = FALSE, sep = "\t", 
                       stringsAsFactors = FALSE)
   }
-  strand_col <- which(apply(tmp[1:min(100, nrow(tmp)), ], 2, 
+  strand_col <- which(apply(tmp[seq_len(min(100, nrow(tmp))), ], 2, 
                             function(x) all(x %in%  c("+", "-", "*"))))
   if (length(strand_col) == 1) {
     tmp <- tmp[, c(1:3, strand_col)]
     colnames(tmp) <- c("chr", "start", "end", "strand")
     tmp[, "start"] <- tmp[, "start"] + 1
-    tmp <- with(tmp, GRanges(tmp$chr, ranges = IRanges(tmp$start, tmp$end), 
-                             strand = strand))
+    tmp <- GRanges(tmp$chr, ranges = IRanges(tmp$start, tmp$end), 
+                             strand = tmp$strand)
   } else {
     tmp <- tmp[, 1:6]
     colnames(tmp) <- c("chr", "start", "end")
     tmp[, "start"] <- tmp[, "start"] + 1
-    tmp <- with(tmp, GRanges(tmp$chr, ranges = IRanges(tmp$start, tmp$end)))
+    tmp <- GRanges(tmp$chr, ranges = IRanges(tmp$start, tmp$end))
   }
   if (paired) {
     left <- resize(tmp, width = 1, fix = "start", ignore.strand = TRUE)
@@ -329,10 +335,11 @@ bamToFragmentsByRG <- function(bamfile, paired) {
   
   if (paired) {
     scanned <- scanBam(bamfile, 
-                       param = ScanBamParam(flag = scanBamFlag(isMinusStrand = FALSE, 
-                                                               isProperPair = TRUE),
-                                            what = c("rname", "pos", "isize"),
-                                            tag = "RG"))[[1]]
+                       param = ScanBamParam(
+                         flag = scanBamFlag(isMinusStrand = FALSE, 
+                                            isProperPair = TRUE),
+                         what = c("rname", "pos", "isize"),
+                         tag = "RG"))[[1]]
     RG_tags <- mxsort(unique(scanned$tag$RG))
     
     out <- bplapply(RG_tags, function(RG) {
@@ -357,7 +364,8 @@ bamToFragmentsByRG <- function(bamfile, paired) {
       match_RG <- which(scanned$tag$RG == RG)
       return(GRanges(seqnames = scanned$rname[match_RG], 
                      IRanges(start = ifelse(scanned$strand[match_RG] ==  "-", 
-                                            scanned$pos[match_RG] + scanned$qwidth[match_RG] - 1, 
+                                            scanned$pos[match_RG] + 
+                                              scanned$qwidth[match_RG] - 1, 
                                             scanned$pos[match_RG]), 
                              width = 1)))
     })
@@ -372,9 +380,11 @@ bamToFragmentsByRG <- function(bamfile, paired) {
 bamToFragments <- function(bamfile, paired) {
   if (paired) {
     scanned <- scanBam(bamfile, 
-                       param = ScanBamParam(flag = scanBamFlag(isMinusStrand = FALSE, 
-                                                               isProperPair = TRUE),
-                                            what = c("rname", "pos", "isize")))[[1]]
+                       param = 
+                         ScanBamParam(flag = 
+                                        scanBamFlag(isMinusStrand = FALSE, 
+                                                    isProperPair = TRUE),
+                                      what = c("rname", "pos", "isize")))[[1]]
     scanned_left <- GRanges(seqnames = scanned$rname, 
                             IRanges(start = scanned$pos, 
                                     width = 1), strand = "+")
@@ -400,7 +410,7 @@ bamToFragments <- function(bamfile, paired) {
 }
 
 getFragmentCountsByRG <- function(bam, peaks, paired) {
-  message(paste("Reading in file: ", bam, sep = "", collapse = ""))
+  message("Reading in file: ", bam)
   rg_fragments <- bamToFragmentsByRG(bam, paired)
   
   tmpfun <- function(frags) {
@@ -412,16 +422,18 @@ getFragmentCountsByRG <- function(bam, peaks, paired) {
   }
   
   all_overlaps <- bplapply(rg_fragments, tmpfun)
-  counts_mat <- sparseMatrix(i = do.call(rbind, all_overlaps)$queryHits,
-                             j = unlist(lapply(seq_along(all_overlaps), 
-                                               function(y) rep(y, 
-                                                               nrow(all_overlaps[[y]]))), 
-                                        use.names = FALSE),
-                             x = 1, 
-                             dims = c(length(peaks), length(rg_fragments)), 
-                             dimnames = list(NULL, names(rg_fragments)))
+  counts_mat <- sparseMatrix(
+    i = do.call(rbind, all_overlaps)$queryHits,
+    j = unlist(lapply(seq_along(all_overlaps), 
+                      function(y) rep(y, 
+                                      nrow(all_overlaps[[y]]))), 
+               use.names = FALSE),
+    x = 1, 
+    dims = c(length(peaks), length(rg_fragments)), 
+    dimnames = list(NULL, names(rg_fragments)))
   
-  return(list(counts = counts_mat, depths = sapply(rg_fragments, length)))
+  return(list(counts = counts_mat, 
+              depths = vapply(rg_fragments, length, 0)))
 }
 
 # Read in depths from bam ------------------------------------------------------
@@ -470,23 +482,29 @@ get_sample_depths_from_bams <- function(bams, paired = TRUE, by_rg = FALSE) {
     out <- do.call(c, lapply(bams, getSampleDepthsByRG, paired = paired))
   } else {
     if (paired) {
-      out <- sapply(bams, countBam, param = ScanBamParam(scanBamFlag(isMinusStrand = FALSE, 
-                                                                     isProperPair = TRUE)))
+      out <- vapply(bams, 
+                    function(x) 
+                      countBam(x,
+                               param = 
+                                 ScanBamParam(
+                                   scanBamFlag(isMinusStrand = FALSE, 
+                                               isProperPair = TRUE)))$records, 
+                    0)
     } else {
-      out <- sapply(bams, countBam)
+      out <- vapply(bams, function(x) countBam(x)$records, 0)
     }
-    names(out) <- sapply(bams, basename)
+    names(out) <- vapply(bams, basename, "")
   }
   return(out)
 }
 
 get_sample_depths_from_beds <- function(beds) {
   if (is.installed("readr")) {
-    out <- do.call(c, 
-                   bplapply(beds, 
-                            function(filename) 
-                              nrow(suppressMessages(readr::read_tsv(file = filename, 
-                                                                    col_names = FALSE)))))
+    out <- 
+      do.call(c, 
+              bplapply(beds,function(filename){ 
+                nrow(suppressMessages(readr::read_tsv(file = filename, 
+                                                      col_names = FALSE)))}))
   } else {
     out <- do.call(c, 
                    bplapply(beds, 
@@ -496,15 +514,16 @@ get_sample_depths_from_beds <- function(beds) {
                                               sep = "\t", 
                                               stringsAsFactors = FALSE))))
   }
-  names(out) <- sapply(beds, basename)
+  names(out) <- vapply(beds, basename,"")
   return(out)
 }
 
 getSampleDepthsByRG <- function(bamfile, paired = TRUE) {
   if (paired) {
     tags <- scanBam(bamfile, 
-                    param = ScanBamParam(flag = scanBamFlag(isMinusStrand = FALSE, 
-                                                            isProperPair = TRUE),
+                    param = ScanBamParam(flag = 
+                                           scanBamFlag(isMinusStrand = FALSE, 
+                                                       isProperPair = TRUE),
                                          tag = "RG"))[[1]]$tag$RG
   } else {
     tags <- scanBam(bamfile, param = ScanBamParam(tag = "RG"))[[1]]$tag$RG

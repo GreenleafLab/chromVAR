@@ -40,14 +40,14 @@ get_kmer_positions <- function(kmer, peaks, seqs) {
                               seqs, fixed = FALSE)
 
   tmp1 <- elementNROWS(matches)
-  tmp2 <- unlist(sapply(1:length(peaks), function(x) rep(x, tmp1[x])),
+  tmp2 <- unlist(lapply(seq_along(peaks), function(x) rep(x, tmp1[x])),
                  use.names = FALSE)
   f_pos <- resize(shift(peaks[tmp2], shift = start(unlist(matches))) + 1,
                   width = 1)
   BiocGenerics::strand(f_pos) <- "+"
 
   tmp1 <- elementNROWS(rc_matches)
-  tmp2 <- unlist(sapply(1:length(peaks), function(x) rep(x, tmp1[x])),
+  tmp2 <- unlist(lapply(seq_along(peaks), function(x) rep(x, tmp1[x])),
                  use.names = FALSE)
   r_pos <- resize(shift(peaks[tmp2], shift = start(unlist(rc_matches)) - 1),
                   width = 1)
@@ -91,7 +91,7 @@ match_kmers_helper <- function(seqs, kmers, out, ranges) {
 #' @param ranges if subject is not GenomicRanges, ranges to use when out is
 #' positions
 #' @param ... additional arguments
-#' @seealso \code{\link{get_annotations}}, \code{\link{computeDeviations}}
+#' @seealso \code{\link{getAnnotations}}, \code{\link{computeDeviations}}
 #' @details  Can either return a SummarizedExperiment with just sparse matrix
 #' with values set to 1 for a match (if return == 'matches'),  or a
 #' GenomicRanges  object with all the positions of matches
@@ -163,7 +163,8 @@ setMethod("matchKmers", signature(k = "character", subject = "GenomicRanges"),
             match_kmers_helper(seqs, k, out, subject)
           })
 
-#' @describeIn matchKmers For RangedSummarizedExperiment (containing GRanges in rowRanges)
+#' @describeIn matchKmers For RangedSummarizedExperiment (containing GRanges in
+#'  rowRanges)
 #' @export
 setMethod("matchKmers", signature(k = "character",
                                    subject = "RangedSummarizedExperiment"),
@@ -185,7 +186,8 @@ setMethod("matchKmers", signature(k = "numeric", subject = "ANY"),
           })
 
 
-#' @describeIn matchKmers Catch-all for other un-documented types with DNAStringSet
+#' @describeIn matchKmers Catch-all for other un-documented types with 
+#' DNAStringSet
 #' @export
 setMethod("matchKmers", signature(k = "DNAStringSet", subject = "ANY"),
           function(k,

@@ -6,20 +6,21 @@
 #' @param norm weight all samples equally?
 #' @param group an group vector, optional
 #' @param ... additional arguments
-#' @details By default, this function will compute the expected fraction of reads
-#' per peak as the the total fragments per peak across all samples divided by total
-#' reads in peaks in all samples. Optionally, norm can be set to TRUE and then the
-#' expectation will be the average fraction of reads in a peak across the cells.
-#' This is not recommended for single cell applications as cells with very few reads
-#' will have a large impact.  Another option is to give a vector of groups, in which
-#' case the expectation will be the average fraction of reads per peak within each group.
-#' If group vector is provided and norm is set to TRUE then within each group
-#' the fraction of reads per peak is the average fraction of reads per peak in each
-#' sample.  Otherwise, the within group fraction of reads per peak is based on the
-#' reads per peak within the sample divided by the total reads within each sample.
-#' The group can also be given by a length 1 character vector representing the
-#' name of a column in the colData of the input object if the input is a
-#' SummarizedExperiment
+#' @details By default, this function will compute the expected fraction of
+#'  reads per peak as the the total fragments per peak across all samples 
+#'  divided by total reads in peaks in all samples. Optionally, norm can be set 
+#'  to TRUE and then the expectation will be the average fraction of reads in a 
+#'  peak across the cells. This is not recommended for single cell applications 
+#'  as cells with very few reads will have a large impact.  Another option is to
+#'  give a vector of groups, in which case the expectation will be the average 
+#'  fraction of reads per peak within each group. If group vector is provided 
+#'  and norm is set to TRUE then within each group the fraction of reads per 
+#'  peak is the average fraction of reads per peak in each sample.  Otherwise, 
+#'  the within group fraction of reads per peak is based on the reads per peak 
+#'  within the sample divided by the total reads within each sample. 
+#'  The group can also be given by a length 1 character vector representing the
+#'  name of a column in the colData of the input object if the input is a
+#'  SummarizedExperiment
 #' @return vector with expected fraction of reads per peak.
 #' @export
 #' @author Alicia Schep
@@ -63,12 +64,14 @@ setGeneric("computeExpectations",
 #' dev <- computeDeviations(object = mini_counts,
 #'                          annotations = mini_ix)
 setGeneric("computeDeviations",
-           function(object, annotations, ...) standardGeneric("computeDeviations"))
+           function(object, annotations, ...) 
+             standardGeneric("computeDeviations"))
 
 
 #' deviations
 #'
-#' Accessor for bias corrected deviations from \code{\link{chromVARDeviations-class}} object
+#' Accessor for bias corrected deviations from 
+#' \code{\link{chromVARDeviations-class}} object
 #' @rdname deviations
 #' @name deviations
 #' @aliases deviations,chromVARDeviations-method
@@ -83,7 +86,8 @@ setGeneric("deviations", function(object) standardGeneric("deviations"))
 
 #' deviationScores
 #'
-#' Accessor for deviation Z-scores from \code{\link{chromVARDeviations-class}} object
+#' Accessor for deviation Z-scores from 
+#' \code{\link{chromVARDeviations-class}} object
 #' @rdname deviationScores
 #' @name deviationScores
 #' @aliases deviationScores,chromVARDeviations-method
@@ -129,35 +133,33 @@ setMethod("deviationScores", c(object = "chromVARDeviations"),
 #' doubledev <- rbind(mini_dev, mini_dev) #concatenate two of the same tother
 setMethod("rbind", "chromVARDeviations",
           function(..., deparse.level=1){
-            inputs = list(...)
+            inputs <- list(...)
 
             all_rowdata_colnames <- unique(do.call(c,lapply(inputs,
                                                  function(x)
                                                    colnames(rowData(x)))))
-
-            common_colnames <- all_rowdata_colnames[sapply(all_rowdata_colnames,
-                                      function(x){
-                                        all(sapply(inputs,
-                                                   function(y) {
-                                                     x %in% colnames(rowData(y))
-                                                   }))})]
-            inputs = lapply(inputs, function(x){
+            in_common <- vapply(all_rowdata_colnames, function(x) {
+              all(vapply(inputs,
+                         function(y) {
+                           x %in% colnames(rowData(y))
+                         },
+                         rep(TRUE, length(x))))
+              },
+              TRUE)
+            common_colnames <- all_rowdata_colnames[in_common]
+            inputs <- lapply(inputs, function(x){
               rowData(x) <- rowData(x)[,common_colnames, drop = FALSE]
               x
             })
-            out <- SummarizedExperiment(assays =
-                                          list(z = do.call(rbind,
-                                                           lapply(inputs,
-                                                                  function(x)
-                                                                    assays(x)$z)),
-                                               deviations = do.call(rbind,
-                                                                    lapply(inputs,
-                                                                           function(x)
-                                                                             assays(x)$deviations))),
+            z <- do.call(rbind,
+                         lapply(inputs, function(x) assays(x)$z))
+            dev <- do.call(rbind,
+                           lapply(inputs, function(x) assays(x)$deviations))
+            rd <- do.call(rbind, lapply(inputs,rowData))
+            out <- SummarizedExperiment(assays = list(z = z,
+                                                      deviations = dev),
                                         colData = colData(inputs[[1]]),
-                                        rowData = do.call(rbind, lapply(inputs,
-                                                                        function(x)
-                                                                          rowData(x))) )
+                                        rowData =  rd)
 
             return(new("chromVARDeviations", out))
           })
@@ -212,7 +214,8 @@ setMethod("computeExpectations", c(object = "SummarizedExperiment"),
                      "colData of object")
               }
             }
-            compute_expectations_core(counts(object), norm = norm, group = group)
+            compute_expectations_core(counts(object), norm = norm, 
+                                      group = group)
           })
 
 
@@ -280,8 +283,8 @@ setMethod("computeDeviations", c(object = "SummarizedExperiment",
                    annotations,
                    background_peaks = getBackgroundPeaks(object),
                    expectation = computeExpectations(object)) {
-            message(paste0("Annotations not provided, ",
-                           "so chromVAR being run on individual peaks..."))
+            message("Annotations not provided, ",
+                    "so chromVAR being run on individual peaks...")
             object <- counts_check(object)
             peak_indices <- split(seq_len(nrow(object)), seq_len(nrow(object)))
             compute_deviations_core(counts(object),
@@ -342,8 +345,8 @@ setMethod("computeDeviations", c(object = "MatrixOrmatrix",
           function(object, annotations,
                    background_peaks,
                    expectation = computeExpectations(object)) {
-            message(paste0("Annotations not provided, ",
-                           "so chromVAR being run on individual peaks..."))
+            message("Annotations not provided, ",
+                    "so chromVAR being run on individual peaks...")
             peak_indices <- split(seq_len(nrow(object)), seq_len(nrow(object)))
             compute_deviations_core(object, peak_indices, background_peaks,
                                     expectation)
@@ -393,7 +396,8 @@ compute_deviations_core <- function(counts_mat,
   colnames(z) <- colnames(dev) <- sample_names
 
   rowData$fractionMatches <- vapply(results, function(x) x[["matches"]], 0)
-  rowData$fractionBackgroundOverlap <- vapply(results, function(x) x[["overlap"]], 
+  rowData$fractionBackgroundOverlap <- vapply(results, 
+                                              function(x) x[["overlap"]], 
                                               0)
   
   out <- SummarizedExperiment(assays = list(deviations = dev, z = z),

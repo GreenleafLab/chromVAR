@@ -34,7 +34,8 @@ data(example_counts, package = "chromVAR")
 
 counts_filtered <- filterSamples(example_counts, min_depth = 1500,
                                   min_in_peaks = 0.15, shiny = FALSE)
-counts_filtered_plot <- filterSamplesPlot(counts_filtered, min_in_peaks = 0.15,
+counts_filtered_plot <- filterSamplesPlot(counts_filtered, 
+                                          min_in_peaks = 0.15,
                                           min_depth = 1500, 
                                           use_plotly = FALSE)
 

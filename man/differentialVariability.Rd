@@ -9,7 +9,8 @@ differentialVariability(object, groups, parametric = TRUE)
 \arguments{
 \item{object}{chromVARDeviations object}
 
-\item{groups}{either vector of groups or name of column in colData of object with grouop information}
+\item{groups}{either vector of groups or name of column in colData of object 
+with grouop information}
 
 \item{parametric}{use parametric test. alternatively will use kruskal wallace}
 }

@@ -21,10 +21,12 @@ getCounts(alignment_files, peaks, paired, by_rg = FALSE, format = c("bam",
 \item{colData}{sample annotation DataFrame}
 }
 \value{
-\code{\link[SummarizedExperiment]{RangedSummarizedExperiment-class}} object
+\code{\link[SummarizedExperiment]{RangedSummarizedExperiment-class}}
+ object
 }
 \description{
-makes matrix of fragment counts in peaks using one or multiple bam or bed files
+makes matrix of fragment counts in peaks using one or multiple bam or bed 
+files
 }
 \examples{
 

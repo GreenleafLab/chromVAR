@@ -15,29 +15,29 @@ getAnnotationCorrelation(object, annotations, ...)
 
 
   \S4method{getAnnotationCorrelation}{SummarizedExperiment,SummarizedExperiment}(object,
-  annotations, background_peaks = get_background_peaks(object),
-  expectation = compute_expectations(object), variabilities = NULL)
+  annotations, background_peaks = getBackgroundPeaks(object),
+  expectation = computeExpectations(object), variabilities = NULL)
 
 
   \S4method{getAnnotationCorrelation}{SummarizedExperiment,MatrixOrmatrix}(object,
-  annotations, background_peaks = get_background_peaks(object),
-  expectation = compute_expectations(object), variabilities = NULL)
+  annotations, background_peaks = getBackgroundPeaks(object),
+  expectation = computeExpectations(object), variabilities = NULL)
 
 \S4method{getAnnotationCorrelation}{SummarizedExperiment,list}(object,
-  annotations, background_peaks = get_background_peaks(object),
-  expectation = compute_expectations(object), variabilities = NULL)
+  annotations, background_peaks = getBackgroundPeaks(object),
+  expectation = computeExpectations(object), variabilities = NULL)
 
 
   \S4method{getAnnotationCorrelation}{MatrixOrmatrix,SummarizedExperiment}(object,
-  annotations, background_peaks, expectation = compute_expectations(object),
+  annotations, background_peaks, expectation = computeExpectations(object),
   variabilities = NULL)
 
 \S4method{getAnnotationCorrelation}{MatrixOrmatrix,MatrixOrmatrix}(object,
-  annotations, background_peaks, expectation = compute_expectations(object),
+  annotations, background_peaks, expectation = computeExpectations(object),
   variabilities = NULL)
 
 \S4method{getAnnotationCorrelation}{MatrixOrmatrix,list}(object, annotations,
-  background_peaks, expectation = compute_expectations(object),
+  background_peaks, expectation = computeExpectations(object),
   variabilities = NULL)
 }
 \arguments{
@@ -50,7 +50,7 @@ getAnnotationCorrelation(object, annotations, ...)
 \item{background_peaks}{optional, matrix of background peaks}
 
 \item{expectation}{optional, expected fraction of reads per peak, as computed
-by compute_expectations}
+by computeExpectations}
 
 \item{variabilities}{optional, variabilities computed from 
 computeVariability}

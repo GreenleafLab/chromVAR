@@ -22,16 +22,16 @@ anno_mat <- sparseMatrix(j = c(rep(1,3),rep(2,2),rep(3,2)),
 
 anno_se <- SummarizedExperiment(assays = list(matches = anno_mat))
 
-e = rowSums(mat) / sum(mat) 
+e <- rowSums(mat) / sum(mat) 
 
-bg = matrix(c(2,2,2,1,1,3,2,2,1), nrow = 3, byrow = TRUE)
+bg <- matrix(c(2,2,2,1,1,3,2,2,1), nrow = 3, byrow = TRUE)
 
 deviations_test <- readRDS(system.file("extdata", "deviations_test", 
                                        package = "chromVAR"))
 
 
 
-test_that("computeDeviations works with SummarizedExperiment & SummarizedExperient",
+test_that("computeDeviations works with SummarizedExperiment for both args",
           {
             dev <- computeDeviations(counts, anno_se, bg)
             expect_equal(assays(dev)$deviations, deviations_test$deviations)

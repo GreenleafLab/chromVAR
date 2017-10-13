@@ -24,7 +24,8 @@ test_that("can count fragments using RG tags", {
 # Test fragment counts with multiple bam --------------------------------------
 
 test_that("can count fragments with multiple bams", {
-  counts <- getCounts(c(test_bam1, test_bam2, test_bam3), test_peaks, by_rg = FALSE, paired = TRUE)
+  counts <- getCounts(c(test_bam1, test_bam2, test_bam3), test_peaks, 
+                      by_rg = FALSE, paired = TRUE)
   expect_is(counts, "RangedSummarizedExperiment")
   expect_equal(assays(counts)$counts[11,3][[1]],1)
   expect_equal(sum(assays(counts)$counts),1)
@@ -36,7 +37,8 @@ test_that("can count fragments with multiple bams", {
 # Test fragment counts with bed file -------------------------------------------
 
 test_that("can count fragments with bed file", {
-  counts <- getCounts(test_bed, test_peaks, by_rg = FALSE, paired = FALSE, format = "bed")
+  counts <- getCounts(test_bed, test_peaks, by_rg = FALSE, paired = FALSE, 
+                      format = "bed")
   expect_is(counts, "RangedSummarizedExperiment")
   expect_equal(assays(counts)$counts[2,1][[1]], 2)
   expect_equal(assays(counts)$counts[5,1][[1]], 1)

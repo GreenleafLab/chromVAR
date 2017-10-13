@@ -10,9 +10,11 @@ differentialDeviations(object, groups, alternative = c("two.sided", "less",
 \arguments{
 \item{object}{chromVARDeviations object}
 
-\item{groups}{either vector of groups or name of column in colData of object with group information}
+\item{groups}{either vector of groups or name of column in colData of object 
+with group information}
 
-\item{alternative}{only used if there are two groups -- two.sided or one sided test}
+\item{alternative}{only used if there are two groups -- two.sided or one 
+sided test}
 
 \item{parametric}{use parametric test. alternatively will use kruskal wallace}
 }

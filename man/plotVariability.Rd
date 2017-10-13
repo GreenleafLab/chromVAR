@@ -8,7 +8,7 @@ plotVariability(variability, xlab = "Sorted TFs", n = 3,
   labels = variability$name, use_plotly = interactive())
 }
 \arguments{
-\item{variability}{output from \code{\link{compute_variability}}}
+\item{variability}{output from \code{\link{computeVariability}}}
 
 \item{xlab}{label for x-axis (default is 'Sorted TFs')}
 
@@ -28,7 +28,7 @@ plot variability of motifs/etc
 # Load very small example results from computeDeviations
 data(mini_dev, package = "chromVAR")
 variability <- computeVariability(mini_dev)
-var_plot <- plotVariability(variability, use_plotly = FALSE)                        
+var_plot <- plotVariability(variability, use_plotly = FALSE) 
 }
 \author{
 Alicia Schep
