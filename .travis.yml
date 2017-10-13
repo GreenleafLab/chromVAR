@@ -20,4 +20,5 @@ env:
   global:
     secure: kiAXm3tJd5SVjemkoUKMnBuz5AaT5chA281oNVtGn1V2pjrOkcFVMUPRh+uJ+772OBPvheFKErquCdI2UKwcbsL/Pw5eBPKS5w6XnK3ukAqxEHneN1XoPe27sKJcSIwSBDSv1u8oUT1yCfF0MmRq1vbw352x1rbEf+uEo/lbK8T0y3wZtzzTYRJm1b3UvnMJJdziTM3vOFJRAMidIdov61ulXA+R14tWEWMscd5xTluN3hhlqfitWh1NUa11MWt3rO9qUkjkwbPjB5qhZdt0dD425VQe6KKOUXMIri2Jd4CDqiPPmf1vyFBQwHLoWrYO1KnUvPCFLNrYk23brEscG+2jAnEWxjlsCNE1Iye2ol8jiZ+/Uk3EAIcAIIKfYjeSBEoQh6rqhaGmIBWj14bKpJ5rEY7Z/4x+jroUXfOF7bBlvwDW8NDe9dWXM7YRYDJaVVMXKGs50va2hABJH+39SfniCPzZnzUgrKdZqKw3vuhqQQ3a9JZjHMJekE88YlYaDoT6yFmn2+61e3fwilcb/EPImQvDOxUk7kY35gYQXqo8LZT/rCtPfT9UQyJVivQ5shtuSp30X7ipfdJy+d4KhoVl7B9yTIZ2f3FU3ju/I1z0XAqcgpBbLZV3SQ0rXLBvbMUrZ5My/n40SFqDMvxI1wfnNjNTHwYLzZOko3EFyLo=
 after_success:
-- Rscript -e "packagedocs::deploy_travis(repo = 'GreenleafLab/chromVAR', build_fn = function(output_dir, ...){devtools::install('.'); pkgdown::build_site(path = output_dir)})"
+- if [[ "$TRAVIS_R_VERSION_STRING" = 'bioc-release' ]]; then R CMD INSTALL *tar.gz; fi
+- if [[ "$TRAVIS_R_VERSION_STRING" = 'bioc-release' ]]; then Rscript -e "packagedocs::deploy_travis(repo = 'GreenleafLab/chromVAR', build_fn = function(output_dir, ...){pkgdown::build_site(path = output_dir)})"; fi
