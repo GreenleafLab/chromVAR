@@ -60,8 +60,8 @@ mean_smooth <- function(X, window) {
   pad_left <- rev(X[seq_len(window%/%2)])
   pad_right <- rev(X[(length(X) - ((window - 1)%/%2)):length(X)])
   cx <- c(0, cumsum(c(pad_left, X, pad_right)))
-  return((cx[(window + 1):(length(cx) - 1)] - cx[seq_len(length(cx) - 1 - window)])/
-           window)
+  return((cx[(window + 1):(length(cx) - 1)] - 
+            cx[seq_len(length(cx) - 1 - window)])/window)
 }
 
 rms <- function(x) sqrt(mean(x^2))
@@ -148,7 +148,8 @@ merge_lists <- function(..., by = c("order", "name")) {
         common_names <- names(output)[which(names(output) %in% names(tmp))]
         unique_old <- names(output)[which(names(output) %ni% common_names)]
         unique_new <- names(tmp)[which(names(tmp) %ni% common_names)]
-        output <- c(Map(c, output[common_names], tmp[common_names]), output[unique_old], 
+        output <- c(Map(c, output[common_names], tmp[common_names]), 
+                    output[unique_old], 
           tmp[unique_new])
       }
       return(output)
@@ -301,9 +302,14 @@ convert_to_ix_list <- function(ix) {
 # Convert list of indices to matrix -------------------------------------------
 convert_from_ix_list <- function(ix, npeaks) {
   stopifnot(inherits(ix, "list"))
-  sparseMatrix(j = unlist(lapply(seq_along(ix), function(x) rep(x, length(ix[[x]]))), 
-    use.names = FALSE), i = unlist(ix, use.names = FALSE), dims = c(npeaks, length(ix)), 
-    x = TRUE, dimnames = list(NULL, names(ix)))
+  sparseMatrix(j = unlist(lapply(seq_along(ix), 
+                                 function(x) 
+                                   rep(x, length(ix[[x]]))), 
+                          use.names = FALSE), 
+               i = unlist(ix, use.names = FALSE), 
+               dims = c(npeaks, length(ix)), 
+               x = TRUE, 
+               dimnames = list(NULL, names(ix)))
   
 }
 

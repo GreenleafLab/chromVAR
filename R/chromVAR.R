@@ -14,9 +14,11 @@
 #' @import miniUI
 #' @importFrom plotly ggplotly plotlyOutput renderPlotly
 #' @importFrom graphics text
-#' @importFrom stats anova approx as.dist cor cov dist dnorm hclust kruskal.test lm median
-#' @importFrom stats na.omit oneway.test p.adjust pchisq pnorm prcomp quantile runif sd t.test var wilcox.test
-#' @importFrom utils installed.packages read.delim setTxtProgressBar txtProgressBar
+#' @importFrom stats anova approx as.dist cor cov dist dnorm hclust
+#' kruskal.test lm median runif sd t.test var wilcox.test
+#' na.omit oneway.test p.adjust pchisq pnorm prcomp quantile 
+#' @importFrom utils installed.packages read.delim setTxtProgressBar 
+#' txtProgressBar
 #' @importFrom Rcpp sourceCpp
 #' @importFrom S4Vectors queryHits subjectHits DataFrame elementNROWS isSorted
 #' @importFrom GenomeInfoDb seqlevels seqlevels<- sortSeqlevels seqnames

@@ -38,7 +38,8 @@ computeVariability <- function(object,
   
   sd_deviations <- row_sds(assays(object)$z, na.rm)
   
-  p_sd <- pchisq((ncol(object) - 1) * (sd_deviations^2), df = (ncol(object) - 1), 
+  p_sd <- pchisq((ncol(object) - 1) * (sd_deviations^2), 
+                 df = (ncol(object) - 1), 
                  lower.tail = FALSE)
   
   p_adj <- p.adjust(p = p_sd, method = "BH")
@@ -54,9 +55,11 @@ computeVariability <- function(object,
     stopifnot(bootstrap_quantiles[2] > bootstrap_quantiles[1])
     
     boot_sd <- do.call(rbind, bplapply(seq_len(bootstrap_samples), 
-                                       function(x) row_sds_perm(assays(object)$z, 
+                                       function(x) 
+                                         row_sds_perm(assays(object)$z, 
                                                                 na.rm)))
-    sd_error <- apply(boot_sd, 2, quantile_helper, quantiles = bootstrap_quantiles, 
+    sd_error <- apply(boot_sd, 2, quantile_helper, 
+                      quantiles = bootstrap_quantiles, 
                       na.rm = na.rm)
     
     out <- data.frame(name = name_vals, 

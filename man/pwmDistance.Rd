@@ -14,9 +14,9 @@ pwmDistance(x, y = NULL, min_overlap = 5)
 \item{min_overlap}{minimum number of basepairs overlapping between motifs}
 }
 \value{
-a list with three matrices- 'dist' has the distance between each pair 
-of motifs, 'strand' the strand of the motif for the match, and 'offset' the 
-offset between the motifs.
+a list with three matrices- 'dist' has the distance between each
+ pair of motifs, 'strand' has the strand of the motif for the match, and 
+ 'offset' has the offset between the motifs.
 }
 \description{
 computes distance between every pwm in a list or between pwms in one list

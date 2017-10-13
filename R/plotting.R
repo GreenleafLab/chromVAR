@@ -17,7 +17,7 @@
 #' # Load very small example results from computeDeviations
 #' data(mini_dev, package = "chromVAR")
 #' variability <- computeVariability(mini_dev)
-#' var_plot <- plotVariability(variability, use_plotly = FALSE)                        
+#' var_plot <- plotVariability(variability, use_plotly = FALSE) 
 plotVariability <- function(variability, xlab = "Sorted TFs", n = 3, 
                              labels = variability$name, 
   use_plotly = interactive()) {
@@ -264,10 +264,11 @@ plot_deviations_tsne_shiny <- function(object, tsne, var_df,
       s <- input$tbl_rows_selected
       if (length(s) == 0) 
         return(NULL)
-      p2 <- ggplot(data.frame(x = tsne[, 1], y = tsne[, 2],
-                              color = deviationScores(object)[s,], 
-                              text = colnames(object)), 
-                   aes_string(x = "x", y = "y", col = "color", text = "text")) + 
+      p2 <- 
+        ggplot(data.frame(x = tsne[, 1], y = tsne[, 2],
+                          color = deviationScores(object)[s,], 
+                          text = colnames(object)), 
+               aes_string(x = "x", y = "y", col = "color", text = "text")) +
         geom_point(size = 2) + 
         scale_color_gradient2(name = rowData(object)[s,  "name"], 
                               mid = "lightgray", low = "blue", high = "red") +

@@ -12,7 +12,8 @@ default is 'Homo sapiens'}
 
 \item{collection}{Which collection to use?  default is 'CORE'}
 
-\item{...}{additional arguments to opts for \code{\link[TFBSTools]{getMatrixSet}}}
+\item{...}{additional arguments to opts for 
+\code{\link[TFBSTools]{getMatrixSet}}}
 }
 \value{
 \code{\link[TFBSTools]{PFMatrixList}}

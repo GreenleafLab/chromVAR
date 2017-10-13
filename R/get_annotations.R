@@ -17,7 +17,7 @@
 #' my_annotation_granges <- GRangesList(GRanges("chr1", 
 #'                                              ranges = IRanges(start = 
 #'                                              c(566763,805090), width = 8)),
-#'                                      GRanges("chr1", ranges = IRanges(start = 
+#'                                      GRanges("chr1", ranges = IRanges(start =
 #'                                                c(566792,895798), width = 8)))
 #' anno_ix <- getAnnotations(my_annotation_granges, 
 #'                            rowRanges = rowRanges(mini_counts))
@@ -192,7 +192,9 @@ setMethod(getAnnotations, c(annotations = "character"),
                     readr::read_tsv(file = filename, 
                                     col_names = FALSE)[, c(1:3, column)]))
                 } else {
-                  bed <- read.delim(file = filename, header = FALSE, sep = "\t", 
+                  bed <- read.delim(file = filename, 
+                                    header = FALSE, 
+                                    sep = "\t",
                                     stringsAsFactors = FALSE)[,  c(1:3, column)]
                 }
                 colnames(bed) <- c("chr", "start", "end")

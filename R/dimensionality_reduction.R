@@ -48,7 +48,7 @@ deviationsTsne <- function(object,
                             theta = 0.5,
                             what = c("samples","annotations"),
                             shiny = FALSE) {
-  what = match.arg(what)
+  what <- match.arg(what)
   stopifnot(inherits(object, "chromVARDeviations") || 
               canCoerce(object, "chromVARDeviations"))
   if (what == "samples"){
@@ -122,38 +122,35 @@ deviations_tsne_shiny <- function(object, threshold = 1.5, perplexity = 30,
 
   ui <- miniPage(
     gadgetTitleBar("tsne visualization: adjust parameters on left"),
-    fillCol(flex = c(1,4),
-            miniContentPanel(fillRow(flex = c(1,1,2),
-                                     numericInput("perplexity", 
-                                                  "Perplexity:", 
-                                                  min = 3, 
-                                                  max = floor(ncol(object)/2), 
-                                                  value = perplexity, 
-                                                  step = 1, width = "90%"),
-                                     numericInput("threshold", 
-                                                  "Variability threshold:", 
-                                                  min = 1, 
-                                                  max = round(max(vars, 
-                                                                  na.rm = TRUE)-
-                                                                0.1,
-                                                              digits = 2),
-                                                  value = threshold, 
-                                                  step = 0.1, width = "90%"),
-                                     selectizeInput("color", 
-                                                    "Color by", 
-                                                    options = 
-                                                      list(dropdownParent = 
-                                                             'body'),
-                                                    choices = 
-                                                      c("none",
-                                                        colnames(colData(object)),
-                                                        rownames(object)[order(vars, 
-                                                                               decreasing = 
-                                                                                 TRUE)]), 
-                                                    selected = "none", width = "90%"))),
-            miniContentPanel(plotlyOutput("plot1", height = "100%")), 
-            width = "95%", 
-            height ="95%")
+    fillCol(
+      flex = c(1,4),
+      miniContentPanel(
+        fillRow(
+          flex = c(1,1,2),
+          numericInput("perplexity", 
+                       "Perplexity:", 
+                       min = 3, 
+                       max = floor(ncol(object)/2), 
+                       value = perplexity, 
+                       step = 1, width = "90%"),
+          numericInput("threshold", 
+                       "Variability threshold:", 
+                       min = 1, 
+                       max = round(max(vars, na.rm = TRUE) - 0.1,
+                                   digits = 2),
+                       value = threshold, 
+                       step = 0.1, width = "90%"),
+          selectizeInput("color", 
+                         "Color by", 
+                         options = list(dropdownParent = 'body'),
+                         choices = 
+                           c("none",
+                             colnames(colData(object)),
+                             rownames(object)[order(vars, decreasing = TRUE)]), 
+                         selected = "none", width = "90%"))),
+      miniContentPanel(plotlyOutput("plot1", height = "100%")), 
+      width = "95%", 
+      height = "95%")
   )
   
   server <- function(input, output, session) {
@@ -188,13 +185,13 @@ deviations_tsne_shiny <- function(object, threshold = 1.5, perplexity = 30,
       } else{
         p1 <- 
           ggplot(data.frame(x = tsne$Y[,1], 
-                            y= tsne$Y[,2], 
+                            y = tsne$Y[,2], 
                             color = deviationScores(object[input$color,])[1,], 
                             text = colnames(object)),
                  aes_string(x = "x", y = "y", col = "color", text = "text")) + 
           geom_point(size= 2) +
           scale_color_gradient2(name = rowData(object[input$color,])[,"name"],
-                                mid = "lightgray", low = "blue", high = "red") + 
+                                mid = "lightgray", low = "blue", high = "red") +
           chromVAR_theme(12) +
           xlab("tSNE dim 1") + ylab("tSNE dim 2") + 
           theme(legend.key.size = grid::unit(0.5,"lines"))

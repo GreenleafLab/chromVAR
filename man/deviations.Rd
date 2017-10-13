@@ -18,7 +18,8 @@ deviations(object)
 matrix of bias corrected deviations
 }
 \description{
-Accessor for bias corrected deviations from \code{\link{chromVARDeviations-class}} object
+Accessor for bias corrected deviations from 
+\code{\link{chromVARDeviations-class}} object
 }
 \examples{
 # Load very small example results from computeDeviations

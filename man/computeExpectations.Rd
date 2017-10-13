@@ -31,20 +31,21 @@ vector with expected fraction of reads per peak.
 computeExpectations
 }
 \details{
-By default, this function will compute the expected fraction of reads
-per peak as the the total fragments per peak across all samples divided by total
-reads in peaks in all samples. Optionally, norm can be set to TRUE and then the
-expectation will be the average fraction of reads in a peak across the cells.
-This is not recommended for single cell applications as cells with very few reads
-will have a large impact.  Another option is to give a vector of groups, in which
-case the expectation will be the average fraction of reads per peak within each group.
-If group vector is provided and norm is set to TRUE then within each group
-the fraction of reads per peak is the average fraction of reads per peak in each
-sample.  Otherwise, the within group fraction of reads per peak is based on the
-reads per peak within the sample divided by the total reads within each sample.
-The group can also be given by a length 1 character vector representing the
-name of a column in the colData of the input object if the input is a
-SummarizedExperiment
+By default, this function will compute the expected fraction of
+ reads per peak as the the total fragments per peak across all samples 
+ divided by total reads in peaks in all samples. Optionally, norm can be set 
+ to TRUE and then the expectation will be the average fraction of reads in a 
+ peak across the cells. This is not recommended for single cell applications 
+ as cells with very few reads will have a large impact.  Another option is to
+ give a vector of groups, in which case the expectation will be the average 
+ fraction of reads per peak within each group. If group vector is provided 
+ and norm is set to TRUE then within each group the fraction of reads per 
+ peak is the average fraction of reads per peak in each sample.  Otherwise, 
+ the within group fraction of reads per peak is based on the reads per peak 
+ within the sample divided by the total reads within each sample. 
+ The group can also be given by a length 1 character vector representing the
+ name of a column in the colData of the input object if the input is a
+ SummarizedExperiment
 }
 \section{Methods (by class)}{
 \itemize{

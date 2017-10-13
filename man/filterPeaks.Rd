@@ -8,15 +8,16 @@ filterPeaks(object, min_fragments_per_peak = 1, non_overlapping = TRUE,
   ix_return = FALSE)
 }
 \arguments{
-\item{object}{SummarizedExperiment with matrix of fragment counts per peak 
+\item{object}{SummarizedExperiment with matrix of fragment counts per peak
 per sample, as computed by \code{\link{getCounts}}}
 
-\item{min_fragments_per_peak}{minimum number of fragmints in peaks across all 
+\item{min_fragments_per_peak}{minimum number of fragmints in peaks across all
 samples}
 
 \item{non_overlapping}{reduce peak set to non-overlapping peaks, see details}
 
-\item{ix_return}{return indices of peaks to keep instead of subsetted counts object}
+\item{ix_return}{return indices of peaks to keep instead of subsetted counts
+object}
 }
 \value{
 vector of indices, representing peaks that should be kept
@@ -25,8 +26,8 @@ vector of indices, representing peaks that should be kept
 function to get indices of peaks that pass filters
 }
 \details{
-if non_overlapping is set to true, when peaks overlap the overlapping
-peak with lower counts is removed
+if non_overlapping is set to true, when peaks overlap the 
+overlapping peak with lower counts is removed
 }
 \examples{
 data(example_counts, package = "chromVAR")

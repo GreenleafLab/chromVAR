@@ -163,7 +163,8 @@ setMethod("matchKmers", signature(k = "character", subject = "GenomicRanges"),
             match_kmers_helper(seqs, k, out, subject)
           })
 
-#' @describeIn matchKmers For RangedSummarizedExperiment (containing GRanges in rowRanges)
+#' @describeIn matchKmers For RangedSummarizedExperiment (containing GRanges in
+#'  rowRanges)
 #' @export
 setMethod("matchKmers", signature(k = "character",
                                    subject = "RangedSummarizedExperiment"),
@@ -185,7 +186,8 @@ setMethod("matchKmers", signature(k = "numeric", subject = "ANY"),
           })
 
 
-#' @describeIn matchKmers Catch-all for other un-documented types with DNAStringSet
+#' @describeIn matchKmers Catch-all for other un-documented types with 
+#' DNAStringSet
 #' @export
 setMethod("matchKmers", signature(k = "DNAStringSet", subject = "ANY"),
           function(k,

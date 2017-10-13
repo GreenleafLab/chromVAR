@@ -46,8 +46,8 @@ Background peaks are chosen by sampling peaks based on similarity in
 GC content and # of fragments across samples using the Mahalanobis distance.
 The w paramter controls how similar background peaks should be. The bs 
 parameter controls the precision with which the similarity is computed;
- increasing bs will make the function run slower. Sensible default parameters 
- are chosen for both.
+increasing bs will make the function run slower. Sensible default parameters 
+are chosen for both.
 }
 \section{Methods (by class)}{
 \itemize{

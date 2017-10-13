@@ -20,7 +20,8 @@ The deviationScores and deviations accessors both return matrices.
 matrix of deviation Z-scores
 }
 \description{
-Accessor for deviation Z-scores from \code{\link{chromVARDeviations-class}} object
+Accessor for deviation Z-scores from 
+\code{\link{chromVARDeviations-class}} object
 }
 \examples{
 # Load very small example results from computeDeviations

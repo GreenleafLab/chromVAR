@@ -82,9 +82,9 @@ pwm_to_prob <- function(pwms) {
 #' \code{\link[TFBSTools]{PWMatrixList}} 
 #' or \code{\link[TFBSTools]{PFMatrixList}} or a list of matrices with rows 
 #' corresponding to "A","C","G","T" and columns summing to 1. 
-#' @return a list with three matrices- 'dist' has the distance between each pair 
-#' of motifs, 'strand' the strand of the motif for the match, and 'offset' the 
-#' offset between the motifs. 
+#' @return a list with three matrices- 'dist' has the distance between each
+#'  pair of motifs, 'strand' has the strand of the motif for the match, and 
+#'  'offset' has the offset between the motifs. 
 #' @export
 #' @examples 
 #' 

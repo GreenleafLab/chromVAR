@@ -74,11 +74,13 @@ GenomicRanges  object with all the positions of matches
 
 \item \code{k = character,subject = GenomicRanges}: For GenomicRanges
 
-\item \code{k = character,subject = RangedSummarizedExperiment}: For RangedSummarizedExperiment (containing GRanges in rowRanges)
+\item \code{k = character,subject = RangedSummarizedExperiment}: For RangedSummarizedExperiment (containing GRanges in
+rowRanges)
 
 \item \code{k = numeric,subject = ANY}: Catch-all for other un-documented types
 
-\item \code{k = DNAStringSet,subject = ANY}: Catch-all for other un-documented types with DNAStringSet
+\item \code{k = DNAStringSet,subject = ANY}: Catch-all for other un-documented types with 
+DNAStringSet
 
 \item \code{k = DNAString,subject = ANY}: Catch-all for other un-documented types with DNAString
 }}

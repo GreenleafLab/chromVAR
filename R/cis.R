@@ -7,7 +7,7 @@
 #' @param ... additional arguments
 #' @export
 #' @author Alicia Schep
-#' @return SummarizedExperiment with annotationMatches assay storing which peaks 
+#' @return SummarizedExperiment with annotationMatches assay storing which peaks
 #' belong to which groups
 #' @examples 
 #' 

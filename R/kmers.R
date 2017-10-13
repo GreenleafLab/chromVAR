@@ -193,13 +193,13 @@ get_null_kmer_dist <- function(kmer, cov_mat, max_extend = 2) {
   o <- get_overlap_kmers(kmer, max_extend = max_extend)
   mm <- get_mm_kmers(kmer)
   
-  omm <- Reduce(union, 
-                lapply(mm, 
-                       function(k) 
-                         unique(get_overlap_kmers(k, 
-                                                  max_extend = max_extend + 1))
-                       )
-                )
+  omm <- 
+    Reduce(union, 
+           lapply(mm, 
+                  function(k) 
+                    unique(get_overlap_kmers(k,  max_extend = max_extend + 1))
+           )
+    )
   
   null_dist <- cov_mat[kmer, which(colnames(cov_mat) %ni% 
                                      kmers_to_names(unique(c(kmer, mm, o, omm)),
@@ -217,12 +217,12 @@ get_covariable_kmers <- function(kmer, cov_mat, max_extend = 2) {
   o <- get_overlap_kmers(kmer, max_extend = max_extend)
   mm <- get_mm_kmers(kmer)
   
-  omm <- Reduce(union, 
-                lapply(mm, 
-                       function(k) 
-                         unique(get_overlap_kmers(k, 
-                                                  max_extend = max_extend +  1))
-                       ))
+  omm <- 
+    Reduce(union, 
+           lapply(mm, 
+                  function(k) 
+                    unique(get_overlap_kmers(k, max_extend = max_extend +  1))
+           ))
   
   null_dist <- cov_mat[kmer, which(colnames(cov_mat) %ni%
                                      kmers_to_names(unique(c(kmer, 
@@ -283,15 +283,17 @@ kmer_group_to_pwm <- function(kgroup, p = 0.01, threshold = 0.25) {
       w <- max(covars)
       if (w > 1) 
         w <- 0 #1
-      out[, i - min_shift + 1] <- (1 - w) * baseline + (w * covars^2/(sum(covars^2) + 
-                                                                        all_true(covars == 0)))
+      out[, i - min_shift + 1] <- 
+        (1 - w) * baseline + 
+        (w * covars^2/(sum(covars^2) +  all_true(covars == 0)))
     }
   }
   for (i in seq_len(k)) {
     ix <- c(1, which(kgroup$mismatch == i))
     nuc <- substr(kgroup$kmer[ix], i, i)
     covars <- vapply(nucs, 
-                     function(x) max(c(0, kgroup$covariability[ix[which(nuc == x)]])),
+                     function(x) 
+                       max(c(0, kgroup$covariability[ix[which(nuc == x)]])),
                      0)
     covars[!is.finite(covars)] <- 0
     pvals <- vapply(nucs, 
@@ -318,8 +320,9 @@ kmer_group_to_pwm <- function(kgroup, p = 0.01, threshold = 0.25) {
       w <- max(covars)
       if (w > 1) 
         w <- 0 #1
-      out[, abs(min_shift) + k + i] <- (1 - w) * baseline + (w * covars^2/(sum(covars^2) + 
-                                                                             all_true(covars == 0)))
+      out[, abs(min_shift) + k + i] <- 
+        (1 - w) * baseline + 
+        (w * covars^2/(sum(covars^2) + all_true(covars == 0)))
     }
   }
   start <- 1
@@ -359,14 +362,17 @@ kmer_group_to_pwm <- function(kgroup, p = 0.01, threshold = 0.25) {
 #' @param p p value threshold for inclusion of kmer
 #' @param progress show progress bar?
 #' @details function for assembling de novo kmers from kmer deviations
-#' @return list with (1) motifs: de novo motif matrices, (2) seed: seed kmer for de novo motif 
+#' @return list with (1) motifs: de novo motif matrices, (2) seed: seed kmer
+#'  for de novo motif 
 #' @importFrom TFBSTools PWMatrix
 #' @export
 assembleKmers <- function(object, threshold = 1.5, p = 0.01, progress = TRUE) {
   devco <- deviationsCovariability(object)
   vars <- row_sds(assays(object)$z)
-  cands <- rownames(object)[order(vars, decreasing = TRUE)[seq_len(sum(vars > threshold, 
-                                                                 na.rm = TRUE))]]
+  cands <- 
+    rownames(object)[order(vars, 
+                           decreasing = TRUE)[seq_len(sum(vars > threshold, 
+                                                          na.rm = TRUE))]]
   out <- list(motifs = list(), seed = list())
   nc <- length(cands)
   if (progress) pb <- txtProgressBar(min = 0, max = nc, style = 3)
@@ -378,7 +384,8 @@ assembleKmers <- function(object, threshold = 1.5, p = 0.01, progress = TRUE) {
       out$seed <- c(out$seed, cands[1])
     }
     nd <- get_null_kmer_dist(cands[1], devco)
-    z <- (devco[cands[1], cands] - mean(nd, na.rm = TRUE)) / sd(nd, na.rm = TRUE)
+    z <- (devco[cands[1], cands] - mean(nd, na.rm = TRUE)) / 
+      sd(nd, na.rm = TRUE)
     pval <- pnorm(z, lower.tail = FALSE)
     d <- pwmDistance(kmotif, lapply(cands, seq_to_pwm))$d[1, ]
     exc <- intersect(which(d < 0.25), which(pval < p))
@@ -386,12 +393,13 @@ assembleKmers <- function(object, threshold = 1.5, p = 0.01, progress = TRUE) {
     if (progress) setTxtProgressBar(pb, nc - length(cands))
   }
   if (progress) close(pb)
-  denovo_motifs <- do.call(PWMatrixList, 
-                           lapply(seq_along(out$motifs), 
-                                  function(x) PWMatrix(ID = paste0("denovo_", x), 
-                                                       name = paste0("denovo_",  x), 
-                                                       tags = list(seed = out$seed[[x]]), 
-                                                       profileMatrix = out$motifs[[x]])))
+  denovo_motifs <- 
+    do.call(PWMatrixList, 
+            lapply(seq_along(out$motifs), 
+                   function(x) PWMatrix(ID = paste0("denovo_", x), 
+                                        name = paste0("denovo_",  x), 
+                                        tags = list(seed = out$seed[[x]]), 
+                                        profileMatrix = out$motifs[[x]])))
   names(denovo_motifs) <- name(denovo_motifs)
   return(denovo_motifs)
 }
@@ -409,16 +417,18 @@ plotKmerMismatch <- function(kmer, cov_mat, pval = 0.01) {
   kgroup <- get_covariable_kmers(kmer, cov_mat, max_extend = 0)
   ix <- which(!is.na(kgroup$mismatch))
   
-  mm_df <- rbind(data.frame(val = ifelse(kgroup$covariability[ix] > 0, 
-                                         kgroup$covariability[ix]^2, 
-                                         0), pos = kgroup$mismatch[ix], 
-                            Nucleotide = substr(kgroup$kmer[ix], kgroup$mismatch[ix], 
-                                                kgroup$mismatch[ix])), 
-                 data.frame(val = 1, pos = seq_len(nchar(kmer)), 
-                            Nucleotide = strsplit(kmer,  "")[[1]]))
+  mm_df <- rbind(
+    data.frame(val = ifelse(kgroup$covariability[ix] > 0, 
+                            kgroup$covariability[ix]^2, 
+                            0), pos = kgroup$mismatch[ix], 
+               Nucleotide = substr(kgroup$kmer[ix], kgroup$mismatch[ix], 
+                                   kgroup$mismatch[ix])), 
+    data.frame(val = 1, pos = seq_len(nchar(kmer)), 
+               Nucleotide = strsplit(kmer,  "")[[1]]))
   
-  out <- ggplot(mm_df) + geom_point(aes_string(x = "pos", y = "val", col = "Nucleotide"), 
-                                    position = position_jitter(height = 0,  width = 0.1)) + 
+  out <- ggplot(mm_df) + 
+    geom_point(aes_string(x = "pos", y = "val", col = "Nucleotide"), 
+               position = position_jitter(height = 0,  width = 0.1)) + 
     ylab("Shared variability with\nseed nucleotide") + xlab("Position") + 
     scale_x_continuous(breaks = c(seq_len(max(mm_df$pos)))) + 
     scale_y_continuous(breaks = c(0, 
@@ -432,6 +442,7 @@ plotKmerMismatch <- function(kmer, cov_mat, pval = 0.01) {
 
 
 toIC <- function(mat) {
-  mat * matrix(apply(mat, 2, function(x) 2 + sum(log(x) * x)), nrow = nrow(mat), 
+  mat * matrix(apply(mat, 2, function(x) 2 + sum(log(x) * x)), 
+               nrow = nrow(mat), 
                ncol = ncol(mat), byrow = TRUE)
 }

@@ -24,8 +24,8 @@ dist object for distance between samples
 Get distance between samples based on bias corrected deviations
 }
 \details{
-This function will compute the distance between samples based on the 
-normalized deviations.  It will first remove correlated motifs / peak sets. 
+This function will compute the distance between samples based on the
+ normalized deviations.  It will first remove correlated motifs / peak sets. 
 Then the dimensionality will be further reduced via PCA if the number of 
 dimensions exceeds initial_dims.  Then  the supplied distance_function will 
 be used.

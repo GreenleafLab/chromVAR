@@ -28,7 +28,7 @@ plot variability of motifs/etc
 # Load very small example results from computeDeviations
 data(mini_dev, package = "chromVAR")
 variability <- computeVariability(mini_dev)
-var_plot <- plotVariability(variability, use_plotly = FALSE)                        
+var_plot <- plotVariability(variability, use_plotly = FALSE) 
 }
 \author{
 Alicia Schep

@@ -170,7 +170,8 @@ setMethod(makePermutedSets, c(object = "MatrixOrmatrix",
           function(object, annotations,
                    bias, window = 10) {
             annotations <- matches_check(annotations)
-            peak_indices <- convert_to_ix_list(annotationMatches(assays(annotations)))
+            peak_indices <- 
+              convert_to_ix_list(annotationMatches(assays(annotations)))
             makePermutedSets_core(object, peak_indices, bias, window = window, 
                                     colData = colData(annotations))
           })
@@ -223,7 +224,8 @@ setMethod(makePermutedSets, c(object = "SummarizedExperiment",
 
 #' @describeIn makePermutedSets method for RangedSummarizedExperiment and list
 #' @export
-setMethod(makePermutedSets, c(object = "RangedSummarizedExperiment", annotations = "list"), 
+setMethod(makePermutedSets, c(object = "RangedSummarizedExperiment",
+                              annotations = "list"), 
           function(object,  annotations,
                    bias = rowRanges(object)$bias, window = 10) {
             object <- counts_check(object)
@@ -232,7 +234,8 @@ setMethod(makePermutedSets, c(object = "RangedSummarizedExperiment", annotations
 
 #' @describeIn makePermutedSets method for Matrix or matrix and list
 #' @export
-setMethod(makePermutedSets, c(object = "MatrixOrmatrix", annotation = "list"), 
+setMethod(makePermutedSets, c(object = "MatrixOrmatrix",
+                              annotation = "list"), 
           function(object, annotations,
                    bias, window = 10) {
             makePermutedSets_core(object, annotations, bias, window = window)

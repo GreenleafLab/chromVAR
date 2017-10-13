@@ -16,7 +16,8 @@
 #'
 #' @export
 setGeneric("getAnnotationSynergy", 
-           function(object, annotations, ...) standardGeneric("getAnnotationSynergy"))
+           function(object, annotations, ...) 
+             standardGeneric("getAnnotationSynergy"))
 
 
 
@@ -227,8 +228,9 @@ setGeneric("getAnnotationCorrelation",
 #' @describeIn getAnnotationCorrelation object and annotations are 
 #' SummarizedExperiment 
 #' @export
-setMethod("getAnnotationCorrelation", c(object = "SummarizedExperiment", 
-                                          annotations = "SummarizedExperiment"), 
+setMethod("getAnnotationCorrelation", 
+          c(object = "SummarizedExperiment", 
+            annotations = "SummarizedExperiment"), 
           function(object, annotations, 
                    background_peaks = getBackgroundPeaks(object), 
                    expectation = computeExpectations(object), 
@@ -286,8 +288,9 @@ setMethod("getAnnotationCorrelation", c(object = "SummarizedExperiment",
 #' @describeIn getAnnotationCorrelation object and annotations are 
 #' SummarizedExperiment 
 #' @export
-setMethod("getAnnotationCorrelation", c(object = "MatrixOrmatrix", 
-                                          annotations = "SummarizedExperiment"), 
+setMethod("getAnnotationCorrelation", 
+          c(object = "MatrixOrmatrix", 
+            annotations = "SummarizedExperiment"), 
           function(object, 
                    annotations, 
                    background_peaks, 
@@ -416,23 +419,26 @@ get_variability_boost_helper <- function(peak_set,
   setlen <- vapply(tmpsets, length, 0)
   
   bgsets <- unlist(lapply(setlen, 
-                          function(x) lapply(seq_len(nbg), 
-                                             function(y) sample(peak_set, 
-                                                                x, 
-                                                                replace = FALSE))), 
+                          function(x) 
+                            lapply(seq_len(nbg), 
+                                   function(y) sample(peak_set, 
+                                                      x, 
+                                                      replace = FALSE))), 
                    recursive = FALSE)
   
   bgvar <- do.call(c, bplapply(bgsets, 
-                                             compute_variability_single, 
-                                             counts_mat = counts_mat, 
-                                             background_peaks = background_peaks, 
-                                             expectation = expectation))
+                               compute_variability_single, 
+                               counts_mat = counts_mat, 
+                               background_peaks = background_peaks, 
+                               expectation = expectation))
   
-  var_boost <- vapply(seq_along(tmpvar), 
-                      function(x) 
-                        (tmpvar[x] - mean(bgvar[((x -1) * nbg + 1):(x * nbg)])) /
-                        sd(bgvar[((x - 1) * nbg + 1):(x * nbg)]),
-                      0)
+  var_boost <- 
+    vapply(seq_along(tmpvar), 
+           function(x) {
+             (tmpvar[x] - mean(bgvar[((x - 1) * nbg + 1):(x * nbg)])) /
+               sd(bgvar[((x - 1) * nbg + 1):(x * nbg)])
+             },
+           0)
   return(var_boost)
 }
 

@@ -1,20 +1,27 @@
 context("getAnnotations")
 
-anno_file1 = system.file("extdata", "test_anno1.bed", package = "chromVAR")
-anno_file2 = system.file("extdata", "test_anno2.bed", package = "chromVAR")
-anno_file3 = system.file("extdata", "test_anno3.bed", package = "chromVAR")
+anno_file1 <- system.file("extdata", "test_anno1.bed", package = "chromVAR")
+anno_file2 <- system.file("extdata", "test_anno2.bed", package = "chromVAR")
+anno_file3 <- system.file("extdata", "test_anno3.bed", package = "chromVAR")
 
-peaks <- GenomicRanges::GRanges(seqnames = c("chr1","chr2","chr2"),
-                                ranges = IRanges::IRanges(start = c(76585873,42772928,100183786),
-                                                          width = 500))
+peaks <- 
+  GenomicRanges::GRanges(
+    seqnames = c("chr1","chr2","chr2"),
+    ranges = IRanges::IRanges(start = c(76585873,42772928,100183786),
+                              width = 500))
 
-anno_ranges <- GenomicRanges::GRangesList(GenomicRanges::GRanges(seqnames = c("chr1"),
-                                                          ranges = IRanges::IRanges(start = 76585933,
-                                                                                    end = 76585942)),
-                                   GenomicRanges::GRanges(seqnames = c("chr2"),
-                                                          ranges = IRanges::IRanges(start = c(42773087,100183852,100183852),
-                                                                                    end = c(42773097,100183862,100183862))),
-                                   GenomicRanges::GRanges())
+anno_ranges <- 
+  GenomicRanges::GRangesList(
+    GenomicRanges::GRanges(seqnames = c("chr1"),
+                           ranges = IRanges::IRanges(start = 76585933,
+                                                     end = 76585942)),
+    GenomicRanges::GRanges(seqnames = c("chr2"),
+                           ranges = 
+                             IRanges::IRanges(start = c(42773087,100183852,
+                                                        100183852),
+                                              end = c(42773097,100183862,
+                                                      100183862))),
+    GenomicRanges::GRanges())
 
 
 anno_mat <- matrix(c(TRUE,FALSE,FALSE,FALSE,TRUE,TRUE), nrow = 3, byrow = FALSE)

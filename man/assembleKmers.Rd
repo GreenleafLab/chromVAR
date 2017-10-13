@@ -16,7 +16,8 @@ assembleKmers(object, threshold = 1.5, p = 0.01, progress = TRUE)
 \item{progress}{show progress bar?}
 }
 \value{
-list with (1) motifs: de novo motif matrices, (2) seed: seed kmer for de novo motif
+list with (1) motifs: de novo motif matrices, (2) seed: seed kmer
+ for de novo motif
 }
 \description{
 function to create de novo motifs from kmers based on deviations
