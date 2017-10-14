@@ -9,6 +9,7 @@ r_packages:
 - packagedocs
 r_github_packages:
 - AliciaSchep/ggmotif
+- GreenleafLab/motifmatchr
 before_install: if [[ "$TRAVIS_R_VERSION_STRING" = 'bioc-devel' ]]; then mkdir ~/.R
   && echo 'CXX1X=g++ -std=c++0x -g -O2 -fPIC' > ~/.R/Makevars; fi
 before_script: echo "BiocParallel::register(BiocParallel::SerialParam())" > ~/.Rprofile
