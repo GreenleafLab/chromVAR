@@ -140,12 +140,16 @@ dist_to_known$strand[1,closest_match1]
 
 library(ggmotif) # Package on github at AliciaSchep/ggmotif. Can use seqLogo alternatively
 library(TFBSTools)
-ggmotif_plot(toPWM(reverseComplement(motifs[[closest_match1]]),type = "prob"))
+
+# De novo motif
 ggmotif_plot(de_novos[[1]])
+
+# Closest matching known
+ggmotif_plot(toPWM(reverseComplement(motifs[[closest_match1]]),type = "prob"))
 
 ```
 
-In this case, it looks like the first five base pairs of the de novo motif match well with the last five of the known motif. To get a better sense of whether these might represent the same motif, one can compute the deviations for the de novo motif and see if they are correlated with the known. 
+In this case, it looks like the last five base pairs of the de novo motif match well with the first five of the known motif. To get a better sense of whether these might represent the same motif, one can compute the deviations for the de novo motif and see if they are correlated with the known. 
 
 ## Synergy between motifs
 

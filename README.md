@@ -5,10 +5,6 @@
 
 chromVAR is an R package for the analysis of sparse chromatin accessibility data from single cell or bulk ATAC or DNAse-seq data. The package aims to identify motifs or other genomic annotations associated with variability in chromatin accessibility between individual cells or samples.  For a more detail overview of the method, please see the [publication](https://www.nature.com/nmeth/journal/vaop/ncurrent/full/nmeth.4401.html) ([pdf](http://greenleaf.stanford.edu/assets/pdf/nmeth.4401.pdf), [supplement](https://drive.google.com/file/d/0B8eUn6ZURmqvUjBCbE5Hc0p4UFU/view?usp=sharing)). 
 
-## Note on recent function name changes
-
-The chromVAR (and related motifmatchr) function names recently changed to switch over to camelCase from snake_case.  All exported functions now use camelCase, e.g. `compute_deviations` is now `computeDeviations`. If following the current documentation but using an earlier version of the package, either update the package or be aware of the discrepancy. This change was made to comply with Bioconductor naming preferences, as chromVAR will soon be submitted to Bioconductor.    
-
 ## Installation
 
 The recommended installation method for `chromVAR` is using the `biocLite` command from BiocInstaller. You will first have to have installed the [BiocInstaller package

@@ -32,9 +32,14 @@ jaspar_motifs <- getJasparMotifs() # default species is human
 
 A companion package, chromVARmotifs, includes pwms from a couple different sources that can also be used with motifmatchr and chromVAR.
 
-```{r, eval = FALSE}
-# Not Run
+```{r}
 devtools::install_github("GreenleafLab/chromVARmotifs")
+```
+
+We can load these collections using `data`.
+
+```{r}
+library(chromVARmotifs)
 
 data("human_pwms_v1") # human collection
 
@@ -95,9 +100,11 @@ cis_ix <- getCisGroups(counts_filtered, grpsize = 25, stepsize = 10)
 
 If your have a set of genomic annotations (e.g. genomic motif matches, GWAS hits) in bed files that you want to use, then the function `getAnnotations` can be used to read those annotations into the appropriate SummarizedExperiment with matrix.  
 
-```{r, eval = FALSE}
-# Not evaluated
-my_annotation_files <- c('anno1.bed','anno2.bed') # Fake files
+```{r}
+my_annotation_files <- c(system.file("extdata/test_anno1.bed", 
+                                     package = "chromVAR"),
+                         system.file("extdata/test_anno1.bed", 
+                                     package = "chromVAR"))
 anno_ix <- getAnnotations(my_annotation_files, 
                           rowRanges = rowRanges(counts_filtered))
 ```
@@ -106,11 +113,11 @@ anno_ix <- getAnnotations(my_annotation_files,
 
 Use the `getAnnotations` with a single file and the column argument to get an annotation matrix based on the groups indicated in that column (1-based indexing).  
 
-```{r, eval=FALSE}
-# Not evaluated
-my_annotation_file <- "anno.bed" # Fake file
-anno_ix <- getAnnotations(my_annotation_files, 
-                           rowRanges = rowRanges(counts_filtered), column = 5)
+```{r}
+my_annotation_file <- system.file("extdata/test_anno3.bed", 
+                                     package = "chromVAR")
+anno_ix <- getAnnotations(my_annotation_file, 
+                           rowRanges = rowRanges(counts_filtered), column = 4)
 ```
 
 ### Other annotation formats
@@ -150,7 +157,9 @@ anno_ix <- getAnnotations(my_annotation_df,
 If your annotations are stored as a list of peak indices, with each element of the list a vector of which peaks contain the annotation, then the `getAnnotations` function can be used to convert that list into a boolean matrix of peak and annotation overlaps stored within the `annotationMatches` assay of a SummarizedExperiment.  
 
 ```{r}
-my_annotation_list <- list(first100 = rep(1, 100), last100 = c(rep(nrow(counts_filtered) - 100, nrow(counts_filtered))))
+my_annotation_list <- list(first100 = rep(1, 100), 
+                           last100 = c(rep(nrow(counts_filtered) - 100, 
+                                           nrow(counts_filtered))))
 anno_ix <- getAnnotations(my_annotation_list, 
                           rowRanges = rowRanges(counts_filtered))
 ```

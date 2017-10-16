@@ -82,7 +82,7 @@ The result from getBackgroundPeaks is a matrix of indices, where each column rep
 
 To use the background peaks computed, simply add those to the call to computeDeviations:
 
-```{r, eval = FALSE}
+```{r}
 dev <- computeDeviations(object = counts_filtered, 
                                  annotations = motif_ix, 
                                  background_peaks = bg)
@@ -114,7 +114,7 @@ expected <- computeExpectations(counts_filtered,
 
 To use your computed expectation vector, simply pass it to the `expectation` argument.
 
-```{r, eval = FALSE}
+```{r}
 dev <- computeDeviations(object = counts_filtered, 
                           annotations = motif_ix, 
                           expectation = expected)

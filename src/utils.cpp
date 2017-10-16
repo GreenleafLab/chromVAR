@@ -4,24 +4,6 @@
 using namespace Rcpp;
 
 
-// [[Rcpp::export]]
-NumericVector col_sds( arma::mat& X, bool na_rm = false) {
-  arma::vec res(X.n_cols);
-  if (na_rm){
-    for( int j=0; j < X.n_cols; j++ ) {
-      arma::vec tmp = X.col(j);
-      arma::uvec keep = arma::find_finite(tmp);
-      if (keep.size() > 1){
-        res(j) = arma::stddev(tmp(keep));        
-      } else{
-        res(j) = arma::datum::nan;
-      }
-    }
-  } else{
-    res = arma::stddev(X,0,0).t();
-  }
-  return NumericVector(res.begin(),res.end()); 
- }
 
 // [[Rcpp::export]]
 NumericVector row_sds( arma::mat& X, bool na_rm = false) {

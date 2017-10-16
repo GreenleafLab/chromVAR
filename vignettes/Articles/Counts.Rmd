@@ -20,14 +20,17 @@ library(Matrix)
 
 chromVAR includes a function `getCounts` for reading in fragment counts from bam or bed files.  
 
-```{r, eval = FALSE}
-# Not evaluated -- Fake files!
-peakfile <- "mypeaks.bed"
-peaks <- getPeaks(peakfile)
+```{r}
+peakfile <- system.file("extdata/test_bed.txt", package = "chromVAR")
+peaks <- getPeaks(peakfile, sort_peaks = TRUE)
 
-bamfiles <- c("mybam1.bam","mybam2.bam")
-fragment_counts <- getCounts(bamfiles, peaks, paired =  TRUE, by_rg = TRUE, format = "bam", 
-                              colData = DataFrame(celltype = c("GM","K562")))
+bamfile <- system.file("extdata/test_RG.bam", package = "chromVAR")
+fragment_counts <- getCounts(bamfile, 
+                             peaks, 
+                             paired =  TRUE, 
+                             by_rg = TRUE, 
+                             format = "bam", 
+                             colData = DataFrame(celltype = "GM"))
 ```
 
 ### RG tags
@@ -40,7 +43,7 @@ The `paired` argument should be set based on whether the data is paired end. Wit
 
 ### Sample annotation
 
-The colData argument takes in a DataFrame with sample annotations. If `by_rg = TRUE` and the number of rows in the DataFrame is equal to the number of alignment files rather than the number of cells/samples indicated by the RG tags, then the annotations are propagated to all cells/samples in each alignment file. In the example above, all cells in "mybam1.bam" would get assigned celltype as "GM" and all cells in "mybam2.bam" would get assigned as cell type "K562". 
+The colData argument takes in a DataFrame with sample annotations. If `by_rg = TRUE` and the number of rows in the DataFrame is equal to the number of alignment files rather than the number of cells/samples indicated by the RG tags, then the annotations are propagated to all cells/samples in each alignment file. 
 
 ### Sequencing depth
 
@@ -50,10 +53,12 @@ When chromVAR reads in alignments to determine fragment counts per peak, it also
 
 If you have already computed a matrix of fragment counts per peaks and don't want to use chromVAR's `getCounts` function, then it is recommended to create your own RangedSummarizedExperiment object that matches the output one would get from `getCounts`. See the documentation for SummarizedExperiment for more information on the (Ranged)SummarizedExperiment constructor function. 
 
-```{r, eval = FALSE}
-# Not evaluated -- example (not real) objects
-fragment_counts <- SummarizedExperiment(assays = list(counts = my_counts_matrix),
-                                        colData = sample_annotation,
+```{r}
+counts_file <- system.file("extdata/counts_table.tsv", package = "chromVAR")
+my_counts_matrix <- as.matrix(read.delim(counts_file))
+
+fragment_counts <- SummarizedExperiment(assays = 
+                                          list(counts = my_counts_matrix),
                                         rowRanges = peaks)
 ```
 
@@ -67,7 +72,7 @@ It is possible to instead use just a simple matrix or Matrix as input to the mai
 If your counts are stored as a RangedSummarizedExperiment, then gc bias can be added to rowRanges data. The GC content will be used for determining background peaks. The function `addGCBias` returns an updated RangedSummarizedExperiment with a new rowData column named "bias". The function requires an input of a genome sequence, which can be provided as a BSgenome, FaFile, or DNAStringSet object. Check out `available.genomes` from the BSgenome package for what genomes are available. For making your own BSgenome object, check out `BSgenomeForge`.  
 
 
-```{r}
+```{r, message = FALSE}
 library(BSgenome.Hsapiens.UCSC.hg19)
 data(example_counts)
 example_counts <- addGCBias(example_counts, genome = BSgenome.Hsapiens.UCSC.hg19)
@@ -96,7 +101,7 @@ filtering_plot
 ```
 
 To instead return the indexes of the samples to keep instead of a new SummarizedExperiment object, use ix_return = TRUE.
-```{r, eval = FALSE}
+```{r}
 ix <- filterSamples(example_counts, ix_return = TRUE, shiny = FALSE)
 ```
 

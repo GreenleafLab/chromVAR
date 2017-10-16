@@ -29,19 +29,19 @@ set.seed(2017)
 ##Setting multiprocessing options
 The package uses BiocParallel to do the multiprocessing.  Check the documentation for BiocParallel to see available options.  The settings can be set using the register function.  For example, to use MulticoreParam with 8 cores:
 
-```{r, eval = FALSE}
+```{r}
 register(MulticoreParam(8))
 ```
 
 To enable progress bars for multiprocessed tasks, use 
-```{r, eval = FALSE}
-register(MulticoreParam(8), progressbar = TRUE)
+```{r}
+register(MulticoreParam(8, progressbar = TRUE))
 ```
 
 For Windows, `MulticoreParam` will not work, but you can use SnowParam:
 
-```{r, eval = FALSE}
-register(SnowParam(SnowParam(workers=1, type = "SOCK")))
+```{r}
+register(SnowParam(workers = 1, type = "SOCK"))
 ```
 
 Even if you don't want to use more than one core, it is best to explicitly register that choice using SerialParam:
@@ -53,20 +53,46 @@ Please see the documentation for [BiocParallel](https://bioconductor.org/package
 
 ##Reading in inputs
 
-```{r, eval = FALSE}
-# Not evaluated; fake file names 
-peakfile <- "mypeaks.bed"
-peaks <- getPeaks(peakfile)
+chromVAR takes as input a table of counts of fragments falling in open chromatin peaks. There are numerous software packages that enable the creation of count tables from epigenomics data; chromVAR also provides a method that is tailored for single-cell ATAC-seq counts. To learn more about the options for the count table and how to format a count table computed via other software, see the [Counts section of the documentation website](https://greenleaflab.github.io/chromVAR/articles/Articles/Counts.html).
 
-bamfiles <- c("mybam1.bam","mybam2.bam")
-fragment_counts <- getCounts(bamfiles, peaks, paired =  TRUE, 
-                             by_rg = TRUE, format = "bam", 
-                             colData = DataFrame(celltype = c("GM","K562")))
+###Peaks
+
+For using chromVAR, it is recommended to use fixed-width, non-overlapping peaks. The method is fairly robust to the exact choice of peak width, but a width of 250 to 500 bp is recommended. See the [supplement](https://drive.google.com/file/d/0B8eUn6ZURmqvUjBCbE5Hc0p4UFU/view?usp=sharing) of the paper for a disussion section and supplementary figures related to the choice of peak width.  
+
+If analyzing single cell data, it can make sense to use peaks derived from bulk ATAC or DNAse-seq data, either from the same population or a similar population (or possibly from a public resource, like the Roadmap Epigenomics project).  
+
+If combining multiple peak files from different populations, it is recommended to combine the peaks together. The `filterPeaks` function (demonstrated a bit further down this vignette) will reduce the peaks to a non-overlapping set based on which overlapping peak has stronger signal across all the data.  
+
+The function `getPeaks` reads in the peaks as a GenomicRanges object. We will show its use by reading in a tiny sample bed file. We'll use the `sort_peaks` argument to indicate we want to sort the peaks.   
+
+```{r}
+peakfile <- system.file("extdata/test_bed.txt", package = "chromVAR")
+peaks <- getPeaks(peakfile, sort_peaks = TRUE)
 ```
 
-The function `getPeaks` reads in the peaks as a GenomicRanges object.  The function `getCounts` returns a chromVARCounts object with a Matrix of fragment counts per sample/cell for each peak in assays.  This data can be accessed with `counts(fragment_counts)`.The Matrix package is used so that if the matrix is sparse, the matrix will be stored as a sparse Matrix. 
+For reading in peaks in the narrowpeak format, chromVAR includes a function, `readNarrowpeaks`, that will read in the file, resize the peaks to a given size based on the `width` argument, and remove peaks that overlap a peak with stronger signal (if `non_overlapping` is set to TRUE -- the default).  
 
-For the rest of the vignette, we will use a very small example data set of 10 GM cells and 10 H1 cells that has already been read in as a SummarizedExperiment object. 
+###Counts
+
+The function `getCounts` returns a chromVARCounts object with a Matrix of fragment counts per sample/cell for each peak in assays.  This data can be accessed with `counts(fragment_counts)`.The Matrix package is used so that if the matrix is sparse, the matrix will be stored as a sparse Matrix. We will demonstrate this function with a very tiny set of reads included in the package:
+
+```{r}
+bamfile <- system.file("extdata/test_RG.bam", package = "chromVAR")
+fragment_counts <- getCounts(bamfile, 
+                             peaks, 
+                             paired =  TRUE, 
+                             by_rg = TRUE, 
+                             format = "bam", 
+                             colData = DataFrame(celltype = "GM"))
+```
+
+Here we passed only one bam file, but we can also pass a vector of bam file names.  In that case, for the column data we would specify the appropriate value per file, e.g `DataFrame(celltype = c("GM","K562"))` if we were passing in one file for GM cells and one for K562 cells. 
+
+If RG tags are not used for combining multiple samples within a file, use `by_rg = FALSE`.  For more on reading in counts, see the [Counts section of the documentation website](https://greenleaflab.github.io/chromVAR/articles/Articles/Counts.html).
+
+## Example data
+
+For the rest of the vignette, we will use a very small (but slightly larger than the previous example) data set of 10 GM cells and 10 H1 cells that has already been read in as a SummarizedExperiment object. 
 
 ```{r}
 data(example_counts, package = "chromVAR")
@@ -77,7 +103,7 @@ head(example_counts)
 
 The GC content will be used for determining background peaks.  The function `addGCBias` returns an updated SummarizedExperiment with a new rowData column named "bias". The function requires an input of a genome sequence, which can be provided as a BSgenome, FaFile, or DNAStringSet object. 
 
-```{r}
+```{r, message = FALSE}
 library(BSgenome.Hsapiens.UCSC.hg19)
 example_counts <- addGCBias(example_counts, 
                             genome = BSgenome.Hsapiens.UCSC.hg19)
@@ -99,7 +125,7 @@ counts_filtered <- filterSamples(example_counts, min_depth = 1500,
 ```
 If shiny argument is set to TRUE (the default), a shiny gadget will pop up which allows you to play with the filtering parameters and see which cells pass filters or not.  
 
-To get just the plot of what is filtered, use `filterSamplesPlot`.  By default, the plot is interactive-- to set it as not interactive use DEFAULT = FALSE.
+To get just the plot of what is filtered, use `filterSamplesPlot`.  By default, the plot is interactive-- to set it as not interactive use `use_plotly = FALSE`.
 
 ```{r filter_plot, fig.width = 6, fig.height = 6}
 #find indices of samples to keep
@@ -115,7 +141,7 @@ ix <- filterSamples(example_counts, ix_return = TRUE, shiny = FALSE)
 ```
 
 
-For both bulk and single cell data, peaks should be filtered based on having at least a certain number of fragments. At minimum, each peak should have at least one fragment across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data). Otherwise, downstream functions won't work. The function `filterPeaks` will also reduce the peak set to non-overlapping peaks (keeping the peak with higher counts for peaks that overlap) if non_overlapping argument is set to TRUE (which is default). 
+For both bulk and single cell data, peaks should be filtered based on having at least a certain number of fragments. At minimum, each peak should have at least one fragment across all the samples (it might be possible to have peaks with zero reads due to using a peak set defined by other data). Otherwise, downstream functions won't work. The function `filterPeaks` will also reduce the peak set to non-overlapping peaks (keeping the peak with higher counts for peaks that overlap) if non_overlapping argument is set to TRUE (which is the default). 
 
 ```{r}
 counts_filtered <- filterPeaks(counts_filtered, non_overlapping = TRUE)
@@ -123,6 +149,7 @@ counts_filtered <- filterPeaks(counts_filtered, non_overlapping = TRUE)
 
 
 ## Get motifs and what peaks contain motifs
+
 The function `getJasparMotifs` fetches motifs from the JASPAR database.  
 ```{r}
 motifs <- getJasparMotifs()
@@ -149,7 +176,7 @@ One option is the p.cutoff for determing how stringent motif calling should be. 
 
 Instead of returning just motif matches, the function can also return additional matrices (stored as assays) with the number of motif matches per peak and the maximum motif score per peak.  For this additional information, use `out = scores`.  To return the actual positions of motif matches, use `out = positions`. Either the output with `out = matches` or `out = scores` can be passed to the computeDeviations function.
 
-If instead of using known motifs, you want to use all kmers of a certain length, the `matchKmers` function can be used.  For more about using kmers as inputs, see the Annotations vignette on the documentation website. 
+If instead of using known motifs, you want to use all kmers of a certain length, the `matchKmers` function can be used.  For more about using kmers as inputs, see the the [Annotations section of the documentation website](https://greenleaflab.github.io/chromVAR/articles/Articles/Counts.html).
 
 ```{r}
 kmer_ix <- matchKmers(6, counts_filtered, 
@@ -158,16 +185,16 @@ kmer_ix <- matchKmers(6, counts_filtered,
 
 ## Compute deviations
 
+The function `computeDeviations` returns a SummarizedExperiment with two "assays". The first matrix (accessible via `deviations(dev)` or `assays(dev)$deviations`) will give the bias corrected "deviation" in accessibility for each set of peaks (rows) for each cell or sample (columns). This metric represent how accessible the set of peaks is relative to the expectation based on equal chromatin accessibility profiles across cells/samples, normalized by a set of background peak sets matched for GC and average accessability.  The second matrix (`deviationScores(dev)` or `assays(deviations)$z`) gives the deviation Z-score, which takes into account how likely such a score would occur if randomly sampling sets of beaks with similar GC content and average accessibility.  
+
 ```{r}
 dev <- computeDeviations(object = counts_filtered, annotations = motif_ix)
 ```
 
-The function `computeDeviations` returns a SummarizedExperiment with two "assays". The first matrix (accessible via `deviations(dev)` or `assays(dev)$deviations`) will give the bias corrected "deviation" in accessibility for each set of peaks (rows) for each cell or sample (columns). This metric represent how accessible the set of peaks is relative to the expectation based on equal chromatin accessibility profiles across cells/samples, normalized by a set of background peak sets matched for GC and average accessability.  The second matrix (`deviationScores(dev)` or `assays(deviations)$z`) gives the deviation Z-score, which takes into account how likely such a score would occur if randomly sampling sets of beaks with similar GC content and average accessibility.  
 
 ## Background Peaks
 
 The function computeDeviations will use a set of background peaks for normalizing the deviation scores.  This computation is done internally by default and not returned -- to have greater control over this step, a user can run the `getBackgroundPeaks` function themselves and pass the result to computeDeviations under the background_peaks parameter.
-
 
 Background peaks are peaks that are similar to a peak in GC content and average accessibility.
 
@@ -207,8 +234,10 @@ tsne_results <- deviationsTsne(dev, threshold = 1.5, perplexity = 10)
 To plot the results, `plotDeviationsTsne` can be used.  If running in an interactive session or an interactive Rmarkdown document, shiny can be set to TRUE to generate a shiny widget.  Here we will show static results.
 
 ```{r}
-tsne_plots <- plotDeviationsTsne(dev, tsne_results, annotation = "TEAD3", 
-                                   sample_column = "Cell_Type", shiny = FALSE)
+tsne_plots <- plotDeviationsTsne(dev, tsne_results, 
+                                 annotation_name = "TEAD3", 
+                                   sample_column = "Cell_Type", 
+                                 shiny = FALSE)
 tsne_plots[[1]]
 tsne_plots[[2]]
 ```

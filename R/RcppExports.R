@@ -17,10 +17,6 @@ compute_pwm_dist2 <- function(pwms, pwms2, min_overlap) {
     .Call(`_chromVAR_compute_pwm_dist2`, pwms, pwms2, min_overlap)
 }
 
-col_sds <- function(X, na_rm = FALSE) {
-    .Call(`_chromVAR_col_sds`, X, na_rm)
-}
-
 row_sds <- function(X, na_rm = FALSE) {
     .Call(`_chromVAR_row_sds`, X, na_rm)
 }
