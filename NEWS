@@ -1,10 +1,25 @@
+# chromVAR 0.99.1
+
+Updates to vignettes.
+
+# chromVAR 0.99.1
+
+Changes in reponse to Bioconductor review:
+
+* Removed deprecated snake_case functions
+* Internal changes to make code neater, less prone to problems
+
+# chromVAR 0.99.0
+
+First version submitted to Bioconductor
+
 # chromVAR 0.4.7
 
 Made it mandatory to provide genome for some functions, rather than defaulting
 to hg19.  Allow usage of FaFile or DNAStringSet instead of BSgenome for genome
 input.
 
-# chromVAR v0.4.2
+# chromVAR 0.4.2
 
 ChromVAR is a package for determining variation in chromatin accessibility 
 across sets of peaks sharing a common genomic annotations. Designed primarily 
