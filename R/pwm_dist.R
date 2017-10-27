@@ -1,27 +1,30 @@
 pwm_type <- function(pwm) {
   # Determine whether un-logged, natural log, or log2
-  if (isTRUE(all.equal(colSums(as.matrix(pwm)), rep(1, length(pwm))))) {
+  if (isTRUE(all.equal(colSums(as.matrix(pwm)), 
+                       rep(1, length(pwm)),
+                       check.attributes = FALSE))) {
     return("frequency")
   } else if (isTRUE(all.equal(colSums(2^(as.matrix(pwm)) *
                                       matrix(bg(pwm),
                                              byrow = FALSE,
                                              ncol = length(pwm),
                                              nrow = 4)),
-                              rep(1, length(pwm)), tolerance = 10^-5))) {
+                              rep(1, length(pwm)), tolerance = 10^-5,
+                              check.attributes = FALSE))) {
     return("log2")
   } else if (isTRUE(all.equal(colSums(exp(as.matrix(pwm)) *
                                       matrix(bg(pwm),
                                              byrow = FALSE,
                                              ncol = length(pwm),
                                              nrow = 4)),
-                              rep(1, length(pwm)), tolerance = 10^-5))) {
+                              rep(1, length(pwm)), tolerance = 10^-5,
+                              check.attributes = FALSE))) {
     return("log")
   } else {
-    stop("Can't determine format of PWM -- should be numeric frequency summing
-         to 1 or log or log2 odds ratio")
+    stop("Can't determine format of PWM -- should be numeric ",
+         "frequency summing to 1 or log or log2 odds ratio")
   }
 }
-
 
 pwm_to_prob_helper <- function(pwm) {
   type <- pwm_type(pwm)
