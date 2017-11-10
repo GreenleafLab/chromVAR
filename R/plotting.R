@@ -169,7 +169,7 @@ plotDeviationsTsne <- function(object,
   if (!is.null(annotation_name)) {
     for (i in annotation_name) {
       if (i %in% rownames(object)) {
-        ix <- i
+        ix <- match(c(i), rownames(object))
       } else if (i %in% rowData(object)$name) {
         ix <- which(rowData(object)$name == i)
         if (length(ix) > 1) 
@@ -179,13 +179,18 @@ plotDeviationsTsne <- function(object,
       } else {
         stop("annotation_name invalid")
       }
+      if ("name" %in% colnames(rowData(object))){
+        name_val <- rowData(object)[ix, "name"]
+      } else{
+        name_val <- i
+      }
       out[[i]] <- ggplot(data.frame(x = tsne[, 1], y = tsne[, 2], 
                                     color = deviationScores(object)[ix,], 
                                     text = colnames(object)), 
                          aes_string(x = "x", y = "y", col = "color", 
                                     text = "text")) + 
         geom_point(size = 2) + 
-        scale_color_gradient2(name = rowData(object)[ix, "name"],
+        scale_color_gradient2(name = i,
                               mid = "lightgray", low = "blue", high = "red") +
         chromVAR_theme() + 
         xlab("tSNE dim 1") + ylab("tSNE dim 2") + 
