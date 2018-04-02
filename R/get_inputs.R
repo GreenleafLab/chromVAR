@@ -221,7 +221,7 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE,
                        function(x){
                          rep(sample_annotation[x, ,drop = FALSE], l[x])}))
     }
-    counts_mat <- do.call(cBind, lapply(tmp, function(x) x$counts))
+    counts_mat <- do.call(cbind, lapply(tmp, function(x) x$counts))
     depths <- do.call(c, lapply(tmp, function(x) x$depths))
   } else {
     mat <- matrix(nrow = length(peaks), ncol = length(bams))

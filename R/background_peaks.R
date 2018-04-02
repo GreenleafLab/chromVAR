@@ -199,7 +199,7 @@ reorder_columns <- function(mat, colixmat) {
   reordered <- lapply(seq_len(ncol(mat)), 
                       function(x) 
                         mat[colixmat[, x], x, drop = FALSE])
-  return(do.call(cBind, reordered))
+  return(do.call(cbind, reordered))
 }
 
 
