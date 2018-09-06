@@ -11,10 +11,10 @@ The recommended installation method for `chromVAR` is using the `biocLite` comma
 ](https://bioconductor.org/packages/release/bioc/html/BiocInstaller.html).
 
 ```r
-BiocInstaller::biocLite("GreenleafLab/chromVAR")
+BiocManager::install("GreenleafLab/chromVAR")
 ```
 
-A number of needed packages are installed in this process. One of the dependencies has a system requirement for the gsl library, so if this is not installed already it may need to be installed separately. Several people have reported issues with the GO.db package (a dependency of one of the dependencies) not being installed automatically -- if you see an error relating to that package, try installing it separately first (`biocLite("GO.db")`).
+A number of needed packages are installed in this process. One of the dependencies has a system requirement for the gsl library, so if this is not installed already it may need to be installed separately. Several people have reported issues with the GO.db package (a dependency of one of the dependencies) not being installed automatically -- if you see an error relating to that package, try installing it separately first (`BiocManager::install("GO.db")`).
 
 For Windows users, some have reported that the S4Vector dependency does not currently function on windows R 3.3.3, but that installation was successful on R 3.3.2.
 
