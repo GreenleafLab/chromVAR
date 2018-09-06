@@ -7,11 +7,13 @@ chromVAR is an R package for the analysis of sparse chromatin accessibility data
 
 ## Installation
 
-The recommended installation method for `chromVAR` is using the `biocLite` command from BiocInstaller. You will first have to have installed the [BiocInstaller package
-](https://bioconductor.org/packages/release/bioc/html/BiocInstaller.html).
+The recommended installation method for `chromVAR` is using BiocManager. You will first have to have installed the [BiocManager package
+](https://cran.r-project.org/package=BiocManager).
 
 ```r
-BiocManager::install("GreenleafLab/chromVAR")
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("chromVAR")
 ```
 
 A number of needed packages are installed in this process. One of the dependencies has a system requirement for the gsl library, so if this is not installed already it may need to be installed separately. Several people have reported issues with the GO.db package (a dependency of one of the dependencies) not being installed automatically -- if you see an error relating to that package, try installing it separately first (`BiocManager::install("GO.db")`).
