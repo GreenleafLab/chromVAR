@@ -51,7 +51,7 @@ Suggests:
     rmarkdown,
     pheatmap,
     motifmatchr
-biocViews: SingleCell, Sequencing, GeneRegulation
+biocViews: SingleCell, Sequencing, GeneRegulation, ImmunoOncology
 LazyData: TRUE
 LinkingTo: Rcpp, RcppArmadillo
 SystemRequirements: C++11
