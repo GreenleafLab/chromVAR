@@ -17,6 +17,8 @@ test_that("can read in 10x", {
   counts <- getCounts(test_bed_10x, test_peaks, x10 = TRUE, format = "bed",
     paired = TRUE, colData = DataFrame(cell_name = c("Test")))
   expect_is(counts, "RangedSummarizedExperiment")
+  # 861 unique barcodes = 861 cells
+  expect_equal(ncol(assays(counts)$counts),861)
 })
 
 # Test fragment counts with RG ___________--------------------------------------
