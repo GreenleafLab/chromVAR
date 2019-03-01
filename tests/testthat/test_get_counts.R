@@ -14,7 +14,7 @@ test_bed_10x <- system.file("extdata", "test_x10_bed.tsv", package = "chromVAR")
 # Test 10x bed file ------------------------------------------------------------
 
 test_that("can read in 10x", {
-  counts <- getCounts(test_bed_10x, test_peaks, x10 = TRUE, format = "bed",
+  counts <- getCounts(test_bed_10x, test_peaks, is_10x = TRUE, format = "bed",
     paired = TRUE, colData = DataFrame(cell_name = c("Test")))
   expect_is(counts, "RangedSummarizedExperiment")
   # 861 unique barcodes = 861 cells

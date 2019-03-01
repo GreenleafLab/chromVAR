@@ -207,13 +207,12 @@ getCounts <- function(alignment_files, peaks, paired, by_rg = FALSE,
     }
   } else if (format == "bed"){
     if (is_10x == TRUE) {
-      return(get_counts_from_10x_beds(alignment_files, peaks, paired, colData, is_10x))
+      return(get_counts_from_10x_beds(alignment_files, peaks, paired, colData))
     } else {
       return(get_counts_from_beds(alignment_files, peaks, paired, colData))
     }
   }
 }
-
 
 get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE,
                                  sample_annotation = NULL) {
@@ -376,7 +375,7 @@ readAlignmentFromBed <- function(filename, paired, is_10x = FALSE) {
   }
   strand_col <- which(apply(tmp[seq_len(min(100, nrow(tmp))), ], 2,
                             function(x) all(x %in%  c("+", "-", "*"))))
-  if is_10x) {
+  if (is_10x) {
     colnames(tmp) <- c("chr", "start", "end", "barcodes", "num_pcr")
     tmp[, "start"] <- tmp[, "start"] + 1
     tmp_tmp <- GRanges(tmp$chr, ranges = IRanges(tmp$start, tmp$end))
