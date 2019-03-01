@@ -196,14 +196,18 @@ setReplaceMethod("counts", signature(object = "SummarizedExperiment",
 #'                            paired = FALSE,
 #'                            format = "bed")
 getCounts <- function(alignment_files, peaks, paired, by_rg = FALSE,
-                       format = c("bam", "bed"), colData = NULL, x10 = FALSE) {
+                       format = c("bam", "bed"), colData = NULL, is_10x = FALSE) {
 
   format <- match.arg(format)
   if (format == "bam") {
     return(get_counts_from_bams(alignment_files, peaks, paired, by_rg, colData))
+    if(is_10 == TRUE){
+      message("Error: Cannot input bam files for 10x data. To read in 10x data, 
+              please input a bed file")
+    }
   } else if (format == "bed"){
-    if (x10 == TRUE) {
-      return(get_counts_from_x10_beds(alignment_files, peaks, paired, colData, x10))
+    if (is_10x == TRUE) {
+      return(get_counts_from_10x_beds(alignment_files, peaks, paired, colData, is_10x))
     } else {
       return(get_counts_from_beds(alignment_files, peaks, paired, colData))
     }
@@ -252,7 +256,7 @@ get_counts_from_bams <- function(bams, peaks, paired, by_rg = FALSE,
   return(out)
 }
 
-get_counts_from_x10_beds <- function(beds, peaks, paired, colData = NULL, x10 = FALSE) {
+get_counts_from_10x_beds <- function(beds, peaks, paired, colData = NULL) {
   if(length(beds == NULL)){
     beds <- list(beds)
   }
@@ -263,11 +267,11 @@ get_counts_from_x10_beds <- function(beds, peaks, paired, colData = NULL, x10 = 
     # read in alignments from bed file. If 10x, readAlignmentFromBed will add
     # barcode information in a metadata field
 
-    fragment <- readAlignmentFromBed(i, paired = paired, x10 = TRUE)
+    fragment <- readAlignmentFromBed(i, paired = paired, is_10x = TRUE)
     if (paired) {
       left <- resize(fragment, width = 1, fix = "start", ignore.strand = TRUE)
       right <- resize(fragment, width = 1, fix = "end", ignore.strand = TRUE)
-      fragments <- left_right_to_grglist(left, right)
+      fragments <- left_right_to_grglist(left, right, is_10x = TRUE)
     } else {
       fragments <- resize(fragment, width = 1, ignore.strand = FALSE)
     }
@@ -363,7 +367,7 @@ get_counts_from_beds <- function(beds, peaks, paired, colData = NULL) {
 # Helper functions for reading in counts from bam ------------------------------
 
 
-readAlignmentFromBed <- function(filename, paired, x10 = FALSE) {
+readAlignmentFromBed <- function(filename, paired, is_10x = FALSE) {
   if (is.installed("readr")) {
     tmp <- suppressMessages(readr::read_tsv(file = filename, col_names = FALSE))
   } else {
@@ -372,7 +376,7 @@ readAlignmentFromBed <- function(filename, paired, x10 = FALSE) {
   }
   strand_col <- which(apply(tmp[seq_len(min(100, nrow(tmp))), ], 2,
                             function(x) all(x %in%  c("+", "-", "*"))))
-  if (x10) {
+  if is_10x) {
     colnames(tmp) <- c("chr", "start", "end", "barcodes", "num_pcr")
     tmp[, "start"] <- tmp[, "start"] + 1
     tmp_tmp <- GRanges(tmp$chr, ranges = IRanges(tmp$start, tmp$end))
@@ -395,7 +399,7 @@ readAlignmentFromBed <- function(filename, paired, x10 = FALSE) {
 
 #' @importFrom IRanges PartitioningByEnd
 #' @importFrom BiocGenerics relist
-left_right_to_grglist <- function(left, right, x10 = FALSE) {
+left_right_to_grglist <- function(left, right, is_10x = FALSE) {
   stopifnot(length(left) == length(right))
   if (length(left) == 0) {
     return(GenomicRangesList())
@@ -405,7 +409,7 @@ left_right_to_grglist <- function(left, right, x10 = FALSE) {
   p <- PartitioningByEnd(cumsum(rep(2, length(x)/2)))
   out <- relist(x, p)
   # if 10x, get every other barcode
-  if(x10) {
+  if(is_10x) {
     codes <- x$barcodes[c(TRUE, FALSE)]
     mcols(out)$barcodes <- codes
   }
