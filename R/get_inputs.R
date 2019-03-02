@@ -162,6 +162,7 @@ setReplaceMethod("counts", signature(object = "SummarizedExperiment",
 #' @param paired paired end data?
 #' @param format bam or bed?  default is bam
 #' @param colData sample annotation DataFrame
+#' @param is_10x is this 10x format? if so, format must also be set to 'bed'
 #' @return \code{\link[SummarizedExperiment]{RangedSummarizedExperiment-class}}
 #'  object
 #' @seealso \code{\link{getSampleDepths}},  \code{\link{getPeaks}},
@@ -201,7 +202,7 @@ getCounts <- function(alignment_files, peaks, paired, by_rg = FALSE,
   format <- match.arg(format)
   if (format == "bam") {
     return(get_counts_from_bams(alignment_files, peaks, paired, by_rg, colData))
-    if(is_10 == TRUE){
+    if(is_10x == TRUE){
       message("Error: Cannot input bam files for 10x data. To read in 10x data, 
               please input a bed file")
     }

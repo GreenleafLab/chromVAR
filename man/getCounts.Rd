@@ -4,8 +4,8 @@
 \alias{getCounts}
 \title{getCounts}
 \usage{
-getCounts(alignment_files, peaks, paired, by_rg = FALSE, format = c("bam",
-  "bed"), colData = NULL)
+getCounts(alignment_files, peaks, paired, by_rg = FALSE,
+  format = c("bam", "bed"), colData = NULL, is_10x = FALSE)
 }
 \arguments{
 \item{alignment_files}{filenames for bam or bed files with aligned reads}
@@ -19,13 +19,15 @@ getCounts(alignment_files, peaks, paired, by_rg = FALSE, format = c("bam",
 \item{format}{bam or bed?  default is bam}
 
 \item{colData}{sample annotation DataFrame}
+
+\item{is_10x}{is this 10x format? if so, format must also be set to 'bed'}
 }
 \value{
 \code{\link[SummarizedExperiment]{RangedSummarizedExperiment-class}}
  object
 }
 \description{
-makes matrix of fragment counts in peaks using one or multiple bam or bed 
+makes matrix of fragment counts in peaks using one or multiple bam or bed
 files
 }
 \examples{
@@ -36,28 +38,28 @@ test_peaks <- getPeaks(peaks_file, sort = TRUE)
 
 # With single bam with RG tags (can also give multiple bams with RG)
 test_rg <- system.file("extdata", "test_RG.bam", package = "chromVAR")
-test_counts <- getCounts(test_rg, peaks = test_peaks, by_rg = TRUE, 
-                          paired = TRUE, 
+test_counts <- getCounts(test_rg, peaks = test_peaks, by_rg = TRUE,
+                          paired = TRUE,
                           colData = S4Vectors::DataFrame(condition ="A"))
-                          
+
 
 # Multiple bams without RG tags
 test_bam1 <- system.file("extdata", "test_single1.bam", package = "chromVAR")
 test_bam2 <- system.file("extdata", "test_single2.bam", package = "chromVAR")
 test_bam3 <- system.file("extdata", "test_single3.bam", package = "chromVAR")
-test_counts2 <- getCounts(c(test_bam1, test_bam2,test_bam3), 
-                           peaks = test_peaks, by_rg = FALSE, 
-                           paired = TRUE, 
-                           colData = S4Vectors::DataFrame(celltype = 
-                                                          c("A","B","C"))) 
-                           
+test_counts2 <- getCounts(c(test_bam1, test_bam2,test_bam3),
+                           peaks = test_peaks, by_rg = FALSE,
+                           paired = TRUE,
+                           colData = S4Vectors::DataFrame(celltype =
+                                                          c("A","B","C")))
+
 # Bed file with reads (can give multiple bed files, here we will just read 1)
 test_bed <- system.file("extdata", "test_reads.bed", package = "chromVAR")
-test_counts3 <- getCounts(test_bed, test_peaks, by_rg = FALSE, 
-                           paired = FALSE, 
-                           format = "bed")                           
+test_counts3 <- getCounts(test_bed, test_peaks, by_rg = FALSE,
+                           paired = FALSE,
+                           format = "bed")
 }
 \seealso{
-\code{\link{getSampleDepths}},  \code{\link{getPeaks}}, 
+\code{\link{getSampleDepths}},  \code{\link{getPeaks}},
 \code{\link{filterSamples}}
 }
