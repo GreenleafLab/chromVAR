@@ -21,6 +21,16 @@ test_that("can read in 10x", {
   expect_equal(ncol(assays(counts)$counts),861)
 })
 
+# Test 10x multiple bed files --------------------------------------------------
+
+test_that("can read in two 10x bed files", {
+  counts <- getCounts(c(test_bed_10x,test_bed_10x), test_peaks, is_10x = TRUE,
+    format = "bed",paired = TRUE, colData = DataFrame(cell_name = c("Test1", "Test2")))
+  expect_is(counts, "RangedSummarizedExperiment")
+  # 861 unique barcodes = 861*2 cells
+  expect_equal(ncol(assays(counts)$counts),1722)
+})
+
 # Test fragment counts with RG ___________--------------------------------------
 
 test_that("can count fragments using RG tags", {
