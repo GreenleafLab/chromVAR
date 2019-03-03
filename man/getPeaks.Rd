@@ -24,7 +24,7 @@ As in standard definition of bed file, first column is assumed to be
  chromosome, second is assumed to be start of peak (0-based), and third is
  assumed to be end of peak (1-based). Note that in output GenomicRanges
  output, start and end indices are both 1-based. Extra columns can be added
- as metadata or strand information if provided, but the user must indicate 
+ as metadata or strand information if provided, but the user must indicate
  column index and name using named vector for extra_cols.
 }
 \examples{
@@ -32,6 +32,6 @@ peaks_file <- system.file("extdata", "test_bed.txt", package = "chromVAR")
 peaks <- getPeaks(peaks_file, sort = TRUE)
 }
 \seealso{
-\code{\link{getCounts}}, \code{\link{filterPeaks}}, 
+\code{\link{getCounts}}, \code{\link{filterPeaks}},
 \code{\link{readNarrowpeaks}}
 }

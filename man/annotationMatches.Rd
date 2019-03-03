@@ -6,7 +6,6 @@
 \alias{annotationMatches,SummarizedExperiment-method}
 \alias{annoation_matches<-,SummarizedExperiment-method}
 \alias{annotationMatches<-}
-\alias{annotationMatches,SummarizedExperiment-method}
 \alias{annotationMatches<-,SummarizedExperiment-method}
 \title{annotationMatches}
 \usage{

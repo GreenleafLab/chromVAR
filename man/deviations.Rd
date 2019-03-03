@@ -4,7 +4,6 @@
 \name{deviations}
 \alias{deviations}
 \alias{deviations,chromVARDeviations-method}
-\alias{deviations,chromVARDeviations-method}
 \title{deviations}
 \usage{
 deviations(object)

@@ -4,7 +4,6 @@
 \name{deviationScores}
 \alias{deviationScores}
 \alias{deviationScores,chromVARDeviations-method}
-\alias{deviationScores,chromVARDeviations-method}
 \title{deviationScores}
 \usage{
 deviationScores(object)
