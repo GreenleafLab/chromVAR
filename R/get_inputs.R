@@ -202,7 +202,7 @@ getCounts <- function(alignment_files, peaks, paired, by_rg = FALSE,
   if (format == "bam") {
     return(get_counts_from_bams(alignment_files, peaks, paired, by_rg, colData))
     if(is_10 == TRUE){
-      message("Error: Cannot input bam files for 10x data. To read in 10x data, 
+      message("Error: Cannot input bam files for 10x data. To read in 10x data,
               please input a bed file")
     }
   } else if (format == "bed"){
@@ -265,7 +265,6 @@ get_counts_from_10x_beds <- function(beds, peaks, paired, colData = NULL) {
   results <- lapply(beds, function(i) {
     # read in alignments from bed file. If 10x, readAlignmentFromBed will add
     # barcode information in a metadata field
-
     fragment <- readAlignmentFromBed(i, paired = paired, is_10x = TRUE)
     if (paired) {
       left <- resize(fragment, width = 1, fix = "start", ignore.strand = TRUE)
@@ -275,21 +274,27 @@ get_counts_from_10x_beds <- function(beds, peaks, paired, colData = NULL) {
       fragments <- resize(fragment, width = 1, ignore.strand = FALSE)
     }
     unique_barcodes <- unique(fragment$barcodes)
+    # iterate over the unique barcodes
     cell_list <- lapply(unique_barcodes, function(i) {
-      # subset data based on barcode
+      # subset data based on that unique barcodes
       current_barcode <- fragments[mcols(fragments)$barcodes == i]
+
+      # make seqlevels for peaks and barcodes the same
       if (!isTRUE(all.equal(sort(seqlevels(current_barcode)), sort(seqlevels(peaks))))) {
         merged_seq <- unique(c(seqlevels(current_barcode), seqlevels(peaks)))
         seqlevels(current_barcode) <- merged_seq
         seqlevels(peaks) <- merged_seq
       }
+
+      # count overlaps between peaks and current barcode
       return(list(counts = countOverlaps(peaks, current_barcode,
                                     type = "any", ignore.strand = TRUE),
                                     depth = length(current_barcode), barcodes = i))
      })
    })
 
-   mat <- lapply(results, function(x) vapply(x, function(x) x[["counts"]], rep(0, length(peaks))))
+   # lapply over the bed files and vapply over the cells
+   mat <- lapply(results, function(x) Matrix::Matrix(vapply(x, function(x) x[["counts"]], rep(0, length(peaks)))))
    depths <- lapply(results, function(x) vapply(x, function(x) x[["depth"]], 0))
    # get barcodes here
    codes <- lapply(results, function(result) { barcodes <- unlist(lapply(result, function(x) x$barcodes))})
@@ -304,6 +309,7 @@ get_counts_from_10x_beds <- function(beds, peaks, paired, colData = NULL) {
      for(j in 1:length(colData[,1])){
        save <- c(save, rep(colData[j,1], ncol(mat[[j]])))
      }
+     # overwrite colData
      colData <- c()
      colData$cell_name <- save
      colData$depth <- unlist(depths)
@@ -311,9 +317,7 @@ get_counts_from_10x_beds <- function(beds, peaks, paired, colData = NULL) {
 
    mat <-  t(do.call(rbind, lapply(mat, function(x) if (length(x) == 1L && is.na(x)) NULL else t(x))))
 
-   counts_mat <- Matrix::Matrix(mat)
-
-   out <- SummarizedExperiment(assays = list(counts = counts_mat),
+   out <- SummarizedExperiment(assays = list(counts = mat),
                              rowRanges = peaks,
                               colData = colData)
    return(out)
