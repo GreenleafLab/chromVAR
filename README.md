@@ -5,6 +5,8 @@
 
 chromVAR is an R package for the analysis of sparse chromatin accessibility data from single cell or bulk ATAC or DNAse-seq data. The package aims to identify motifs or other genomic annotations associated with variability in chromatin accessibility between individual cells or samples.  For a more detail overview of the method, please see the [publication](https://www.nature.com/nmeth/journal/vaop/ncurrent/full/nmeth.4401.html) ([pdf](http://greenleaf.stanford.edu/assets/pdf/nmeth.4401.pdf), [supplement](https://drive.google.com/file/d/0B8eUn6ZURmqvUjBCbE5Hc0p4UFU/view?usp=sharing)). 
 
+For a paper evaluating chromVAR and other methods as a method for enabling clustering of single cells, see [the preprint from Huidong Chen et al](https://www.biorxiv.org/content/10.1101/739011v1). Using kmers + PCA appears to be the best variant of chromVAR for clustering, but newer methods such as [SnapATAC](https://github.com/r3fang/SnapATAC) outperform chromVAR for the clustering tasks evaluated in the paper. chromVAR may be complementary to some other methods, as a way of annotating TF motif usage in cells & clusters rather than cluster identification or embedding.
+
 ## Installation
 
 The recommended installation method for `chromVAR` is using BiocManager. You will first have to have installed the [BiocManager package
