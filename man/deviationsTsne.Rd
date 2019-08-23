@@ -4,9 +4,9 @@
 \alias{deviationsTsne}
 \title{deviationsTsne}
 \usage{
-deviationsTsne(object, threshold = 1.5, perplexity = if (what == "samples")
-  30 else 8, max_iter = 1000, theta = 0.5, what = c("samples",
-  "annotations"), shiny = FALSE)
+deviationsTsne(object, threshold = 1.5, perplexity = if (what ==
+  "samples") 30 else 8, max_iter = 1000, theta = 0.5,
+  what = c("samples", "annotations"), shiny = FALSE)
 }
 \arguments{
 \item{object}{deviations result}

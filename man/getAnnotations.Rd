@@ -20,8 +20,8 @@ getAnnotations(annotations, ...)
 
 \S4method{getAnnotations}{list}(annotations, npeaks = NULL, ...)
 
-\S4method{getAnnotations}{character}(annotations, rowRanges, column = NULL,
-  ...)
+\S4method{getAnnotations}{character}(annotations, rowRanges,
+  column = NULL, ...)
 }
 \arguments{
 \item{annotations}{matrix, Matrix, or data.frame of fragment counts,

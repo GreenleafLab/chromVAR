@@ -12,8 +12,8 @@ computeExpectations(object, ...)
 \S4method{computeExpectations}{MatrixOrmatrix}(object, norm = FALSE,
   group = NULL)
 
-\S4method{computeExpectations}{SummarizedExperiment}(object, norm = FALSE,
-  group = NULL)
+\S4method{computeExpectations}{SummarizedExperiment}(object,
+  norm = FALSE, group = NULL)
 }
 \arguments{
 \item{object}{SummarizedExperiment}

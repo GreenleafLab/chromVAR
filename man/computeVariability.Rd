@@ -4,8 +4,9 @@
 \alias{computeVariability}
 \title{computeVariability}
 \usage{
-computeVariability(object, bootstrap_error = TRUE, bootstrap_samples = 1000,
-  bootstrap_quantiles = c(0.025, 0.975), na.rm = TRUE)
+computeVariability(object, bootstrap_error = TRUE,
+  bootstrap_samples = 1000, bootstrap_quantiles = c(0.025, 0.975),
+  na.rm = TRUE)
 }
 \arguments{
 \item{object}{output from \code{\link{computeDeviations}}}
