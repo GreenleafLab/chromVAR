@@ -460,7 +460,9 @@ compute_deviations_single <- function(peak_set,
                 matches = 0, overlap = NA))
   }
 
-  fragments_per_sample <- colSums(counts_mat)
+  dge <- edgeR::DGEList(counts_mat)
+  dge <- edgeR::calcNormFactors(dge)
+  fragments_per_sample <- dge$samples$lib.size*dge$samples$norm.factors
 
   ### counts_mat should already be normed!
   tf_count <- length(peak_set)
