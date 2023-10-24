@@ -44,6 +44,8 @@ setGeneric("computeExpectations",
 #' \code{\link{getBackgroundPeaks}}, computed internally with default
 #' paramaters if not provided
 #' @param expectation (optional) expectations computed using
+#' @param TMM a logical variable determines if TMM normalization from edgeR 
+#' will be used
 #' \code{\link{computeExpectations}}, computed automatically if not provided
 #' @param ... additional arguments
 #' @details multiprocessing using \code{\link[BiocParallel]{bplapply}}
@@ -64,7 +66,7 @@ setGeneric("computeExpectations",
 #' dev <- computeDeviations(object = mini_counts,
 #'                          annotations = mini_ix)
 setGeneric("computeDeviations",
-           function(object, annotations, ...) 
+           function(object, annotations, TMM, ...) 
              standardGeneric("computeDeviations"))
 
 
@@ -215,17 +217,19 @@ setMethod("computeExpectations", c(object = "SummarizedExperiment"),
               }
             }
             compute_expectations_core(counts(object), norm = norm, 
-                                      group = group)
+              group = group)
           })
 
 
 #' @describeIn computeDeviations object and annotations are SummarizedExperiment
 #' @export
 setMethod("computeDeviations", c(object = "SummarizedExperiment",
-                                  annotations = "SummarizedExperiment"),
+                                  annotations = "SummarizedExperiment",
+                                  TMM = "logical"),
           function(object, annotations,
                    background_peaks = getBackgroundPeaks(object),
-                   expectation = computeExpectations(object)) {
+                   expectation = computeExpectations(object),
+                   TMM = FALSE) {
             object <- counts_check(object)
             annotations <- matches_check(annotations)
             peak_indices <- convert_to_ix_list(annotationMatches(annotations))
@@ -234,17 +238,20 @@ setMethod("computeDeviations", c(object = "SummarizedExperiment",
                                     background_peaks,
                                     expectation,
                                     colData = colData(object),
-                                    rowData = colData(annotations))
+                                    rowData = colData(annotations),
+                                    TMM = TMM)
           })
 
 #' @describeIn computeDeviations object is SummarizedExperiment,
 #' annotations are Matrix
 #' @export
 setMethod("computeDeviations", c(object = "SummarizedExperiment",
-                                  annotations = "MatrixOrmatrix"),
+                                  annotations = "MatrixOrmatrix",
+                                  TMM = "logical"),
           function(object, annotations,
                    background_peaks = getBackgroundPeaks(object),
-                   expectation = computeExpectations(object)) {
+                   expectation = computeExpectations(object),
+                   TMM = FALSE) {
             stopifnot(canCoerce(annotations, "lMatrix"))
             annotations <- as(annotations, "lMatrix")
             object <- counts_check(object)
@@ -253,7 +260,8 @@ setMethod("computeDeviations", c(object = "SummarizedExperiment",
                                     peak_indices,
                                     background_peaks,
                                     expectation,
-                                    colData = colData(object))
+                                    colData = colData(object),
+                                    TMM = TMM)
           })
 
 
@@ -261,28 +269,33 @@ setMethod("computeDeviations", c(object = "SummarizedExperiment",
 #' annotations are list
 #' @export
 setMethod("computeDeviations", c(object = "SummarizedExperiment",
-                                  annotations = "list"),
+                                  annotations = "list",
+                                  TMM = "logical"),
           function(object,
                    annotations,
                    background_peaks = getBackgroundPeaks(object),
-                   expectation = computeExpectations(object)) {
+                   expectation = computeExpectations(object),
+                   TMM = FALSE) {
             object <- counts_check(object)
             compute_deviations_core(counts(object),
                                     annotations,
                                     background_peaks,
                                     expectation,
-                                    colData = colData(object))
+                                    colData = colData(object),
+                                    TMM = TMM)
           })
 
 #' @describeIn computeDeviations object is SummarizedExperiment,
 #' annotations are missing
 #' @export
 setMethod("computeDeviations", c(object = "SummarizedExperiment",
-                                  annotations = "missingOrNULL"),
+                                  annotations = "missingOrNULL",
+                                  TMM = "logical"),
           function(object,
                    annotations,
                    background_peaks = getBackgroundPeaks(object),
-                   expectation = computeExpectations(object)) {
+                   expectation = computeExpectations(object),
+                   TMM = FALSE) {
             message("Annotations not provided, ",
                     "so chromVAR being run on individual peaks...")
             object <- counts_check(object)
@@ -291,38 +304,45 @@ setMethod("computeDeviations", c(object = "SummarizedExperiment",
                                     peak_indices,
                                     background_peaks,
                                     expectation,
-                                    colData = colData(object))
+                                    colData = colData(object),
+                                    TMM = TMM)
           })
 
 #' @describeIn computeDeviations object and annotations are SummarizedExperiment
 #' @export
 setMethod("computeDeviations", c(object = "MatrixOrmatrix",
-                                  annotations = "SummarizedExperiment"),
+                                  annotations = "SummarizedExperiment",
+                                  TMM = "logical"),
           function(object,
                    annotations,
                    background_peaks,
-                   expectation = computeExpectations(object)) {
+                   expectation = computeExpectations(object),
+                   TMM = FALSE) {
             annotations <- matches_check(annotations)
             peak_indices <- convert_to_ix_list(annotationMatches(annotations))
             compute_deviations_core(object, peak_indices, background_peaks,
                                     expectation,
-                                    rowData = colData(annotations))
+                                    rowData = colData(annotations),
+                                    TMM = TMM)
           })
 
 #' @describeIn computeDeviations object is SummarizedExperiment,
 #' annotations are Matrix
 #' @export
 setMethod("computeDeviations", c(object = "MatrixOrmatrix",
-                                  annotations = "MatrixOrmatrix"),
+                                  annotations = "MatrixOrmatrix",
+                                  TMM = "logical"),
           function(object, annotations, background_peaks,
-                   expectation = computeExpectations(object)) {
+                   expectation = computeExpectations(object),
+                   TMM = FALSE) {
             stopifnot(canCoerce(annotations, "lMatrix"))
             annotations <- as(annotations, "lMatrix")
             peak_indices <- convert_to_ix_list(annotations)
             compute_deviations_core(object,
                                     peak_indices,
                                     background_peaks,
-                                    expectation)
+                                    expectation,
+                                    TMM = TMM)
           })
 
 
@@ -330,26 +350,31 @@ setMethod("computeDeviations", c(object = "MatrixOrmatrix",
 #' annotations are list
 #' @export
 setMethod("computeDeviations", c(object = "MatrixOrmatrix",
-                                  annotations = "list"),
+                                  annotations = "list",
+                                  TMM = "logical"),
           function(object, annotations, background_peaks,
-                   expectation = computeExpectations(object)) {
+                   expectation = computeExpectations(object),
+                   TMM = FALSE) {
             compute_deviations_core(object, annotations,
-                                    background_peaks, expectation)
+                                    background_peaks, expectation,
+                                    TMM = TMM)
           })
 
 #' @describeIn computeDeviations object is SummarizedExperiment,
 #' annotations are missing
 #' @export
 setMethod("computeDeviations", c(object = "MatrixOrmatrix",
-                                  annotations = "missingOrNULL"),
+                                  annotations = "missingOrNULL",
+                                  TMM = "logical"),
           function(object, annotations,
                    background_peaks,
-                   expectation = computeExpectations(object)) {
+                   expectation = computeExpectations(object),
+                   TMM = FALSE) {
             message("Annotations not provided, ",
                     "so chromVAR being run on individual peaks...")
             peak_indices <- split(seq_len(nrow(object)), seq_len(nrow(object)))
             compute_deviations_core(object, peak_indices, background_peaks,
-                                    expectation)
+                                    expectation, TMM = TMM)
           })
 
 compute_deviations_core <- function(counts_mat,
@@ -357,7 +382,8 @@ compute_deviations_core <- function(counts_mat,
                                     background_peaks,
                                     expectation,
                                     rowData = NULL,
-                                    colData = NULL) {
+                                    colData = NULL,
+                                    TMM = FALSE) {
 
   if (min(getFragmentsPerPeak(counts_mat)) <= 0)
     stop("All peaks must have at least one fragment in one sample")
@@ -388,7 +414,8 @@ compute_deviations_core <- function(counts_mat,
                       compute_deviations_single,
                       counts_mat = counts_mat,
                       background_peaks = background_peaks,
-                      expectation = expectation)
+                      expectation = expectation,
+                      TMM = TMM)
 
   z <- t(vapply(results, function(x) x[["z"]], rep(0, ncol(counts_mat))))
   dev <- t(vapply(results, function(x) x[["dev"]], rep(0, ncol(counts_mat))))
@@ -453,16 +480,21 @@ compute_deviations_single <- function(peak_set,
                                       background_peaks,
                                       expectation = NULL,
                                       intermediate_results = FALSE,
-                                      threshold = 1) {
+                                      threshold = 1,
+                                      TMM = FALSE) {
 
   if (length(peak_set) == 0) {
     return(list(z = rep(NA, ncol(counts_mat)), dev = rep(NA, ncol(counts_mat)),
                 matches = 0, overlap = NA))
   }
-
-  dge <- edgeR::DGEList(counts_mat)
-  dge <- edgeR::calcNormFactors(dge)
-  fragments_per_sample <- dge$samples$lib.size*dge$samples$norm.factors
+  
+  if (TMM == TRUE) {
+    dge <- edgeR::DGEList(counts_mat)
+    dge <- edgeR::calcNormFactors(dge)
+    fragments_per_sample <- dge$samples$lib.size*dge$samples$norm.factors
+  } else {
+    fragments_per_sample <- colSums(counts_mat)
+  }
 
   ### counts_mat should already be normed!
   tf_count <- length(peak_set)
