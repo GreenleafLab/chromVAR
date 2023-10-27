@@ -11,11 +11,12 @@
 
 .weightFragments <- function(){}
 
-getCounts <- function(data,
+getCounts <- function (data,
                       ranges,
                       paired=TRUE,
                       resize=TRUE, 
-                      width=100){
-  
+                      width=100) {
+    
+    dt <- .importFragments(data)
 
 }
