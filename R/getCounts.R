@@ -66,15 +66,42 @@
 
 .getInsertionCounts <- function(){}
 
-.getFLD <- function(){}
+.getFLD <- function(dts, cuts=c(0,120,300,500)) {
+    # check the min of cuts
+    if (cuts[1] != 0) cuts <- c(0,cuts)
+    res <- lapply(names(dts), \(sample) {
+        dt <- dts[[sample]]
+        dt[,width:=end-start]
+        # check if max(cuts) covers max(width)
+        if (max(dt$width) > cuts[length(cuts)]) 
+            cuts[length(cuts)+1] <- max(dt$width)
+        dt[,type:=as.numeric(cut(width, breaks = cuts))]
+        if (length(unique(dt$type))==1) 
+            warnings("All fragments fell into 1 type")
+        dtAg <- dt[, .(sum_counts=.N), by=type]
+        dtAg[,total:=sum(sum_counts)]
+        dtAg[,prop:=sum_counts/total]
+        dtAg[,sample_id:=sample]
+    })
+    names(res) <- names(dts)
+    res
+}
 
-.weightFragments <- function(){}
+.weightFragments <- function (dts, cuts = c(0,120,300,500)) {
+    fragDist <- .getFLD(dts, cuts = cuts)
+    fragDT <- rbindlist(fragDist)
+    #fragDT[,sample_type:=paste0(sample_id, ",", type)]
+    fragDT[,mean_prop:=mean(prop), by=type]
+    fragDT[,weight:=mean_prop/prop]
+    res <- split(fragDT, fragDT$sample_id)
+}
 
 getCounts <- function (data,
                       ranges,
                       paired=TRUE,
                       resize=TRUE, 
-                      width=100) {
+                      width=100,
+    ...) {
     
     dt <- .importFragments(data)
 
