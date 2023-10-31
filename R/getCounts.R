@@ -60,18 +60,111 @@
     return(fragData)
 }
 
-.resizeRanges <- function(){}
+#' @param ranges: a list of data.table objects that contains 
+#' @param size: the size of each region/peak
+#' return a list of GRange with resized ranges
+.resizeRanges <- function(ranges, 
+  size = 200, 
+  fix = "center",
+  ...) {
+      res <- lapply(ranges, \(range) {
+        # Sanity check
+        if (is.data.table(range) == FALSE) {
+          range <- data.table::as.data.table(range)
+          if (!all(c("chr", "start", "end") %in% colnames(range))) {
+            stop("The range data.table must contain chr, start and end columns")
+          }
+        }
+        range[,width:=end-start+1]
+        gr <- GRanges(seqnames = range$chr, 
+          ranges = IRanges(start=range$start, 
+            end=range$end,
+            width=range$width))
+        gr <- resize(gr, width = size, fix = fix)
+        gr <- as.data.table(gr)
+        colnames(gr)[which(colnames(gr) == "seqnames")] <- "chr"
+        gr
+       })
+}
 
-.getGCCountent <- function(){} 
+#' @param ranges: a data.table contains `chr`, `start` and `end` columns
+#' @param genome: a BSgenome object, the corresponding genome 
+#' @return a GRanges objects with an additional metadata column gc that contains
+#' GC content
+.getGCContent <- function(range, genome) {
+        if (!all(c("chr", "start", "end") %in% colnames(range))) {
+          stop("The range data.table must contain chr, start and end columns")
+        }
+        gr <- GRanges(seqnames = range$chr, 
+          ranges = IRanges(start=range$start, 
+            end=range$end,
+            width=range$width))
+        peakSeqs <- getSeq(x = genome, gr)
+        mcols(gr)$gc <- letterFrequency(peakSeqs, "GC",as.prob=TRUE)[,1]
+        gr <- as.data.table(gr)
+        colnames(gr)[which(colnames(gr) == "seqnames")] <- "chr"
+        gr
+} 
 
-.getInsertionCounts <- function(){}
+.getInsertionCounts <- function(range, 
+  motif,
+  flankSize = 30,
+  shiftATAC = FALSE
+  ) {
+    # Sanity check
+    if (is.data.table(motif) == FALSE) {
+      motif <- data.table::as.data.table(motif)
+      if (!all(c("chr", "start", "end") %in% colnames(motif))) {
+          stop("The motif data.table must contain chr, start and end columns")
+      }
+    }
+    
+    if (is.data.table(range) == FALSE) {
+      range <- data.table::as.data.table(range)
+      if (!all(c("chr", "start", "end") %in% colnames(range))) {
+        stop("The range data.table must contain chr, start and end columns")
+      }
+    }
+    
+    # why?
+    motifData <- data.table::copy(motif)
+    atacFrag <- data.table::copy(range)
+    
+    if (shiftATAC == TRUE) {
+      atacFrag[, start := ifelse(strand == "+", start + 4, start)]
+      atacFrag[, end   := ifelse(strand == "-", end   - 5, end)]
+    }
+    
+    # set up flanking region
+    motifData[, start_margin := start - flankSize]
+    motifData[, end_margin   := end + flankSize]
+    motifData$motifind <- 1:nrow(motifData)
+    
+    # returning the overlaying counts and within motif counts
+    res <- motifData[, .(motifind, 
+      Start_Count = atacFrag[motifData, 
+        on = .(start >= start_margin, start <= start, chr == chr), 
+        .N, by = .EACHI]$N,
+      End_Count   = atacFrag[motifData, 
+        on = .(end >= end, end <= end_margin, chr == chr), 
+        .N, by = .EACHI]$N,
+      counts = atacFrag[motifData, 
+        on = .(start <= start, end >= end, chr == chr), 
+        .N, by = .EACHI]$N)] 
+
+  
+    res <- res[, .(motifind, 
+      total_counts = Start_Count + End_Count + counts,
+      flanking_counts = Start_Count + End_Count,
+      within_counts = counts) ] 
+}
 
 .getFLD <- function(dts, cuts=c(0,120,300,500)) {
     # check the min of cuts
     if (cuts[1] != 0) cuts <- c(0,cuts)
     res <- lapply(names(dts), \(sample) {
         dt <- dts[[sample]]
-        dt[,width:=end-start]
+        dt[,width:=end-start+1]
         # check if max(cuts) covers max(width)
         if (max(dt$width) > cuts[length(cuts)]) 
             cuts[length(cuts)+1] <- max(dt$width)
@@ -96,13 +189,32 @@
     res <- split(fragDT, fragDT$sample_id)
 }
 
-getCounts <- function (data,
-                      ranges,
-                      paired=TRUE,
-                      resize=TRUE, 
-                      width=100,
+#' getCounts
+#' 
+#' @description
+#' makes matrix of fragment counts in peaks using a list of bam or bed files
+#' @param files a list of filenames for bam or bed files with aligned reads
+#' @param paired paired end data?
+#' @param resize a logical to determine if peaks should be resized
+#' @return \code{\link[SummarizedExperiment]{RangedSummarizedExperiment-class}}
+#'  object
+
+getCounts <- function (files,
+    motifs,
+    ranges,
+    paired=TRUE,
+    resize=TRUE, 
+    width=100,
+    genome = BSgenome.Hsapiens.UCSC.hg38,
     ...) {
+    dts <- .importFragments(files)
     
-    dt <- .importFragments(data)
+    # define resize
+    # if (resize) {
+    #   dts <- .resizeRanges(dts)
+    # }
+    #dts <- lapply(dts, .getGCContent, genome = genome)
+    #weights <- .weightFragments(dts, cuts = c(0,10,50,80))
+    #motif_pos <- lapply(dts, .getInsertionCounts, motif = motif)
 
 }
