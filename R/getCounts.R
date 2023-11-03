@@ -60,83 +60,79 @@
     return(fragData)
 }
 
-#' @param ranges: a GenomicRanges objects that contains 
-#' @param size: the size of each region/peak
-#' return a list of GRange with resized ranges
-#' return a GR
-.resizeRanges <- function(ranges, 
-  size = 200, 
-  fix = c("center", "start", "summit")
-  #summit = FALSE,
+#' @description
+#' Resize the peaks
+#' 
+#' @param peakRanges: a GRanges object of peak ranges
+#' @param width: the re-defined size of each peak
+#' @return a GRange object with resized ranges
+
+.resizeRanges <- function(peakRanges, 
+  width = 200, 
+  fix = c("center", "start", "end", "summit"),
   ...) {
-      # fix <- match.args()
+  
+      fix <- match.arg(fix, choices = c("center", "start", "end", "summit"))
+      # Sanity check
+      if (!class(peakRanges) == "GRanges") {
+        stop("peakRanges must be a GRanges object")
+      }
       
-      res <- lapply(ranges, \(range) {
-        # Sanity check
-        if (is.data.table(range) == FALSE) {
-          range <- data.table::as.data.table(range)
-          if (!all(c("chr", "start", "end") %in% colnames(range))) {
-            stop("The range data.table must contain chr, start and end columns")
-          }
-        }
-        range[,width:=end-start+1]
-        gr <- GRanges(seqnames = range$chr, 
-          ranges = IRanges(start=range$start, 
-            end=range$end,
-            width=range$width))
-        gr <- resize(gr, width = size, fix = fix)
-        gr <- as.data.table(gr)
-        colnames(gr)[which(colnames(gr) == "seqnames")] <- "chr"
-        gr
-       })
+      if (fix == "summit") {
+        start(peakRanges) <- round(peakRanges$summit-width/2)
+        end(peakRanges) <- start(peakRanges)+width-1
+      } else {
+        peakRanges <- resize(peakRanges, width = width, fix = fix)
+      }
+      
+      return(peakRanges)
+      
 }
 
-#' @param ranges: a data.table contains `chr`, `start` and `end` columns
+#' @param peakRanges: a GRanges object of peak ranges
 #' @param genome: a BSgenome object, the corresponding genome 
 #' @return a GRanges objects with an additional metadata column gc that contains
 #' GC content
-.getGCContent <- function(range, genome) {
-        if (!all(c("chr", "start", "end") %in% colnames(range))) {
-          stop("The range data.table must contain chr, start and end columns")
-        }
-        gr <- GRanges(seqnames = range$chr, 
-          ranges = IRanges(start=range$start, 
-            end=range$end,
-            width=range$width))
-        peakSeqs <- getSeq(x = genome, gr)
-        mcols(gr)$gc <- letterFrequency(peakSeqs, "GC",as.prob=TRUE)[,1]
-        gr <- as.data.table(gr)
-        colnames(gr)[which(colnames(gr) == "seqnames")] <- "chr"
-        gr
+.getGCContent <- function(peakRanges, genome) {
+    # Sanity check
+    if (!class(peakRanges) == "GRanges") {
+        stop("peakRanges must be a GRanges object")
+    }
+        
+    peakSeqs <- getSeq(x = genome, peakRanges)
+    mcols(peakRanges)$gc <- letterFrequency(peakSeqs, "GC",as.prob=TRUE)[,1]
+    peakRanges
 } 
 
 #' add a parameter of motif or peak
 #' if peak, just within counts
 #' ranges is the peak ranges
 #' 
-.getInsertionCounts <- function(range, 
-  motif,
+
+.getInsertionCounts <- function(peakRanges, 
+  motifRanges,
+  #rangeType = 
   flankSize = 30,
   shiftATAC = FALSE
   ) {
     # Sanity check
-    if (is.data.table(motif) == FALSE) {
-      motif <- data.table::as.data.table(motif)
-      if (!all(c("chr", "start", "end") %in% colnames(motif))) {
-          stop("The motif data.table must contain chr, start and end columns")
-      }
+    if (is.data.table(motifRanges) == FALSE) {
+      motifRanges <- data.table::as.data.table(motifRanges)
     }
     
-    if (is.data.table(range) == FALSE) {
-      range <- data.table::as.data.table(range)
-      if (!all(c("chr", "start", "end") %in% colnames(range))) {
-        stop("The range data.table must contain chr, start and end columns")
-      }
+    if ("seqnames" %in% colnames(motifRanges))
+      colnames(motifRanges)[which(colnames(motifRanges)=="seqnames")] <- "chr"
+    
+    if (is.data.table(peakRanges) == FALSE) {
+      peakRanges <- data.table::as.data.table(peakRanges)
     }
+  
+    if ("seqnames" %in% colnames(peakRanges))
+      colnames(peakRanges)[which(colnames(peakRanges)=="seqnames")] <- "chr"
     
     # why?
-    motifData <- data.table::copy(motif)
-    atacFrag <- data.table::copy(range)
+    motifData <- data.table::copy(motifRanges)
+    atacFrag <- data.table::copy(peakRanges)
     
     if (shiftATAC == TRUE) {
       atacFrag[, start := ifelse(strand == "+", start + 4, start)]
@@ -149,6 +145,7 @@
     motifData$motifind <- 1:nrow(motifData)
     
     # returning the overlaying counts and within motif counts
+    # ?fragment length is usually larger than motif
     res <- motifData[, .(motifind, 
       Start_Count = atacFrag[motifData, 
         on = .(start >= start_margin, start <= start, chr == chr), 
@@ -157,7 +154,7 @@
         on = .(end >= end, end <= end_margin, chr == chr), 
         .N, by = .EACHI]$N,
       counts = atacFrag[motifData, 
-        on = .(start <= start, end >= end, chr == chr), 
+        on = .(start >= start, end <= end, chr == chr), 
         .N, by = .EACHI]$N)] 
 
   
@@ -165,6 +162,54 @@
       total_counts = Start_Count + End_Count + counts,
       flanking_counts = Start_Count + End_Count,
       within_counts = counts) ] 
+}
+
+#' @description
+#' count the number of fragments in each peak region
+#' 
+#' @param peakRanges a GRange or data.table object that contains the peak ranges
+#' @param fragRanges a list of data.table that contains the fragment ranges, 
+#' each data.table represents a sample
+.getCountsOverlaps <- function(peakRanges, 
+  fragRanges,
+  shiftATAC = FALSE,
+  by = c("count", "weight")) {
+  
+    by <- match.arg(by, choices = c("count", "weight"))
+  
+    # sanity check
+    if (is.data.table(peakRanges) == FALSE) 
+      peakRanges <- data.table::as.data.table(peakRanges)
+    
+    if (is.data.table(fragRanges) == FALSE) 
+      fragRanges <- data.table::as.data.table(fragRanges)
+    
+    if ("seqnames" %in% colnames(peakRanges))
+      colnames(peakRanges)[which(colnames(peakRanges)=="seqnames")] <- "chr"
+    
+    if (shiftATAC == TRUE) {
+      peakRanges[, start := ifelse(strand == "+", start + 4, start)]
+      peakRanges[, end   := ifelse(strand == "-", end   - 5, end)]
+    }  
+    
+    peaks <- data.table::copy(peakRanges)
+    frags <- data.table::copy(fragRanges)
+    peaks$peakID <- 1:nrow(peaks)
+    
+    if (by == "count") {
+      fragCounts <- lapply(frags, \(frag) {
+        res <- peaks[, .(peakID, 
+          counts = frag[peaks, 
+            on = .(start >= start, end <= end, chr == chr), 
+            .N, by = .EACHI]$N)]$counts
+      })
+      counts <- do.call(cbind, fragCounts)
+      rownames(counts) <- peaks$peakID
+    }
+    
+    counts
+    
+    
 }
 
 #' change cuts into bin size
