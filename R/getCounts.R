@@ -60,13 +60,17 @@
     return(fragData)
 }
 
-#' @param ranges: a list of data.table objects that contains 
+#' @param ranges: a GenomicRanges objects that contains 
 #' @param size: the size of each region/peak
 #' return a list of GRange with resized ranges
+#' return a GR
 .resizeRanges <- function(ranges, 
   size = 200, 
-  fix = "center",
+  fix = c("center", "start", "summit")
+  #summit = FALSE,
   ...) {
+      # fix <- match.args()
+      
       res <- lapply(ranges, \(range) {
         # Sanity check
         if (is.data.table(range) == FALSE) {
@@ -106,6 +110,10 @@
         gr
 } 
 
+#' add a parameter of motif or peak
+#' if peak, just within counts
+#' ranges is the peak ranges
+#' 
 .getInsertionCounts <- function(range, 
   motif,
   flankSize = 30,
@@ -159,6 +167,7 @@
       within_counts = counts) ] 
 }
 
+#' change cuts into bin size
 .getFLD <- function(dts, cuts=c(0,120,300,500)) {
     # check the min of cuts
     if (cuts[1] != 0) cuts <- c(0,cuts)
@@ -168,9 +177,12 @@
         # check if max(cuts) covers max(width)
         if (max(dt$width) > cuts[length(cuts)]) 
             cuts[length(cuts)+1] <- max(dt$width)
+        
         dt[,type:=as.numeric(cut(width, breaks = cuts))]
         if (length(unique(dt$type))==1) 
             warnings("All fragments fell into 1 type")
+        
+        
         dtAg <- dt[, .(sum_counts=.N), by=type]
         dtAg[,total:=sum(sum_counts)]
         dtAg[,prop:=sum_counts/total]
@@ -200,14 +212,36 @@
 #'  object
 
 getCounts <- function (files,
-    motifs,
-    ranges,
+    #motifs, 
+    ranges, # motif matches or peaks, set a parameter to define
+    type = c("peaks", "motifs"),
     paired=TRUE,
     resize=TRUE, 
     width=100,
+    binsize,
     genome = BSgenome.Hsapiens.UCSC.hg38,
     ...) {
+    
+    type <- match.arg(type, choices=c("peaks", "motifs"))  
+    
     dts <- .importFragments(files)
+    
+    if(type=='peak' & resiye){
+      
+      rs <- .resizeRanges(ranges, ...)
+    }
+    
+    rs <- .getGCContent(rs)
+    dts <- .weightFragments(dts,...)
+    
+    if(type=='peak'){
+      .getOverlapCounts(fragDTs, rs, cuts, countCol)
+    }
+    else if(type=="motif"){
+      .getInsertionCounts(fragDTs, rs, countCol)
+    }
+    
+    
     
     # define resize
     # if (resize) {
@@ -218,3 +252,5 @@ getCounts <- function (files,
     #motif_pos <- lapply(dts, .getInsertionCounts, motif = motif)
 
 }
+
+# resize before insertionCounts
