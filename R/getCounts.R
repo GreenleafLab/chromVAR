@@ -104,11 +104,11 @@
     peakRanges
 } 
 
-#' add a parameter of motif or peak
-#' if peak, just within counts
-#' ranges is the peak ranges
-#' 
-
+#' @param peakRanges a GRange or data.table object that contains peak ranges
+#' @param motifRanges a GRange or data.table object that contains motif ranges
+#' @param flankSize integer, the number of nucleotides to define the buffer/flanking 
+#' region near the motif instance
+#' @param shiftATAC logic if shifting the ATAC-seq fragment data table
 .getInsertionCounts <- function(peakRanges, 
   motifRanges,
   #rangeType = 
@@ -259,7 +259,7 @@
 getCounts <- function (files,
     #motifs, 
     ranges, # motif matches or peaks, set a parameter to define
-    type = c("peaks", "motifs"),
+    rowType = c("peaks", "motifs"),
     paired=TRUE,
     resize=TRUE, 
     width=100,
@@ -267,11 +267,11 @@ getCounts <- function (files,
     genome = BSgenome.Hsapiens.UCSC.hg38,
     ...) {
     
-    type <- match.arg(type, choices=c("peaks", "motifs"))  
+    rowType <- match.arg(rowType, choices=c("peaks", "motifs"))  
     
     dts <- .importFragments(files)
     
-    if(type=='peak' & resiye){
+    if(rowType=='peak' & resize){
       
       rs <- .resizeRanges(ranges, ...)
     }
