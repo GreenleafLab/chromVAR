@@ -109,7 +109,7 @@
 #' @param flankSize integer, the number of nucleotides to define the buffer/flanking 
 #' region near the motif instance
 #' @param shiftATAC logic if shifting the ATAC-seq fragment data table
-.getInsertionCounts <- function(peakRanges, 
+.getInsertionCounts <- function(fragRanges, 
   motifRanges,
   #rangeType = 
   flankSize = 30,
@@ -123,45 +123,51 @@
     if ("seqnames" %in% colnames(motifRanges))
       colnames(motifRanges)[which(colnames(motifRanges)=="seqnames")] <- "chr"
     
-    if (is.data.table(peakRanges) == FALSE) {
-      peakRanges <- data.table::as.data.table(peakRanges)
+    if (is.data.table(fragRanges) == FALSE) {
+      peakRanges <- data.table::as.data.table(fragRanges)
     }
   
-    if ("seqnames" %in% colnames(peakRanges))
-      colnames(peakRanges)[which(colnames(peakRanges)=="seqnames")] <- "chr"
+    if ("seqnames" %in% colnames(fragRanges))
+      colnames(fragRanges)[which(colnames(fragRanges)=="seqnames")] <- "chr"
     
-    # why?
     motifData <- data.table::copy(motifRanges)
-    atacFrag <- data.table::copy(peakRanges)
+    frags <- data.table::copy(fragRanges)
     
     if (shiftATAC == TRUE) {
-      atacFrag[, start := ifelse(strand == "+", start + 4, start)]
-      atacFrag[, end   := ifelse(strand == "-", end   - 5, end)]
+      frags[, start := ifelse(strand == "+", start + 4, start)]
+      frags[, end   := ifelse(strand == "-", end   - 5, end)]
     }
     
     # set up flanking region
     motifData[, start_margin := start - flankSize]
     motifData[, end_margin   := end + flankSize]
-    motifData$motifind <- 1:nrow(motifData)
+    motifData[, motifID := seq_len(nrow(motifData))]
     
-    # returning the overlaying counts and within motif counts
-    # ?fragment length is usually larger than motif
-    res <- motifData[, .(motifind, 
-      Start_Count = atacFrag[motifData, 
-        on = .(start >= start_margin, start <= start, chr == chr), 
-        .N, by = .EACHI]$N,
-      End_Count   = atacFrag[motifData, 
-        on = .(end >= end, end <= end_margin, chr == chr), 
-        .N, by = .EACHI]$N,
-      counts = atacFrag[motifData, 
-        on = .(start >= start, end <= end, chr == chr), 
-        .N, by = .EACHI]$N)] 
-
-  
-    res <- res[, .(motifind, 
-      total_counts = Start_Count + End_Count + counts,
-      flanking_counts = Start_Count + End_Count,
-      within_counts = counts) ] 
+    fragCounts <- lapply(frags, \(frag) {
+      res <- motifData[, .(motifID, 
+        start_count = frag[motifData, 
+          on = .(start >= start_margin, start <= start, chr == chr), 
+          .N, by = .EACHI]$N,
+        end_count   = frag[motifData, 
+          on = .(end >= end, end <= end_margin, chr == chr), 
+          .N, by = .EACHI]$N,
+        within_count = frag[motifData, 
+          on = .(start >= start, end <= end, chr == chr), 
+          .N, by = .EACHI]$N)] 
+      res[,total_count:=start_count+end_count+within_count]
+      res
+    })
+    
+    cols <- names(fragCounts[[1]])[grepl("count", 
+      names(fragCounts[[1]]))]
+    allCounts <- lapply(cols, \(x) {
+      lst <- lapply(fragCounts, \(.) data.frame(.)[,x])
+      mat <- do.call(cbind, lst)
+      colnames(mat) <- names(fragCounts)
+      mat
+    })
+    names(allCounts) <- cols
+    allCounts
 }
 
 #' @description
@@ -170,10 +176,13 @@
 #' @param peakRanges a GRange or data.table object that contains the peak ranges
 #' @param fragRanges a list of data.table that contains the fragment ranges, 
 #' each data.table represents a sample
-.getCountsOverlaps <- function(peakRanges, 
+#' return a list of count table; by all, nucleosome-free, mono...
+.getOverlapCounts <- function(peakRanges, 
   fragRanges,
-  shiftATAC = FALSE,
-  by = c("count", "weight")) {
+#  shiftATAC = FALSE,
+  by = c("count", "weight"),
+  cuts,
+  genome = genome) {
   
     by <- match.arg(by, choices = c("count", "weight"))
   
@@ -181,69 +190,164 @@
     if (is.data.table(peakRanges) == FALSE) 
       peakRanges <- data.table::as.data.table(peakRanges)
     
-    if (is.data.table(fragRanges) == FALSE) 
-      fragRanges <- data.table::as.data.table(fragRanges)
+    # if (is.data.table(fragRanges) == FALSE) 
+    #   fragRanges <- data.table::as.data.table(fragRanges)
     
     if ("seqnames" %in% colnames(peakRanges))
       colnames(peakRanges)[which(colnames(peakRanges)=="seqnames")] <- "chr"
     
-    if (shiftATAC == TRUE) {
-      peakRanges[, start := ifelse(strand == "+", start + 4, start)]
-      peakRanges[, end   := ifelse(strand == "-", end   - 5, end)]
-    }  
+    # if ("seqnames" %in% colnames(fragRanges))
+    #   colnames(fragRanges)[which(colnames(fragRanges)=="seqnames")] <- "chr"
+    
+    
+    # if (shiftATAC == TRUE) {
+    #   peakRanges[, start := ifelse(strand == "+", start + 4, start)]
+    #   peakRanges[, end   := ifelse(strand == "-", end   - 5, end)]
+    # }  
     
     peaks <- data.table::copy(peakRanges)
     frags <- data.table::copy(fragRanges)
+    
     peaks$peakID <- 1:nrow(peaks)
     
     if (by == "count") {
+      frags <- .getType(frags, cuts = cuts)
       fragCounts <- lapply(frags, \(frag) {
-        res <- peaks[, .(peakID, 
-          counts = frag[peaks, 
-            on = .(start >= start, end <= end, chr == chr), 
-            .N, by = .EACHI]$N)]$counts
+        tmp <- frag[peaks, 
+               on = .(start >= start, end <= end, chr == chr)]
+        
+        types <- names(tmp)[grepl("^type_", names(tmp))]
+        
+        res <- tmp[, c(list(counts = sum(count, na.rm = TRUE)), 
+          lapply(.SD, sum, na.rm = TRUE)), 
+          by = peakID, .SDcols = c(types)]
       })
-      counts <- do.call(cbind, fragCounts)
-      rownames(counts) <- peaks$peakID
+      
+      cols <- names(fragCounts[[1]])[grepl("^type_|counts", 
+        names(fragCounts[[1]]))]
+      allCounts <- lapply(cols, \(x) {
+          lst <- lapply(fragCounts, \(.) data.frame(.)[,x])
+          mat <- do.call(cbind, lst)
+          colnames(mat) <- names(fragCounts)
+          mat
+      })
+      names(allCounts) <- cols
+    } else if (by == "weight") {
+          frags <- .weightFragments(frags, genome = genome)
+          frags <- .getType(frags, cuts = cuts)
+          fragCounts <- lapply(frags, \(frag) {
+            colnames(frag)[which(colnames(frag) == "seqnames")] <- "chr"
+            types <- names(frag)[grepl("^type_", names(frag))]
+            sel <- c("chr", "start", "end", "weight", types)
+            frag <- frag[,..sel]
+            frag$count <- 1
+            tmp <- frag[peaks, 
+              on = .(start >= start, end <= end, chr == chr)]
+            tmp[,count:=count*weight]
+            tmp[,(types) := lapply(.SD, function(x) x * weight), .SDcols = types]
+            
+            res <- tmp[, c(list(counts = sum(count, na.rm = TRUE)), 
+              lapply(.SD, sum, na.rm = TRUE)), 
+              by = peakID, .SDcols = c(types)]
+            
+        })
+        
+        cols <- names(fragCounts[[1]])[grepl("^type_|counts", 
+          names(fragCounts[[1]]))]
+        allCounts <- lapply(cols, \(x) {
+          lst <- lapply(fragCounts, \(.) data.frame(.)[,x])
+          mat <- do.call(cbind, lst)
+          colnames(mat) <- names(fragCounts)
+          mat
+        })
+        names(allCounts) <- cols
     }
     
-    counts
+    # add count by type: 
+    
+    
+    allCounts
     
     
 }
 
-#' change cuts into bin size
-.getFLD <- function(dts, cuts=c(0,120,300,500)) {
+#' change cuts into bin size; given the parameter of nBin;
+#' first calculate intervals
+.getType <- function(fragRanges, cuts=c(0,120,300,500)) {
     # check the min of cuts
     if (cuts[1] != 0) cuts <- c(0,cuts)
-    res <- lapply(names(dts), \(sample) {
-        dt <- dts[[sample]]
+    res <- lapply(names(fragRanges), \(sample) {
+        dt <- fragRanges[[sample]]
         dt[,width:=end-start+1]
         # check if max(cuts) covers max(width)
         if (max(dt$width) > cuts[length(cuts)]) 
             cuts[length(cuts)+1] <- max(dt$width)
         
         dt[,type:=as.numeric(cut(width, breaks = cuts))]
-        if (length(unique(dt$type))==1) 
+        if (length(unique(dt$type))==1) {
             warnings("All fragments fell into 1 type")
-        
-        
-        dtAg <- dt[, .(sum_counts=.N), by=type]
-        dtAg[,total:=sum(sum_counts)]
-        dtAg[,prop:=sum_counts/total]
-        dtAg[,sample_id:=sample]
+        } else if(length(unique(dt$type))>=6) {
+            stop("Too many types!")
+        }
+        for (i in unique(dt$type)) {
+          dt[, paste0("type_",i) := as.integer(type == i)]
+        }
+        dt
+
     })
-    names(res) <- names(dts)
+    names(res) <- names(fragRanges)
     res
 }
 
-.weightFragments <- function (dts, cuts = c(0,120,300,500)) {
-    fragDist <- .getFLD(dts, cuts = cuts)
-    fragDT <- rbindlist(fragDist)
-    #fragDT[,sample_type:=paste0(sample_id, ",", type)]
-    fragDT[,mean_prop:=mean(prop), by=type]
-    fragDT[,weight:=mean_prop/prop]
-    res <- split(fragDT, fragDT$sample_id)
+
+.getBins <- function(fragRanges, 
+  nWidthBins = 10, 
+  nGCBins = 10, 
+  genome) {
+    
+    fragDts <- lapply(names(fragRanges), function(x){
+      dt <- fragRanges[[x]]
+      dt[,width:=end-start+1]
+      gr <- makeGRangesFromDataFrame(as.data.frame(dt))
+      gr <- .getGCContent(gr, genome = genome)
+      dt <- as.data.table(gr)
+      dt[,sample:=x]
+      dt
+    })
+    fragDt <- rbindlist(fragDts)
+    
+    widthIntervals <- seq(min(fragDt$width), max(fragDt$width), 
+      length.out=nWidthBins)
+    GCIntervals <-  seq(0, 1, length.out=nGCBins)
+    
+    fragDt[,widthBin:=cut(width, 
+        breaks=widthIntervals, 
+        include.lowest=TRUE)]
+    fragDt[,GCBin:=as.numeric(cut(gc, 
+        breaks=GCIntervals, 
+        include.lowest=TRUE))]
+    fragDt
+    
+}
+  
+  
+
+## bin by both fragment length and GC content
+
+
+.weightFragments <- function (fragRanges, 
+  #cuts = c(0,120,300,500),
+  genome,
+  ...) {
+  
+    fragDt <- .getBins(fragRanges, genome = genome)
+    fragDt[, bin:=paste0(widthBin, GCBin)]
+    fragDt[, bin:=as.numeric(as.factor(bin))]
+    fragDt[,count_bin:=.N, by=c("sample", "bin")]
+    tmp <- fragDt[,.(mean_count_bin=mean(count_bin, na.rm=TRUE)), by=c("bin")]
+    fragDt <- merge(fragDt, tmp, by = "bin")
+    fragDt[,weight:=mean_count_bin/count_bin]
+    res <- split(fragDt, fragDt$sample)
 }
 
 #' getCounts
@@ -298,4 +402,16 @@ getCounts <- function (files,
 
 }
 
-# resize before insertionCounts
+## test
+motifs <- readRDS("/Volumes/jiayiwang/chromVAR2/data/motif.rds")
+mgr <- lapply(names(motifs), \(x) {
+  gr <- as.data.table(motifs[[x]])
+  gr$motif <- x
+  gr
+})
+
+motifRanges <- rbindlist(mgr)
+
+
+
+
