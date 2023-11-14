@@ -21,16 +21,16 @@
           start(frags) <- ifelse(strand(frags) == "+", start(frags) + 4, start(frags))
           end(frags) <- ifelse(strand(frags) == "-", end(frags) - 5, end(frags))
           frags <- as.data.table(frags)
-          setnames(frags, c("seqnames"), c("chr"))
+          #setnames(frags, c("seqnames"), c("chr"))
           frags$count <- 1
           frags
         })
       }
       else if(grepl(".bed", fragData[[1]], fixed=TRUE))
       {
-        fragData <- lapply(fragData, fread, select=1:3, col.names=c("chr", "start", "end"))
+        fragData <- lapply(fragData, fread, select=1:3, col.names=c("seqnames", "start", "end"))
         fragData <- lapply(fragData, function(dt){dt$count <- 1
-        dt <- dt[,c("chr", "start", "end", "count"), with=FALSE]
+        dt <- dt[,c("seqnames", "start", "end", "count"), with=FALSE]
         dt})
       }
       else if(grepl(".rds", fragData[[1]], fixed=TRUE))
@@ -38,17 +38,17 @@
         fragData <- lapply(fragData, function(gr){
           gr <- readRDS(gr)
           dt <- as.data.table(gr)
-          setnames(dt, c("seqnames"), c("chr"))
+          #setnames(dt, c("seqnames"), c("chr"))
           dt$count <- 1
-          dt <- dt[,c("chr", "start", "end", "count")]
+          dt <- dt[,c("seqnames", "start", "end", "count")]
           dt
         })
       }
       else if(is.data.table(fragData[[1]]))
       {
-        if(!(grepl(paste(c("chr", "start", "end"), collapse=";"),
+        if(!(grepl(paste(c("seqnames", "start", "end"), collapse=";"),
                    paste(colnames(fragData[[1]]),collapse=";"))))
-        {stop("data.table list elements of data need to contain columns: chr, start, end")}
+        {stop("data.table list elements of data need to contain columns: seqnames, start, end")}
       }
       else stop("List elements of data need to be either data.tables, .bams-, .beds- .rds-files")
     }
@@ -120,15 +120,9 @@
       motifRanges <- data.table::as.data.table(motifRanges)
     }
     
-    if ("seqnames" %in% colnames(motifRanges))
-      colnames(motifRanges)[which(colnames(motifRanges)=="seqnames")] <- "chr"
-    
     if (is.data.table(fragRanges) == FALSE) {
       peakRanges <- data.table::as.data.table(fragRanges)
     }
-  
-    if ("seqnames" %in% colnames(fragRanges))
-      colnames(fragRanges)[which(colnames(fragRanges)=="seqnames")] <- "chr"
     
     motifData <- data.table::copy(motifRanges)
     frags <- data.table::copy(fragRanges)
@@ -146,13 +140,13 @@
     fragCounts <- lapply(frags, \(frag) {
       res <- motifData[, .(motifID, 
         start_count = frag[motifData, 
-          on = .(start >= start_margin, start <= start, chr == chr), 
+          on = .(start >= start_margin, start <= start, seqnames == seqnames), 
           .N, by = .EACHI]$N,
         end_count   = frag[motifData, 
-          on = .(end >= end, end <= end_margin, chr == chr), 
+          on = .(end >= end, end <= end_margin, seqnames == seqnames), 
           .N, by = .EACHI]$N,
         within_count = frag[motifData, 
-          on = .(start >= start, end <= end, chr == chr), 
+          on = .(start >= start, end <= end, seqnames == seqnames), 
           .N, by = .EACHI]$N)] 
       res[,total_count:=start_count+end_count+within_count]
       res
@@ -179,92 +173,61 @@
 #' return a list of count table; by all, nucleosome-free, mono...
 .getOverlapCounts <- function(peakRanges, 
   fragRanges,
-#  shiftATAC = FALSE,
   by = c("count", "weight"),
   cuts,
-  genome = genome) {
+  genome) {
   
     by <- match.arg(by, choices = c("count", "weight"))
   
     # sanity check
-    if (is.data.table(peakRanges) == FALSE) 
-      peakRanges <- data.table::as.data.table(peakRanges)
-    
-    # if (is.data.table(fragRanges) == FALSE) 
-    #   fragRanges <- data.table::as.data.table(fragRanges)
-    
-    if ("seqnames" %in% colnames(peakRanges))
-      colnames(peakRanges)[which(colnames(peakRanges)=="seqnames")] <- "chr"
-    
-    # if ("seqnames" %in% colnames(fragRanges))
-    #   colnames(fragRanges)[which(colnames(fragRanges)=="seqnames")] <- "chr"
-    
-    
-    # if (shiftATAC == TRUE) {
-    #   peakRanges[, start := ifelse(strand == "+", start + 4, start)]
-    #   peakRanges[, end   := ifelse(strand == "-", end   - 5, end)]
-    # }  
-    
-    peaks <- data.table::copy(peakRanges)
-    frags <- data.table::copy(fragRanges)
-    
-    peaks$peakID <- 1:nrow(peaks)
-    
-    if (by == "count") {
-      frags <- .getType(frags, cuts = cuts)
-      fragCounts <- lapply(frags, \(frag) {
-        tmp <- frag[peaks, 
-               on = .(start >= start, end <= end, chr == chr)]
-        
-        types <- names(tmp)[grepl("^type_", names(tmp))]
-        
-        res <- tmp[, c(list(counts = sum(count, na.rm = TRUE)), 
-          lapply(.SD, sum, na.rm = TRUE)), 
-          by = peakID, .SDcols = c(types)]
-      })
-      
-      cols <- names(fragCounts[[1]])[grepl("^type_|counts", 
-        names(fragCounts[[1]]))]
-      allCounts <- lapply(cols, \(x) {
-          lst <- lapply(fragCounts, \(.) data.frame(.)[,x])
-          mat <- do.call(cbind, lst)
-          colnames(mat) <- names(fragCounts)
-          mat
-      })
-      names(allCounts) <- cols
-    } else if (by == "weight") {
-          frags <- .weightFragments(frags, genome = genome)
-          frags <- .getType(frags, cuts = cuts)
-          fragCounts <- lapply(frags, \(frag) {
-            colnames(frag)[which(colnames(frag) == "seqnames")] <- "chr"
-            types <- names(frag)[grepl("^type_", names(frag))]
-            sel <- c("chr", "start", "end", "weight", types)
-            frag <- frag[,..sel]
-            frag$count <- 1
-            tmp <- frag[peaks, 
-              on = .(start >= start, end <= end, chr == chr)]
-            tmp[,count:=count*weight]
-            tmp[,(types) := lapply(.SD, function(x) x * weight), .SDcols = types]
-            
-            res <- tmp[, c(list(counts = sum(count, na.rm = TRUE)), 
-              lapply(.SD, sum, na.rm = TRUE)), 
-              by = peakID, .SDcols = c(types)]
-            
-        })
-        
-        cols <- names(fragCounts[[1]])[grepl("^type_|counts", 
-          names(fragCounts[[1]]))]
-        allCounts <- lapply(cols, \(x) {
-          lst <- lapply(fragCounts, \(.) data.frame(.)[,x])
-          mat <- do.call(cbind, lst)
-          colnames(mat) <- names(fragCounts)
-          mat
-        })
-        names(allCounts) <- cols
+    if (is.data.table(peakRanges)) {
+        peaks <- peakRanges
+        peakGR <- makeGRangesListFromDataFrame(as.data.frame(peakRanges))
+    } else if (class(peakRanges) == "GRanges") {
+        peaks <- data.table::as.data.table(peakRanges)
+        peakGR <- peakRanges
     }
     
-    # add count by type: 
+    frags <- data.table::copy(fragRanges)
+    peaks$peakID <- seq_len(nrow(peaks))
     
+    if (by == "weight") {
+      frags <- .weightFragments(frags, genome = genome)
+    }
+    
+    frags <- .getType(frags, cuts = cuts)
+    
+    fragCounts <- lapply(frags, \(frag) {
+      if (by == "weight") {
+        frag[,count:=weight]
+        frag[,(types) := lapply(.SD, function(x) x*weight), 
+          .SDcols = types]
+      }
+      fragGR <- makeGRangesFromDataFrame(as.data.frame(frag))
+      hits <- findOverlaps(fragGR, peakGR)
+      overlaps <- cbind(frag[queryHits(hits),],
+               peaks[subjectHits(hits), c("peakID")])
+      types <- names(frag)[grepl("^type_", names(frag))]
+      tmp <- overlaps[, c(list(counts = sum(count, na.rm = TRUE)), 
+        lapply(.SD, sum, na.rm = TRUE)), 
+        by = peakID, .SDcols = c(types)]
+      
+      res <- data.table(peakID = seq_len(nrow(peaks)))
+      res <- merge(res, tmp, all =TRUE)
+      res[is.na(res)] <- 0
+      res
+      
+    })
+    
+    cols <- names(fragCounts[[1]])[grepl("^type_|counts", 
+      names(fragCounts[[1]]))]
+    allCounts <- lapply(cols, \(x) {
+      lst <- lapply(fragCounts, \(.) data.frame(.)[,x])
+      mat <- do.call(cbind, lst)
+      colnames(mat) <- names(fragCounts)
+      mat
+    })
+    names(allCounts) <- cols
     
     allCounts
     
@@ -361,57 +324,47 @@
 #'  object
 
 getCounts <- function (files,
-    #motifs, 
     ranges, # motif matches or peaks, set a parameter to define
+    genome,
     rowType = c("peaks", "motifs"),
-    paired=TRUE,
-    resize=TRUE, 
-    width=100,
-    binsize,
-    genome = BSgenome.Hsapiens.UCSC.hg38,
+    by = c("count", "weight"),
+    paired = TRUE,
+    resize = TRUE, 
+    width = 200,
+    nWidthBins = 20,
+    nGCBins = 20,
+    cuts = c(0,120,300,500),
     ...) {
     
     rowType <- match.arg(rowType, choices=c("peaks", "motifs"))  
-    
-    dts <- .importFragments(files)
-    
-    if(rowType=='peak' & resize){
+    by <- match.arg(by, choices=c("count", "weight"))  
       
-      rs <- .resizeRanges(ranges, ...)
+    fragRanges <- .importFragments(files)
+
+    
+    if (rowType=='peaks' & resize) {
+      ranges <- .resizeRanges(peakRanges = ranges, width = width)
     }
     
-    rs <- .getGCContent(rs)
-    dts <- .weightFragments(dts,...)
-    
-    if(type=='peak'){
-      .getOverlapCounts(fragDTs, rs, cuts, countCol)
+    if (rowType=='peaks') {
+        asy <- .getOverlapCounts(peakRanges = ranges, 
+          fragRanges = fragRanges,
+          by = by,
+          cuts = cuts,
+          genome = genome)
     }
-    else if(type=="motif"){
-      .getInsertionCounts(fragDTs, rs, countCol)
-    }
+    #else if(type=="motif"){
+      #asy <- .getInsertionCounts(fragRanges, motifRanges = )
+    #}
     
-    
-    
-    # define resize
-    # if (resize) {
-    #   dts <- .resizeRanges(dts)
-    # }
-    #dts <- lapply(dts, .getGCContent, genome = genome)
-    #weights <- .weightFragments(dts, cuts = c(0,10,50,80))
-    #motif_pos <- lapply(dts, .getInsertionCounts, motif = motif)
+    SummarizedExperiment(assays = asy, rowRanges = ranges)
 
 }
 
-## test
-motifs <- readRDS("/Volumes/jiayiwang/chromVAR2/data/motif.rds")
-mgr <- lapply(names(motifs), \(x) {
-  gr <- as.data.table(motifs[[x]])
-  gr$motif <- x
-  gr
-})
-
-motifRanges <- rbindlist(mgr)
-
-
-
-
+# Sys.time()
+# se <- getCounts(beds, ranges = peakRanges,
+#   genome = BSgenome.Hsapiens.UCSC.hg38,
+#   by = "weight",
+#   rowType = "peaks",
+#   cuts = c(40,60,80))
+# Sys.time()
