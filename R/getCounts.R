@@ -104,64 +104,284 @@
     peakRanges
 } 
 
-#' @param peakRanges a GRange or data.table object that contains peak ranges
+#TODO: Functionality
+# - filter max and min length of fragments (30 & 2000 as defaults)
+# - match seqLevels of peaks and atac frags in the beginning
+# - write helper functions for sanity checks, i.e. for data.table / granges conversions etc
+# - write a helper function for ATAC shifting
+
+#TODO: Speed-up & memory usage
+# - use dtToGr helper for data.table to GenomicRanges conversion
+# - overlap with findOverlaps and use indices 
+# - convert samples (!), chr & motif ids to integers / numerical factors wherever possible
+# - test chunking across chromosomes: Different chunk sizes
+
+
+#' @Author: Emanuel Sonder
+dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
+  setnames(dt, seqCol, "chr")
+  gr <- GRanges(seqnames=dt[[seqCol]], ranges=IRanges(start=dt[[startCol]], 
+                                                      end=dt[[endCol]]))
+  if(startCol==endCol)
+  {
+    gr <- GPos(seqnames=dt[[seqCol]], pos=dt[[startCol]])
+  }
+  
+  return(gr)
+}
+
+#' @Author: Emanuel Sonder
+.getInsertionProfiles <- function(atacFrag, 
+                                  motifRanges,
+                                  margin=100,
+                                  aggFun=sum,
+                                  minWidth=30,
+                                  maxWidth=2000,
+                                  chunk=TRUE){
+  
+  # prep motif data
+  motifData <- as.data.table(motifRanges)
+  setnames(motifData, "seqnames", "chr")
+  chrLevels <- unique(motifData$chr)
+  motifLevels <- unique(motifData$motif_id)
+  
+  # convert to factors (memory usage)
+  motifData[,chr:=as.integer(factor(chr, levels=chrLevels, ordered=TRUE))]
+  motifData[,motif_id:=as.integer(factor(motif_id, levels=motifLevels, ordered=TRUE))]
+  
+  # determine margins
+  motifData[,start_margin:=start-margin]
+  motifData[,end_margin:=end+margin]
+  
+  # determine motif center
+  motifData[,motif_center:=floor((end_margin-start_margin)/2)+start_margin]
+  
+  # convert to factors (memory usage)
+  atacFrag <- copy(atacFrag) #TODO: take out that copy 
+  atacFrag[,chr:=as.integer(factor(chr, levels=chrLevels, ordered=TRUE))]
+  nSamples <- length(unique(atacFrag$sample))
+  
+  if(chunk){
+    setorder(motifData, chr)
+    setorder(atacFrag, chr)
+    motifData <- split(motifData, by="chr")
+    atacFrag <- split(atacFrag, by="chr")
+    
+    atacInserts <- mapply(function(md,af){
+      
+      # convert to granges for faster overlapping
+      motifMarginRanges <- dtToGr(md, startCol="start_margin", endCol="end_margin")
+      atacStartRanges <- dtToGr(af, startCol="start", endCol="start")
+      atacEndRanges <- dtToGr(af, startCol="end", endCol="end")
+      
+      startHits <- findOverlaps(atacStartRanges, motifMarginRanges, type="within") # check if type within faster or slower
+      endHits <- findOverlaps(atacEndRanges, motifMarginRanges, type="within") 
+      
+      # get overlapping insertion sites
+      atacStartInserts <- af[queryHits(startHits), c("sample", "start"), with=FALSE]
+      atacEndInserts <-af[queryHits(endHits), c("sample", "end"), with=FALSE]
+      setnames(atacStartInserts, "start", "insert")
+      setnames(atacEndInserts, "end", "insert")
+      
+      ai <- cbind(rbindlist(list(atacStartInserts, atacEndInserts)),
+                  rbindlist(list(md[subjectHits(startHits), c("motif_center", "motif_id")],
+                                 md[subjectHits(endHits), c("motif_center", "motif_id")])))
+      
+      # count insertions around motif
+      ai[,rel_pos:=abs(insert-motif_center)]
+      ai[,.(pos_count_sample=.N), by=.(motif_id, rel_pos, sample)]}, 
+      motifData, 
+      atacFrag, 
+      SIMPLIFY=FALSE)
+    
+    # combine insertion counts across chromosomes
+    atacInserts <- rbindlist(atacInserts)
+    atacInserts <- atacInserts[,.(pos_count_sample=sum(pos_count_sample)), 
+                               by=.(motif_id, rel_pos, sample)]
+  }
+  else
+  {
+    # convert to granges for faster overlapping
+    motifMarginRanges <- dtToGr(motifData, startCol="start_margin", endCol="end_margin")
+    atacStartRanges <- dtToGr(atacFrag, startCol="start", endCol="start")
+    atacEndRanges <- dtToGr(atacFrag, startCol="end", endCol="end")
+    
+    startHits <- findOverlaps(atacStartRanges, motifMarginRanges, type="within") # check if type within faster or slower
+    endHits <- findOverlaps(atacEndRanges, motifMarginRanges, type="within") 
+    
+    # get overlapping insertion sites
+    atacStartInserts <- atacFrag[queryHits(startHits),c("sample", "start"),with=FALSE]
+    atacEndInserts <-atacFrag[queryHits(endHits),c("sample", "end"),with=FALSE]
+    setnames(atacStartInserts, "start", "insert")
+    setnames(atacEndInserts, "end", "insert")
+    
+    atacFragInserts <- cbind(rbindlist(list(atacStartInserts, atacEndInserts)),
+                             rbindlist(list(motifData[subjectHits(startHits), 
+                                                      c("motif_center", "motif_id")],
+                                            motifData[subjectHits(endHits), 
+                                                      c("motif_center", "motif_id")])))
+    
+    # count insertions around motif
+    atacFragInserts[,rel_pos:=abs(insert-motif_center)]
+    atacInserts <- atacFragInserts[,.(pos_count_sample=.N), 
+                                   by=.(motif_id, rel_pos, sample)]
+  }
+  
+  atacInserts[,pos_count_global:=sum(pos_count_sample), by=.(motif_id, rel_pos)]
+  
+  # ensure ordering of positions
+  setorder(atacInserts, motif_id, rel_pos)
+  
+  # calculate and smooth weights
+  atacInserts[,w:=smooth(pos_count_global/sum(pos_count_global),
+                         twiceit=TRUE), by=motif_id]
+  
+  # calculate per sample motif scores
+  atacInserts[,score:=w*pos_count_sample]
+  
+  motifAct <- atacInserts[,.(activity=aggFun(score)), by=.(sample, motif_id)]
+  actMat <- data.table::dcast(motifAct, motif_id~sample, value.var="activity")
+  setorder(actMat, motif_id)
+  rownames(actMat) <- motifLevels
+  
+  se <- SummarizedExperiment(list(scores=actMat[,setdiff(colnames(actMat), "motif_id"), with=FALSE]))
+  S4Vectors::metadata(se)$globalProfiles <- atacInserts
+  
+  return(se)
+}
+
+
+# Comment: 
+# - I removed the sanity checks as we either write a seperate function for that 
+# or we do it once in the main function at the beginning
+# - same for the atac shifts
+
+.atacShift <- function(atacFrag, shifts=c(4L, 5L)){
+  atacFrag[, start := ifelse(strand == "+", start + shifts[1], start)]
+  atacFrag[, end   := ifelse(strand == "-", end   - shifts[2], end)]
+  atacFrag
+}
+
+# something like this: might add more checks
+.checkRanges <- function(ranges){
+  # Sanity check
+  if (!is.data.table(ranges)) {
+    dt <- data.table::as.data.table(ranges)
+  }
+  else
+  {
+    dt <- data.table::copy(dt)
+  }
+  
+  if ("seqnames" %in% colnames(dt))
+    colnames(dt)[which(colnames(dt)=="seqnames")] <- "chr"
+  
+  return(dt)
+}
+
+#' @param atacFragRanges a GRange or data.table object that contains atac fragment ranges
 #' @param motifRanges a GRange or data.table object that contains motif ranges
 #' @param flankSize integer, the number of nucleotides to define the buffer/flanking 
 #' region near the motif instance
 #' @param shiftATAC logic if shifting the ATAC-seq fragment data table
-.getInsertionCounts <- function(fragRanges, 
-  motifRanges,
-  #rangeType = 
-  flankSize = 30,
-  shiftATAC = FALSE
-  ) {
-    # Sanity check
-    if (is.data.table(motifRanges) == FALSE) {
-      motifRanges <- data.table::as.data.table(motifRanges)
-    }
-    
-    if (is.data.table(fragRanges) == FALSE) {
-      peakRanges <- data.table::as.data.table(fragRanges)
-    }
-    
-    motifData <- data.table::copy(motifRanges)
-    frags <- data.table::copy(fragRanges)
-    
-    if (shiftATAC == TRUE) {
-      frags[, start := ifelse(strand == "+", start + 4, start)]
-      frags[, end   := ifelse(strand == "-", end   - 5, end)]
-    }
-    
-    # set up flanking region
-    motifData[, start_margin := start - flankSize]
-    motifData[, end_margin   := end + flankSize]
-    motifData[, motifID := seq_len(nrow(motifData))]
-    
-    fragCounts <- lapply(frags, \(frag) {
-      res <- motifData[, .(motifID, 
-        start_count = frag[motifData, 
-          on = .(start >= start_margin, start <= start, seqnames == seqnames), 
-          .N, by = .EACHI]$N,
-        end_count   = frag[motifData, 
-          on = .(end >= end, end <= end_margin, seqnames == seqnames), 
-          .N, by = .EACHI]$N,
-        within_count = frag[motifData, 
-          on = .(start >= start, end <= end, seqnames == seqnames), 
-          .N, by = .EACHI]$N)] 
-      res[,total_count:=start_count+end_count+within_count]
-      res
-    })
-    
-    cols <- names(fragCounts[[1]])[grepl("count", 
-      names(fragCounts[[1]]))]
-    allCounts <- lapply(cols, \(x) {
-      lst <- lapply(fragCounts, \(.) data.frame(.)[,x])
-      mat <- do.call(cbind, lst)
-      colnames(mat) <- names(fragCounts)
-      mat
-    })
-    names(allCounts) <- cols
-    allCounts
+#' @Author: Emanuel Sonder
+.getInsertionCounts <- function(atacFragRanges, 
+                                motifRanges,
+                                mode=c("total", "weight"),
+                                flankSize=30,
+                                shiftATAC=FALSE,
+                                weightCol="weight", ...) {
+  
+  mode <- match.arg(mode, choices=c("total", "weight"))
+  
+  atacFrag <- .checkRanges(atacFragRanges)
+  motifData <- .checkRanges(motifRanges)
+  
+  # ATAC insertion shifts
+  if (shiftATAC == TRUE) {
+    atacFrag <- .atacShift(atacFrag, ...)
+  }
+  
+  # set up flanking region
+  motifData[, start_margin := start - flankSize]
+  motifData[, end_margin   := end + flankSize]
+  motifData$match_id <- 1:nrow(motifData)
+  
+  # Either count weights or total number of fragments
+  if(mode=="total"){
+    atacFrag$weight <- 1
+  }
+  else
+  {
+    setnames(atacFrag, weightCol, "weight")
+  }
+  
+  # get number of samples and motif matches
+  nSample <- length(unique(atacFrag$sample))
+  nMatch <- length(unique(motifData$match_id))
+  
+  # maybe its faster to chunk that part across samples -------------------------
+  # convert to granges for faster overlaps
+  fragStarts <- dtToGr(atacFrag, startCol="start", endCol="start")
+  fragEnds <- dtToGr(atacFrag, startCol="end", endCol="end")
+  motifMarginRanges <- dtToGr(motifData, 
+                              startCol="start_margin", endCol="end_margin")
+  
+  # refactor this: Try 
+  # - with sparse matrix depending on zero fraction
+  # - findOverlaps invert=TRUE
+  # - (!) if this is run in a loop by sample also countByOverlaps could be used
+  startInsertsMargin <- as.data.table(findOverlaps(motifMarginRanges, fragStarts))
+  startInsertsMargin <- cbind(startInsertsMargin, 
+                              atacFrag[startInsertsMargin$subjectHits, c("sample", "weight")])
+  endInsertsMargin <- as.data.table(findOverlaps(motifMarginRanges, fragEnds))
+  endInsertsMargin <- cbind(endInsertsMargin, 
+                            atacFrag[endInsertsMargin$subjectHits, c("sample", "weight")])
+  
+  # get matrix with inserts within the motif and the margin
+  insertsMargin <- rbind(startInsertsMargin, endInsertsMargin)
+  # get zero inserts
+  insertsMargin <- rbind(insertsMargin, data.table(queryHits=setdiff(1:length(motifRanges), 
+                                                                     unique(insertsMargin$queryHits)),
+                                                   weight=0, 
+                                                   sample=insertsMargin$sample[1]), # give some dummy sample
+                         use.names=TRUE, fill=TRUE)
+  
+  insertsMargin <- dcast(insertsMargin, queryHits~sample, 
+                         value.var="weight",
+                         fill=0,
+                         fun.aggregate=sum, drop=FALSE)
+  insertsMargin$queryHits <- NULL
+  
+  # get the inserts within the motif
+  startInsertsWithin <- as.data.table(findOverlaps(motifRanges, fragStarts))
+  startInsertsWithin <- cbind(startInsertsWithin, 
+                              atacFrag[startInsertsWithin$subjectHits, c("sample", "weight")])
+  endInsertsWithin <- as.data.table(findOverlaps(motifRanges, fragEnds))
+  endInsertsWithin <- cbind(endInsertsWithin, 
+                            atacFrag[endInsertsWithin$subjectHits, c("sample", "weight")])
+  
+  insertsWithin <- rbind(startInsertsWithin, endInsertsWithin)
+  # get missing combinations 
+  insertsWithin <- rbind(insertsWithin, data.table(queryHits=setdiff(1:length(motifRanges), 
+                                                                     unique(insertsWithin$queryHits)),
+                                                   weight=0, 
+                                                   sample=insertsWithin$sample[1]), # give some dummy sample
+                         use.names=TRUE, fill=TRUE)
+  
+  insertsWithin <- dcast(insertsWithin, queryHits~sample, 
+                         value.var="weight",
+                         fill=0,
+                         fun.aggregate=sum, drop=FALSE)
+  insertsWithin$queryHits <- NULL
+  
+  # ----------------------------------------------------------------------------
+  
+  flankingCounts <- insertsMargin -insertsWithin
+  
+  return(list(total_counts=insertsMargin, 
+              flanking_counts=flankingCounts, 
+              within_counts=insertsWithin))
 }
 
 #' @description
