@@ -11,15 +11,17 @@
           readPairs <- GenomicAlignments::readGAlignmentPairs(bamPath, param=param)
           # get fragment coordinates from read pairs
           frags <- GRanges(seqnames(GenomicAlignments::first(readPairs)), 
-                           IRanges(start=pmin(GenomicAlignments::start(GenomicAlignments::first(readPairs)), 
+            IRanges(start=pmin(GenomicAlignments::start(GenomicAlignments::first(readPairs)), 
                                               GenomicAlignments::start(GenomicAlignments::second(readPairs))), 
                                    end=pmax(GenomicAlignments::end(GenomicAlignments::first(readPairs)), 
                                             GenomicAlignments::end(second(readPairs)))))
           frags <- granges(frags, use.mcols=TRUE)
           
           # ATAC shift
-          start(frags) <- ifelse(strand(frags) == "+", start(frags) + 4, start(frags))
-          end(frags) <- ifelse(strand(frags) == "-", end(frags) - 5, end(frags))
+          start(frags) <- ifelse(strand(frags) == "+", 
+            start(frags) + 4, start(frags))
+          end(frags) <- ifelse(strand(frags) == "-", 
+            end(frags) - 5, end(frags))
           frags <- as.data.table(frags)
           #setnames(frags, c("seqnames"), c("chr"))
           frags$count <- 1
@@ -59,6 +61,16 @@
     
     return(fragData)
 }
+
+
+#' @description
+#' Sanity check to ensure the input arguments have the correct classes
+#' 
+#' @param atacFrag: a list of data.tables that contain the ranges of fragments
+#' @param peakRanges: a GRange object that contains the ranges of peaks
+#' @param motifRanges:  a GRange object that contains the ranges of motifs
+# .SanityCheck <- function(atacFrag, ranges)
+
 
 #' @description
 #' Resize the peaks
@@ -104,11 +116,33 @@
     peakRanges
 } 
 
+
+.filterFrags <- function(atacFrag, min = 30, max = 2000) {
+    res <- lapply(atacFrag, \(frag) {
+        frag[,width:=end-start+1]
+        frag[width>=min & width<=max,]
+        frag
+    })
+    res
+}
+
+
+.matchSeqlevels <- function(atacFrag, ranges) {
+    frags <- rbindlist(atacFrag)
+    fragSeq <- unique(frags$seqnames)
+    rangeSeq <- GenomeInfoDb::seqlevels(ranges)
+    common <- intersect(fragSeq,rangeSeq)
+    atacFrag <- lapply(atacFrag, \(frag) frag[seqnames %in% common,])
+    ranges <- ranges[seqnames(ranges) %in% common,]
+    list(atacFrag=atacFrag, ranges=ranges)
+}
+
 #TODO: Functionality
 # - filter max and min length of fragments (30 & 2000 as defaults)
-# - match seqLevels of peaks and atac frags in the beginning
+# - match seqLevels of ranges and atac frags in the beginning
 # - write helper functions for sanity checks, i.e. for data.table / granges conversions etc
 # - write a helper function for ATAC shifting
+# - conversion seqLevels to integer
 
 #TODO: Speed-up & memory usage
 # - use dtToGr helper for data.table to GenomicRanges conversion
@@ -116,10 +150,14 @@
 # - convert samples (!), chr & motif ids to integers / numerical factors wherever possible
 # - test chunking across chromosomes: Different chunk sizes
 
+#TODO:
+# 1. unify the arguments 
+# 2. filter functions
+# 3. seqLevels
 
 #' @Author: Emanuel Sonder
-dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
-  setnames(dt, seqCol, "chr")
+dtToGr <- function(dt, seqCol="seqnames", startCol="start", endCol="end"){
+  setnames(dt, seqCol, "seqnames", skip_absent = TRUE)
   gr <- GRanges(seqnames=dt[[seqCol]], ranges=IRanges(start=dt[[startCol]], 
                                                       end=dt[[endCol]]))
   if(startCol==endCol)
@@ -135,19 +173,21 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
                                   motifRanges,
                                   margin=100,
                                   aggFun=sum,
-                                  minWidth=30,
-                                  maxWidth=2000,
+                                  #minWidth=30,
+                                  #maxWidth=2000,
                                   chunk=TRUE){
   
   # prep motif data
   motifData <- as.data.table(motifRanges)
-  setnames(motifData, "seqnames", "chr")
+  #setnames(motifData, "seqnames", "chr")
   chrLevels <- unique(motifData$chr)
   motifLevels <- unique(motifData$motif_id)
   
   # convert to factors (memory usage)
-  motifData[,chr:=as.integer(factor(chr, levels=chrLevels, ordered=TRUE))]
-  motifData[,motif_id:=as.integer(factor(motif_id, levels=motifLevels, ordered=TRUE))]
+  motifData[,chr:=as.integer(factor(chr, 
+    levels=chrLevels, ordered=TRUE))]
+  motifData[,motif_id:=as.integer(factor(motif_id, 
+    levels=motifLevels, ordered=TRUE))]
   
   # determine margins
   motifData[,start_margin:=start-margin]
@@ -170,22 +210,26 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
     atacInserts <- mapply(function(md,af){
       
       # convert to granges for faster overlapping
-      motifMarginRanges <- dtToGr(md, startCol="start_margin", endCol="end_margin")
+      motifMarginRanges <- dtToGr(md, startCol="start_margin", 
+        endCol="end_margin")
       atacStartRanges <- dtToGr(af, startCol="start", endCol="start")
       atacEndRanges <- dtToGr(af, startCol="end", endCol="end")
       
-      startHits <- findOverlaps(atacStartRanges, motifMarginRanges, type="within") # check if type within faster or slower
+      startHits <- findOverlaps(atacStartRanges, 
+        motifMarginRanges, type="within") # check if type within faster or slower
       endHits <- findOverlaps(atacEndRanges, motifMarginRanges, type="within") 
       
       # get overlapping insertion sites
-      atacStartInserts <- af[queryHits(startHits), c("sample", "start"), with=FALSE]
+      atacStartInserts <- af[queryHits(startHits), 
+        c("sample", "start"), with=FALSE]
       atacEndInserts <-af[queryHits(endHits), c("sample", "end"), with=FALSE]
       setnames(atacStartInserts, "start", "insert")
       setnames(atacEndInserts, "end", "insert")
       
       ai <- cbind(rbindlist(list(atacStartInserts, atacEndInserts)),
-                  rbindlist(list(md[subjectHits(startHits), c("motif_center", "motif_id")],
-                                 md[subjectHits(endHits), c("motif_center", "motif_id")])))
+                  rbindlist(list(
+                    md[subjectHits(startHits), c("motif_center", "motif_id")],
+                    md[subjectHits(endHits), c("motif_center", "motif_id")])))
       
       # count insertions around motif
       ai[,rel_pos:=abs(insert-motif_center)]
@@ -202,7 +246,8 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
   else
   {
     # convert to granges for faster overlapping
-    motifMarginRanges <- dtToGr(motifData, startCol="start_margin", endCol="end_margin")
+    motifMarginRanges <- dtToGr(motifData, startCol="start_margin", 
+      endCol="end_margin")
     atacStartRanges <- dtToGr(atacFrag, startCol="start", endCol="start")
     atacEndRanges <- dtToGr(atacFrag, startCol="end", endCol="end")
     
@@ -210,16 +255,19 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
     endHits <- findOverlaps(atacEndRanges, motifMarginRanges, type="within") 
     
     # get overlapping insertion sites
-    atacStartInserts <- atacFrag[queryHits(startHits),c("sample", "start"),with=FALSE]
-    atacEndInserts <-atacFrag[queryHits(endHits),c("sample", "end"),with=FALSE]
+    atacStartInserts <- atacFrag[queryHits(startHits),
+      c("sample", "start"),with=FALSE]
+    atacEndInserts <-atacFrag[queryHits(endHits),
+      c("sample", "end"),with=FALSE]
     setnames(atacStartInserts, "start", "insert")
     setnames(atacEndInserts, "end", "insert")
     
     atacFragInserts <- cbind(rbindlist(list(atacStartInserts, atacEndInserts)),
-                             rbindlist(list(motifData[subjectHits(startHits), 
-                                                      c("motif_center", "motif_id")],
-                                            motifData[subjectHits(endHits), 
-                                                      c("motif_center", "motif_id")])))
+                             rbindlist(list(
+                               motifData[subjectHits(startHits),
+                                 c("motif_center", "motif_id")],
+                               motifData[subjectHits(endHits),
+                                 c("motif_center", "motif_id")])))
     
     # count insertions around motif
     atacFragInserts[,rel_pos:=abs(insert-motif_center)]
@@ -244,7 +292,8 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
   setorder(actMat, motif_id)
   rownames(actMat) <- motifLevels
   
-  se <- SummarizedExperiment(list(scores=actMat[,setdiff(colnames(actMat), "motif_id"), with=FALSE]))
+  se <- SummarizedExperiment(list(scores=actMat[,setdiff(colnames(actMat), 
+    "motif_id"), with=FALSE]))
   S4Vectors::metadata(se)$globalProfiles <- atacInserts
   
   return(se)
@@ -267,25 +316,23 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
   # Sanity check
   if (!is.data.table(ranges)) {
     dt <- data.table::as.data.table(ranges)
-  }
-  else
-  {
-    dt <- data.table::copy(dt)
+  } else {
+    dt <- data.table::copy(ranges)
   }
   
-  if ("seqnames" %in% colnames(dt))
-    colnames(dt)[which(colnames(dt)=="seqnames")] <- "chr"
+  # if ("seqnames" %in% colnames(dt))
+  #   colnames(dt)[which(colnames(dt)=="seqnames")] <- "chr"
   
   return(dt)
 }
 
-#' @param atacFragRanges a GRange or data.table object that contains atac fragment ranges
+#' @param atacFrag a GRange or data.table object that contains atac fragment ranges
 #' @param motifRanges a GRange or data.table object that contains motif ranges
 #' @param flankSize integer, the number of nucleotides to define the buffer/flanking 
 #' region near the motif instance
 #' @param shiftATAC logic if shifting the ATAC-seq fragment data table
 #' @Author: Emanuel Sonder
-.getInsertionCounts <- function(atacFragRanges, 
+.getInsertionCounts <- function(atacFrag, 
                                 motifRanges,
                                 mode=c("total", "weight"),
                                 flankSize=30,
@@ -294,7 +341,7 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
   
   mode <- match.arg(mode, choices=c("total", "weight"))
   
-  atacFrag <- .checkRanges(atacFragRanges)
+  atacFrag <- .checkRanges(atacFrag)
   motifData <- .checkRanges(motifRanges)
   
   # ATAC insertion shifts
@@ -305,14 +352,12 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
   # set up flanking region
   motifData[, start_margin := start - flankSize]
   motifData[, end_margin   := end + flankSize]
-  motifData$match_id <- 1:nrow(motifData)
+  motifData$match_id <- seq_len(nrow(motifData))
   
   # Either count weights or total number of fragments
   if(mode=="total"){
     atacFrag$weight <- 1
-  }
-  else
-  {
+  } else {
     setnames(atacFrag, weightCol, "weight")
   }
   
@@ -333,19 +378,22 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
   # - (!) if this is run in a loop by sample also countByOverlaps could be used
   startInsertsMargin <- as.data.table(findOverlaps(motifMarginRanges, fragStarts))
   startInsertsMargin <- cbind(startInsertsMargin, 
-                              atacFrag[startInsertsMargin$subjectHits, c("sample", "weight")])
+                              atacFrag[startInsertsMargin$subjectHits, 
+                                c("sample", "weight")])
   endInsertsMargin <- as.data.table(findOverlaps(motifMarginRanges, fragEnds))
   endInsertsMargin <- cbind(endInsertsMargin, 
-                            atacFrag[endInsertsMargin$subjectHits, c("sample", "weight")])
+                            atacFrag[endInsertsMargin$subjectHits, 
+                              c("sample", "weight")])
   
   # get matrix with inserts within the motif and the margin
   insertsMargin <- rbind(startInsertsMargin, endInsertsMargin)
   # get zero inserts
-  insertsMargin <- rbind(insertsMargin, data.table(queryHits=setdiff(1:length(motifRanges), 
-                                                                     unique(insertsMargin$queryHits)),
-                                                   weight=0, 
-                                                   sample=insertsMargin$sample[1]), # give some dummy sample
-                         use.names=TRUE, fill=TRUE)
+  insertsMargin <- rbind(insertsMargin, data.table(
+    queryHits=setdiff(seq_len(length(motifRanges)), 
+      unique(insertsMargin$queryHits)),
+    weight=0, 
+    sample=insertsMargin$sample[1]), # give some dummy sample
+    use.names=TRUE, fill=TRUE)
   
   insertsMargin <- dcast(insertsMargin, queryHits~sample, 
                          value.var="weight",
@@ -356,18 +404,21 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
   # get the inserts within the motif
   startInsertsWithin <- as.data.table(findOverlaps(motifRanges, fragStarts))
   startInsertsWithin <- cbind(startInsertsWithin, 
-                              atacFrag[startInsertsWithin$subjectHits, c("sample", "weight")])
+                              atacFrag[startInsertsWithin$subjectHits, 
+                                c("sample", "weight")])
   endInsertsWithin <- as.data.table(findOverlaps(motifRanges, fragEnds))
   endInsertsWithin <- cbind(endInsertsWithin, 
-                            atacFrag[endInsertsWithin$subjectHits, c("sample", "weight")])
+                            atacFrag[endInsertsWithin$subjectHits, 
+                              c("sample", "weight")])
   
   insertsWithin <- rbind(startInsertsWithin, endInsertsWithin)
   # get missing combinations 
-  insertsWithin <- rbind(insertsWithin, data.table(queryHits=setdiff(1:length(motifRanges), 
-                                                                     unique(insertsWithin$queryHits)),
-                                                   weight=0, 
-                                                   sample=insertsWithin$sample[1]), # give some dummy sample
-                         use.names=TRUE, fill=TRUE)
+  insertsWithin <- rbind(insertsWithin, data.table(
+    queryHits=setdiff(seq_len(length(motifRanges)), 
+      unique(insertsWithin$queryHits)),
+    weight=0, 
+    sample=insertsWithin$sample[1]), # give some dummy sample
+    use.names=TRUE, fill=TRUE)
   
   insertsWithin <- dcast(insertsWithin, queryHits~sample, 
                          value.var="weight",
@@ -377,7 +428,7 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
   
   # ----------------------------------------------------------------------------
   
-  flankingCounts <- insertsMargin -insertsWithin
+  flankingCounts <- insertsMargin - insertsWithin
   
   return(list(total_counts=insertsMargin, 
               flanking_counts=flankingCounts, 
@@ -388,27 +439,25 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
 #' count the number of fragments in each peak region
 #' 
 #' @param peakRanges a GRange or data.table object that contains the peak ranges
-#' @param fragRanges a list of data.table that contains the fragment ranges, 
+#' @param atacFrag a list of data.table that contains the fragment ranges, 
 #' each data.table represents a sample
 #' return a list of count table; by all, nucleosome-free, mono...
 .getOverlapCounts <- function(peakRanges, 
-  fragRanges,
-  by = c("count", "weight"),
+  atacFrag,
+  mode = c("total", "weight"),
   cuts,
-  genome) {
+  genome,
+  overlap = c("any", "start", "end", "within", "equal"),
+  ...
+  #overlaps = c("any",...)
+  ) {
   
-    by <- match.arg(by, choices = c("count", "weight"))
-  
-    # sanity check
-    if (is.data.table(peakRanges)) {
-        peaks <- peakRanges
-        peakGR <- makeGRangesListFromDataFrame(as.data.frame(peakRanges))
-    } else if (class(peakRanges) == "GRanges") {
-        peaks <- data.table::as.data.table(peakRanges)
-        peakGR <- peakRanges
-    }
+    by <- match.arg(mode, choices = c("total", "weight"))
+      
+    peaks <- data.table::as.data.table(peakRanges)
+    peakGR <- peakRanges
     
-    frags <- data.table::copy(fragRanges)
+    frags <- data.table::copy(atacFrag)
     peaks$peakID <- seq_len(nrow(peaks))
     
     if (by == "weight") {
@@ -418,16 +467,17 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
     frags <- .getType(frags, cuts = cuts)
     
     fragCounts <- lapply(frags, \(frag) {
+      types <- names(frag)[grepl("^type_", names(frag))]
       if (by == "weight") {
         frag[,count:=weight]
         frag[,(types) := lapply(.SD, function(x) x*weight), 
           .SDcols = types]
       }
-      fragGR <- makeGRangesFromDataFrame(as.data.frame(frag))
-      hits <- findOverlaps(fragGR, peakGR)
+      #fragGR <- makeGRangesFromDataFrame(as.data.frame(frag))
+      fragGR <- dtToGr(frag)
+      hits <- findOverlaps(fragGR, peakGR, type = overlap)
       overlaps <- cbind(frag[queryHits(hits),],
                peaks[subjectHits(hits), c("peakID")])
-      types <- names(frag)[grepl("^type_", names(frag))]
       tmp <- overlaps[, c(list(counts = sum(count, na.rm = TRUE)), 
         lapply(.SD, sum, na.rm = TRUE)), 
         by = peakID, .SDcols = c(types)]
@@ -456,11 +506,11 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
 
 #' change cuts into bin size; given the parameter of nBin;
 #' first calculate intervals
-.getType <- function(fragRanges, cuts=c(0,120,300,500)) {
+.getType <- function(atacFrag, cuts=c(0,120,300,500)) {
     # check the min of cuts
     if (cuts[1] != 0) cuts <- c(0,cuts)
-    res <- lapply(names(fragRanges), \(sample) {
-        dt <- fragRanges[[sample]]
+    res <- lapply(names(atacFrag), \(sample) {
+        dt <- atacFrag[[sample]]
         dt[,width:=end-start+1]
         # check if max(cuts) covers max(width)
         if (max(dt$width) > cuts[length(cuts)]) 
@@ -478,20 +528,21 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
         dt
 
     })
-    names(res) <- names(fragRanges)
+    names(res) <- names(atacFrag)
     res
 }
 
 
-.getBins <- function(fragRanges, 
+.getBins <- function(atacFrag, 
   nWidthBins = 10, 
   nGCBins = 10, 
   genome) {
     
-    fragDts <- lapply(names(fragRanges), function(x){
-      dt <- fragRanges[[x]]
+    fragDts <- lapply(names(atacFrag), function(x){
+      dt <- atacFrag[[x]]
       dt[,width:=end-start+1]
-      gr <- makeGRangesFromDataFrame(as.data.frame(dt))
+      #gr <- makeGRangesFromDataFrame(as.data.frame(dt))
+      gr <- dtToGr(dt)
       gr <- .getGCContent(gr, genome = genome)
       dt <- as.data.table(gr)
       dt[,sample:=x]
@@ -518,12 +569,12 @@ dtToGr <- function(dt, seqCol="chr", startCol="start", endCol="end"){
 ## bin by both fragment length and GC content
 
 
-.weightFragments <- function (fragRanges, 
+.weightFragments <- function (atacFrag, 
   #cuts = c(0,120,300,500),
   genome,
   ...) {
   
-    fragDt <- .getBins(fragRanges, genome = genome)
+    fragDt <- .getBins(atacFrag, genome = genome)
     fragDt[, bin:=paste0(widthBin, GCBin)]
     fragDt[, bin:=as.numeric(as.factor(bin))]
     fragDt[,count_bin:=.N, by=c("sample", "bin")]
@@ -547,19 +598,29 @@ getCounts <- function (files,
     ranges, # motif matches or peaks, set a parameter to define
     genome,
     rowType = c("peaks", "motifs"),
-    by = c("count", "weight"),
+    mode = c("total", "weight"),
     paired = TRUE,
     resize = TRUE, 
     width = 200,
     nWidthBins = 20,
     nGCBins = 20,
     cuts = c(0,120,300,500),
+    minFrag = 30,
+    maxFrag = 3000,
     ...) {
     
     rowType <- match.arg(rowType, choices=c("peaks", "motifs"))  
-    by <- match.arg(by, choices=c("count", "weight"))  
-      
-    fragRanges <- .importFragments(files)
+    mode <- match.arg(mode, choices=c("total", "weight"))  
+    # get fragments ranges
+    atacFrag <- .importFragments(files)
+    
+    # filter too short or too long fragments
+    atacFrag <- .filterFrags(atacFrag, min = minFrag, max = maxFrag)
+    
+    # match seqLevels
+    res <- .matchSeqlevels(atacFrag, ranges)
+    atacFrag <- res$atacFrag
+    ranges <- res$ranges
 
     
     if (rowType=='peaks' & resize) {
@@ -568,23 +629,33 @@ getCounts <- function (files,
     
     if (rowType=='peaks') {
         asy <- .getOverlapCounts(peakRanges = ranges, 
-          fragRanges = fragRanges,
-          by = by,
+          atacFrag = atacFrag,
+          mode = mode,
           cuts = cuts,
           genome = genome)
+    } else if (rowType=="motif"){
+        if (mode=="weight") {
+          atacFrag <- .weightFragments(atacFrag, genome)
+        }
+        lst <- lapply(names(atacFrag), \(x) {
+            frag <- atacFrag[[x]]
+            frag$sample <- x
+            frag
+        })
+        atacFrags <- rbindlist(lst)
+        asy <- .getInsertionCounts(atacFrags, 
+          motifRanges = ranges, 
+          mode = mode)
     }
-    #else if(type=="motif"){
-      #asy <- .getInsertionCounts(fragRanges, motifRanges = )
-    #}
     
     SummarizedExperiment(assays = asy, rowRanges = ranges)
 
 }
 
+# files <- list("ctrl1"="ctrl1.bed", "ctrl2"="ctrl2.bed",
+# "treat1"="treat1.bed", "treat2"="treat2.bed")
 # Sys.time()
-# se <- getCounts(beds, ranges = peakRanges,
-#   genome = BSgenome.Hsapiens.UCSC.hg38,
-#   by = "weight",
-#   rowType = "peaks",
-#   cuts = c(40,60,80))
+# counts <- getCounts(files, ranges = peakRanges, rowType = "peaks", mode = "total",
+#     genome = BSgenome.Hsapiens.UCSC.hg38)
 # Sys.time()
+
