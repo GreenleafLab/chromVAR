@@ -68,8 +68,36 @@
 #' 
 #' @param atacFrag: a list of data.tables that contain the ranges of fragments
 #' @param peakRanges: a GRange object that contains the ranges of peaks
-#' @param motifRanges:  a GRange object that contains the ranges of motifs
-# .SanityCheck <- function(atacFrag, ranges)
+#' @param motifRanges:  a GRange object that contains the ranges of motifs, 
+#' check metadata columns
+#' check seqnames to factor in datatable
+.sanityCheck <- function(atacFrag, 
+  ranges, 
+  type = c("peaks", "motifs")) {
+  nPeaks <- nrow(atacFrag[[1]])
+  lapply(atacFrag, \(frag) {
+      if (!is.data.table(frag)) {
+        stop("Each element in atacFrag should be a data.table")
+      }
+      if(nrow(frag) != nPeaks) {
+        stop("The number of peaks does not match between samples")
+      }
+  })
+  
+  if (!class(ranges)=="GRanges") {
+    stop("ranges should be a GRanges object")
+  }
+  
+  type <- match.arg(type, choices = c("peaks", "motifs"))
+  if (type=="motifs") {
+    if (!("motif" %in% names(mcols(ranges)))) {
+      stop("There is no motif names in metadata columns")
+    }
+  }
+    
+}
+
+
 
 
 #' @description
@@ -126,14 +154,17 @@
     res
 }
 
-
 .matchSeqlevels <- function(atacFrag, ranges) {
     frags <- rbindlist(atacFrag)
     fragSeq <- unique(frags$seqnames)
-    rangeSeq <- GenomeInfoDb::seqlevels(ranges)
+    rangeSeq <- GenomicRanges::seqnames(ranges) 
     common <- intersect(fragSeq,rangeSeq)
-    atacFrag <- lapply(atacFrag, \(frag) frag[seqnames %in% common,])
+    atacFrag <- lapply(atacFrag, \(frag) {
+     frag <- frag[seqnames %in% common,]
+     frag$seqnames <- factor(frag$seqnames)
+     frag})
     ranges <- ranges[seqnames(ranges) %in% common,]
+    # turn seqnames to factor
     list(atacFrag=atacFrag, ranges=ranges)
 }
 
@@ -337,7 +368,9 @@ dtToGr <- function(dt, seqCol="seqnames", startCol="start", endCol="end"){
                                 mode=c("total", "weight"),
                                 flankSize=30,
                                 shiftATAC=FALSE,
-                                weightCol="weight", ...) {
+                                weightCol="weight", 
+                                #addProfile=FALSE,
+                                ...) {
   
   mode <- match.arg(mode, choices=c("total", "weight"))
   
@@ -589,8 +622,14 @@ dtToGr <- function(dt, seqCol="seqnames", startCol="start", endCol="end"){
 #' @description
 #' makes matrix of fragment counts in peaks using a list of bam or bed files
 #' @param files a list of filenames for bam or bed files with aligned reads
+#' @param ranges a GRanges that contains the ranges of peaks or motifs. If 
+#' rowType == "motifs", ranges must contain a mcols called `motif` that contains
+#' the name of motif for each row
+#' @param rowType using peaks or motifs in rows
+#' @param mode if the assays return original counts or weighted counts
 #' @param paired paired end data?
 #' @param resize a logical to determine if peaks should be resized
+#' @param width if resize is `TRUE`, the new width of each peak
 #' @return \code{\link[SummarizedExperiment]{RangedSummarizedExperiment-class}}
 #'  object
 
@@ -614,6 +653,9 @@ getCounts <- function (files,
     # get fragments ranges
     atacFrag <- .importFragments(files)
     
+    # sanity check
+    .sanityCheck(atacFrag, ranges, type = rowType)
+    
     # filter too short or too long fragments
     atacFrag <- .filterFrags(atacFrag, min = minFrag, max = maxFrag)
     
@@ -633,7 +675,7 @@ getCounts <- function (files,
           mode = mode,
           cuts = cuts,
           genome = genome)
-    } else if (rowType=="motif"){
+    } else if (rowType=="motifs"){
         if (mode=="weight") {
           atacFrag <- .weightFragments(atacFrag, genome)
         }
@@ -654,8 +696,20 @@ getCounts <- function (files,
 
 # files <- list("ctrl1"="ctrl1.bed", "ctrl2"="ctrl2.bed",
 # "treat1"="treat1.bed", "treat2"="treat2.bed")
-# Sys.time()
-# counts <- getCounts(files, ranges = peakRanges, rowType = "peaks", mode = "total",
-#     genome = BSgenome.Hsapiens.UCSC.hg38)
-# Sys.time()
 
+# motifData <- lapply(names(motifRanges), \(x) {
+#   gr <- motifRanges[[x]]
+#   mcols(gr)$motif <- x
+#   gr
+# })
+# 
+# motifs <- bind_ranges(motifData)
+
+
+# s <- Sys.time()
+# se <- getCounts(files, ranges = motifs, rowType = "motifs", mode = "weight",
+#     genome = BSgenome.Hsapiens.UCSC.hg38)
+# e <- Sys.time()
+# e-s
+
+# compare t-values of perturbed motifs to original chromVAR
