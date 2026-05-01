@@ -4,8 +4,8 @@
 \alias{differentialDeviations}
 \title{differentialDeviations}
 \usage{
-differentialDeviations(object, groups, alternative = c("two.sided", "less",
-  "greater"), parametric = TRUE)
+differentialDeviations(object, groups, alternative = c("two.sided",
+  "less", "greater"), parametric = TRUE)
 }
 \arguments{
 \item{object}{chromVARDeviations object}

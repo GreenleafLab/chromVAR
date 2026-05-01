@@ -15,7 +15,8 @@
 \usage{
 computeDeviations(object, annotations, ...)
 
-\S4method{computeDeviations}{SummarizedExperiment,SummarizedExperiment}(object,
+
+  \S4method{computeDeviations}{SummarizedExperiment,SummarizedExperiment}(object,
   annotations, background_peaks = getBackgroundPeaks(object),
   expectation = computeExpectations(object))
 
@@ -23,8 +24,8 @@ computeDeviations(object, annotations, ...)
   annotations, background_peaks = getBackgroundPeaks(object),
   expectation = computeExpectations(object))
 
-\S4method{computeDeviations}{SummarizedExperiment,list}(object, annotations,
-  background_peaks = getBackgroundPeaks(object),
+\S4method{computeDeviations}{SummarizedExperiment,list}(object,
+  annotations, background_peaks = getBackgroundPeaks(object),
   expectation = computeExpectations(object))
 
 \S4method{computeDeviations}{SummarizedExperiment,missingOrNULL}(object,
@@ -32,16 +33,19 @@ computeDeviations(object, annotations, ...)
   expectation = computeExpectations(object))
 
 \S4method{computeDeviations}{MatrixOrmatrix,SummarizedExperiment}(object,
-  annotations, background_peaks, expectation = computeExpectations(object))
+  annotations, background_peaks,
+  expectation = computeExpectations(object))
 
-\S4method{computeDeviations}{MatrixOrmatrix,MatrixOrmatrix}(object, annotations,
-  background_peaks, expectation = computeExpectations(object))
+\S4method{computeDeviations}{MatrixOrmatrix,MatrixOrmatrix}(object,
+  annotations, background_peaks,
+  expectation = computeExpectations(object))
 
 \S4method{computeDeviations}{MatrixOrmatrix,list}(object, annotations,
   background_peaks, expectation = computeExpectations(object))
 
-\S4method{computeDeviations}{MatrixOrmatrix,missingOrNULL}(object, annotations,
-  background_peaks, expectation = computeExpectations(object))
+\S4method{computeDeviations}{MatrixOrmatrix,missingOrNULL}(object,
+  annotations, background_peaks,
+  expectation = computeExpectations(object))
 }
 \arguments{
 \item{object}{chromVARCounts object}

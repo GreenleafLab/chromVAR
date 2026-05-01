@@ -16,7 +16,8 @@
 \usage{
 makePermutedSets(object, annotations, ...)
 
-\S4method{makePermutedSets}{SummarizedExperiment,SummarizedExperiment}(object,
+
+  \S4method{makePermutedSets}{SummarizedExperiment,SummarizedExperiment}(object,
   annotations, bias = rowData(object)$bias, window = 10)
 
 
@@ -29,11 +30,12 @@ makePermutedSets(object, annotations, ...)
 \S4method{makePermutedSets}{SummarizedExperiment,MatrixOrmatrix}(object,
   annotations, bias = rowData(object)$bias, window = 10)
 
-\S4method{makePermutedSets}{RangedSummarizedExperiment,MatrixOrmatrix}(object,
+
+  \S4method{makePermutedSets}{RangedSummarizedExperiment,MatrixOrmatrix}(object,
   annotations, bias = rowRanges(object)$bias, window = 10)
 
-\S4method{makePermutedSets}{MatrixOrmatrix,MatrixOrmatrix}(object, annotations,
-  bias, window = 10)
+\S4method{makePermutedSets}{MatrixOrmatrix,MatrixOrmatrix}(object,
+  annotations, bias, window = 10)
 
 \S4method{makePermutedSets}{SummarizedExperiment,list}(object, annotations,
   bias = rowData(object)$bias, window = 10)

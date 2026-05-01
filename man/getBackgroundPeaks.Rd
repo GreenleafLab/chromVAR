@@ -14,10 +14,11 @@ getBackgroundPeaks(object, ...)
   bias = rowData(object)$bias, niterations = 50, w = 0.1, bs = 50)
 
 \S4method{getBackgroundPeaks}{RangedSummarizedExperiment}(object,
-  bias = rowRanges(object)$bias, niterations = 50, w = 0.1, bs = 50)
+  bias = rowRanges(object)$bias, niterations = 50, w = 0.1,
+  bs = 50)
 
-\S4method{getBackgroundPeaks}{MatrixOrmatrix}(object, bias, niterations = 50,
-  w = 0.1, bs = 50)
+\S4method{getBackgroundPeaks}{MatrixOrmatrix}(object, bias,
+  niterations = 50, w = 0.1, bs = 50)
 }
 \arguments{
 \item{object}{fragment counts as SummarizedExperiment, RangedSummarized, 

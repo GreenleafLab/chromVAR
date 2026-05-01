@@ -12,7 +12,8 @@ getCisGroups(object, ...)
 \S4method{getCisGroups}{RangedSummarizedExperiment}(object, grpsize = 25,
   stepsize = 10)
 
-\S4method{getCisGroups}{GenomicRanges}(object, grpsize = 25, stepsize = 10)
+\S4method{getCisGroups}{GenomicRanges}(object, grpsize = 25,
+  stepsize = 10)
 }
 \arguments{
 \item{object}{GenomicRanges or RangedSummarizedExperiment}

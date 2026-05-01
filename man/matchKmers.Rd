@@ -15,8 +15,8 @@
 \usage{
 matchKmers(k, subject, ...)
 
-\S4method{matchKmers}{character,DNAStringSet}(k, subject, out = c("matches",
-  "positions"), ranges = NULL)
+\S4method{matchKmers}{character,DNAStringSet}(k, subject,
+  out = c("matches", "positions"), ranges = NULL)
 
 \S4method{matchKmers}{character,character}(k, subject, out = c("matches",
   "positions"), ranges = NULL)
@@ -25,9 +25,11 @@ matchKmers(k, subject, ...)
   "positions"), ranges = NULL)
 
 \S4method{matchKmers}{character,GenomicRanges}(k, subject,
-  genome = GenomeInfoDb::genome(subject), out = c("matches", "positions"))
+  genome = GenomeInfoDb::genome(subject), out = c("matches",
+  "positions"))
 
-\S4method{matchKmers}{character,RangedSummarizedExperiment}(k, subject, ...)
+\S4method{matchKmers}{character,RangedSummarizedExperiment}(k, subject,
+  ...)
 
 \S4method{matchKmers}{numeric,ANY}(k, subject, ...)
 

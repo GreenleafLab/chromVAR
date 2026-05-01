@@ -29,16 +29,16 @@ getAnnotationCorrelation(object, annotations, ...)
 
 
   \S4method{getAnnotationCorrelation}{MatrixOrmatrix,SummarizedExperiment}(object,
-  annotations, background_peaks, expectation = computeExpectations(object),
-  variabilities = NULL)
+  annotations, background_peaks,
+  expectation = computeExpectations(object), variabilities = NULL)
 
 \S4method{getAnnotationCorrelation}{MatrixOrmatrix,MatrixOrmatrix}(object,
-  annotations, background_peaks, expectation = computeExpectations(object),
-  variabilities = NULL)
+  annotations, background_peaks,
+  expectation = computeExpectations(object), variabilities = NULL)
 
-\S4method{getAnnotationCorrelation}{MatrixOrmatrix,list}(object, annotations,
-  background_peaks, expectation = computeExpectations(object),
-  variabilities = NULL)
+\S4method{getAnnotationCorrelation}{MatrixOrmatrix,list}(object,
+  annotations, background_peaks,
+  expectation = computeExpectations(object), variabilities = NULL)
 }
 \arguments{
 \item{object}{result from computeDeviations}

@@ -6,3 +6,6 @@
 src/*.o
 src/*.so
 inst/doc
+*.DS_Store
+*._*
+*.swp

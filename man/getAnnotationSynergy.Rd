@@ -19,23 +19,27 @@ getAnnotationSynergy(object, annotations, ...)
   expectation = computeExpectations(object), variabilities = NULL,
   nbg = 25)
 
-\S4method{getAnnotationSynergy}{SummarizedExperiment,MatrixOrmatrix}(object,
+
+  \S4method{getAnnotationSynergy}{SummarizedExperiment,MatrixOrmatrix}(object,
   annotations, background_peaks = getBackgroundPeaks(object),
   expectation = computeExpectations(object), variabilities = NULL,
   nbg = 25)
 
-\S4method{getAnnotationSynergy}{SummarizedExperiment,list}(object, annotations,
-  background_peaks = getBackgroundPeaks(object),
+\S4method{getAnnotationSynergy}{SummarizedExperiment,list}(object,
+  annotations, background_peaks = getBackgroundPeaks(object),
   expectation = computeExpectations(object), variabilities = NULL,
   nbg = 25)
 
-\S4method{getAnnotationSynergy}{MatrixOrmatrix,SummarizedExperiment}(object,
-  annotations, background_peaks, expectation = computeExpectations(object),
-  variabilities = NULL, nbg = 25)
+
+  \S4method{getAnnotationSynergy}{MatrixOrmatrix,SummarizedExperiment}(object,
+  annotations, background_peaks,
+  expectation = computeExpectations(object), variabilities = NULL,
+  nbg = 25)
 
 \S4method{getAnnotationSynergy}{MatrixOrmatrix,MatrixOrmatrix}(object,
-  annotations, background_peaks, expectation = computeExpectations(object),
-  variabilities = NULL, nbg = 25)
+  annotations, background_peaks,
+  expectation = computeExpectations(object), variabilities = NULL,
+  nbg = 25)
 
 \S4method{getAnnotationSynergy}{MatrixOrmatrix,list}(object, annotations,
   background_peaks, expectation = computeExpectations(object),
