@@ -4,8 +4,14 @@
 \alias{getCounts}
 \title{getCounts}
 \usage{
-getCounts(alignment_files, peaks, paired, by_rg = FALSE, format = c("bam",
-  "bed"), colData = NULL)
+getCounts(
+  alignment_files,
+  peaks,
+  paired,
+  by_rg = FALSE,
+  format = c("bam", "bed"),
+  colData = NULL
+)
 }
 \arguments{
 \item{alignment_files}{filenames for bam or bed files with aligned reads}

@@ -4,8 +4,14 @@
 \alias{plotDeviationsTsne}
 \title{plotDeviationsTsne}
 \usage{
-plotDeviationsTsne(object, tsne, var_df = NULL, sample_column = NULL,
-  annotation_name = NULL, shiny = interactive())
+plotDeviationsTsne(
+  object,
+  tsne,
+  var_df = NULL,
+  sample_column = NULL,
+  annotation_name = NULL,
+  shiny = interactive()
+)
 }
 \arguments{
 \item{object}{deviations result object}

@@ -4,15 +4,18 @@
 \alias{getJasparMotifs}
 \title{getJasparMotifs}
 \usage{
-getJasparMotifs(species = "Homo sapiens", collection = "CORE", ...)
+getJasparMotifs(species = "Homo sapiens", collection = "CORE",
+                jaspar_db = JASPAR2016::JASPAR2016, ...)
 }
 \arguments{
-\item{species}{Which species?  use eithe jaspar code or latin name. 
+\item{species}{Which species?  use eithe jaspar code or latin name.
 default is 'Homo sapiens'}
 
 \item{collection}{Which collection to use?  default is 'CORE'}
 
-\item{...}{additional arguments to opts for 
+\item{jaspar_db}{Which JASPAR database? default is \code{JASPAR2016::JASPAR2016}}
+
+\item{...}{additional arguments to opts for
 \code{\link[TFBSTools]{getMatrixSet}}}
 }
 \value{

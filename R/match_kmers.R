@@ -153,7 +153,7 @@ setMethod("matchKmers", signature(k = "character", subject = "DNAString"),
 setMethod("matchKmers", signature(k = "character", subject = "GenomicRanges"),
           function(k,
                    subject, 
-                   genome = GenomeInfoDb::genome(subject),
+                   genome = Seqinfo::genome(subject),
                    out = c("matches", "positions")) {
             out <- match.arg(out)
             GenomicRanges::strand(subject) <- "+"

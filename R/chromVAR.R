@@ -21,7 +21,7 @@
 #' txtProgressBar
 #' @importFrom Rcpp sourceCpp
 #' @importFrom S4Vectors queryHits subjectHits DataFrame elementNROWS isSorted
-#' @importFrom GenomeInfoDb seqlevels seqlevels<- sortSeqlevels seqnames
+#' @importFrom Seqinfo seqlevels seqlevels<- sortSeqlevels seqnames
 #' @importFrom Rsamtools ScanBamParam scanBamFlag scanBam countBam
 #' @importFrom IRanges IRanges overlapsAny
 #' @importFrom BiocParallel bplapply

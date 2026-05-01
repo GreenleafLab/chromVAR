@@ -4,8 +4,12 @@
 \alias{filterPeaks}
 \title{filterPeaks}
 \usage{
-filterPeaks(object, min_fragments_per_peak = 1, non_overlapping = TRUE,
-  ix_return = FALSE)
+filterPeaks(
+  object,
+  min_fragments_per_peak = 1,
+  non_overlapping = TRUE,
+  ix_return = FALSE
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment with matrix of fragment counts per peak

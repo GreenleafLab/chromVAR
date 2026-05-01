@@ -56,7 +56,7 @@ deviationsCovariability <- function(object) {
   return(normed_covs)
 }
 
-#' @importFrom Biostrings nucleotideSubstitutionMatrix stringDist
+#' @importFrom pwalign nucleotideSubstitutionMatrix stringDist
 get_kmer_dist <- function(kmers) {
   stopifnot(all_equal(nchar(kmers)))
   out <- as.matrix(stringDist(kmers, 

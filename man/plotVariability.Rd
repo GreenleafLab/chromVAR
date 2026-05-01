@@ -4,8 +4,13 @@
 \alias{plotVariability}
 \title{plotVariability}
 \usage{
-plotVariability(variability, xlab = "Sorted TFs", n = 3,
-  labels = variability$name, use_plotly = interactive())
+plotVariability(
+  variability,
+  xlab = "Sorted TFs",
+  n = 3,
+  labels = variability$name,
+  use_plotly = interactive()
+)
 }
 \arguments{
 \item{variability}{output from \code{\link{computeVariability}}}

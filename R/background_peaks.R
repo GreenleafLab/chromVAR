@@ -22,7 +22,7 @@ setGeneric("addGCBias", function(object, ...) standardGeneric("addGCBias"))
 #' @export
 setMethod(addGCBias, c(object = "RangedSummarizedExperiment"), 
           function(object, 
-                   genome = GenomeInfoDb::genome(object)) {
+                   genome = Seqinfo::genome(object)) {
             genome <- validate_genome_input(genome)
             peaks <- rowRanges(object)
             seqs <- getSeq(genome, peaks)
@@ -38,7 +38,7 @@ setMethod(addGCBias, c(object = "RangedSummarizedExperiment"),
 #' @export
 setMethod(addGCBias, c(object = "SummarizedExperiment"), 
           function(object, peaks, 
-                   genome = GenomeInfoDb::genome(peaks)) {
+                   genome = Seqinfo::genome(peaks)) {
             genome <- validate_genome_input(genome)
             seqs <- getSeq(genome, peaks)
             nucfreqs <- letterFrequency(seqs, c("A", "C", "G", "T"))

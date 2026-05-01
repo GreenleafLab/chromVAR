@@ -4,8 +4,12 @@
 \alias{filterSamplesPlot}
 \title{filterSamplesPlot}
 \usage{
-filterSamplesPlot(object, min_in_peaks = NULL, min_depth = NULL,
-  use_plotly = interactive())
+filterSamplesPlot(
+  object,
+  min_in_peaks = NULL,
+  min_depth = NULL,
+  use_plotly = interactive()
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment with matrix of fragment counts per peak 

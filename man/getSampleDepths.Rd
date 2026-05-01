@@ -4,8 +4,12 @@
 \alias{getSampleDepths}
 \title{getSampleDepths}
 \usage{
-getSampleDepths(alignment_files, paired = TRUE, by_rg = FALSE,
-  format = c("bam", "bed"))
+getSampleDepths(
+  alignment_files,
+  paired = TRUE,
+  by_rg = FALSE,
+  format = c("bam", "bed")
+)
 }
 \arguments{
 \item{alignment_files}{filenames for bam or bed file(s) with aligned reads}

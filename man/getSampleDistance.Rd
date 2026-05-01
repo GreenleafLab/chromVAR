@@ -4,8 +4,12 @@
 \alias{getSampleDistance}
 \title{getSampleDistance}
 \usage{
-getSampleDistance(object, threshold = 1.5, initial_dims = 50,
-  distance_function = dist)
+getSampleDistance(
+  object,
+  threshold = 1.5,
+  initial_dims = 50,
+  distance_function = dist
+)
 }
 \arguments{
 \item{object}{deviations result}

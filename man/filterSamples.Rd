@@ -4,8 +4,13 @@
 \alias{filterSamples}
 \title{filterSamples}
 \usage{
-filterSamples(object, min_in_peaks = NULL, min_depth = NULL,
-  shiny = interactive(), ix_return = FALSE)
+filterSamples(
+  object,
+  min_in_peaks = NULL,
+  min_depth = NULL,
+  shiny = interactive(),
+  ix_return = FALSE
+)
 }
 \arguments{
 \item{object}{SummarizedExperiment with matrix of fragment counts per peak

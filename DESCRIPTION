@@ -1,7 +1,7 @@
 Package: chromVAR
 Type: Package
 Title: Chromatin Variation Across Regions
-Version: 1.5.0
+Version: 1.35.1
 Authors@R: c(
     person("Alicia", "Schep", email = "aschep@gmail.com", role = c("aut","cre")),
     person("Jason", "Buenrostro", role = "ctb"),
@@ -15,13 +15,14 @@ Description: Determine variation in chromatin accessibility across sets of
 License: MIT + file LICENSE
 Imports:
     IRanges,
-    GenomeInfoDb,
+    Seqinfo,
     GenomicRanges,
     ggplot2,
     nabor,
     BiocParallel,
     BiocGenerics,
     Biostrings,
+    pwalign,
     TFBSTools,
     Rsamtools,
     S4Vectors,
@@ -54,6 +55,6 @@ Suggests:
 biocViews: SingleCell, Sequencing, GeneRegulation, ImmunoOncology
 LazyData: TRUE
 LinkingTo: Rcpp, RcppArmadillo
-SystemRequirements: C++11
+SystemRequirements: C++14
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 7.3.2

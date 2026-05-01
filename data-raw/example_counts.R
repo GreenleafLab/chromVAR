@@ -17,7 +17,7 @@ cleanup_peaks <- function(peaks){
   non_mito_peaks = which(!blacklisted)
   peaks <- peaks[non_mito_peaks]
   
-  seqlengths(peaks) <- GenomeInfoDb::seqlengths(BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)[GenomeInfoDb::seqlevels(peaks)]
+  seqlengths(peaks) <- Seqinfo::seqlengths(BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19)[Seqinfo::seqlevels(peaks)]
   within_boundaries = which(GenomicRanges::trim(peaks) == peaks)
   peaks <- peaks[within_boundaries]
   return(peaks)

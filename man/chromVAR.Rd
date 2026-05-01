@@ -2,11 +2,23 @@
 % Please edit documentation in R/chromVAR.R
 \docType{package}
 \name{chromVAR}
-\alias{chromVAR}
 \alias{chromVAR-package}
+\alias{chromVAR}
 \title{chromVAR: A package for computing variability across sets of peaks.}
 \description{
 Determine variation in chromatin accessibility across sets of
 annotations or peaks. Designed primarily for single-cell or sparse chromatin
 accessibility, e.g. from scATAC-seq or sparse ATAC or DNAse-seq experiments.
+}
+\author{
+\strong{Maintainer}: Alicia Schep \email{aschep@gmail.com}
+
+Other contributors:
+\itemize{
+  \item Jason Buenrostro [contributor]
+  \item Caleb Lareau [contributor]
+  \item William Greenleaf [thesis advisor]
+  \item Stanford University [copyright holder]
+}
+
 }
