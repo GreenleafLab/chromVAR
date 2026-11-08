@@ -6,7 +6,7 @@ library(Matrix)
 
 mat <- matrix(c(0,1,2,1,1,0,2,0,1,0,1,1), nrow = 3)
 
-counts <- SummarizedExperiment( assays= list(counts = Matrix(mat)),
+counts <- SummarizedExperiment( assays= list(counts = Matrix::Matrix(mat)),
   rowRanges = GRanges(seqnames = c("chr1","chr2","chr2"),
                                 ranges = IRanges(start = c(76585873,
                                                            42772928,
@@ -81,7 +81,7 @@ test_that("computeDeviations works with matrix & Matrix",
 
 test_that("computeDeviations works with Matrix & Matrix",
           {
-            dev <- computeDeviations(Matrix(mat), anno_mat, bg)
+            dev <- computeDeviations(Matrix::Matrix(mat), anno_mat, bg)
             expect_equal(assays(dev)$deviations, deviations_test$deviations)
             expect_equal(assays(dev)$z, deviations_test$z)
             expect_is(dev, "chromVARDeviations")
