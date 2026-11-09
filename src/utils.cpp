@@ -180,26 +180,42 @@ List deviations_kernel(const IntegerVector& peak_set,
   NumericMatrix sampled(niter, ncells);
   NumericVector sampled_expected(niter);
   NumericVector overlap(niter);
-  std::vector<double> buf(ncells);
-  std::vector<int> draw(tf_count);
-  for (int i = 0; i < niter; i++) {
-    for (int t = 0; t < tf_count; t++) draw[t] = background_peaks(peak_set[t] - 1, i);
-    std::sort(draw.begin(), draw.end());
-    std::fill(buf.begin(), buf.end(), 0.0);
-    double e = 0, ov = 0;
-    for (int t = 0; t < tf_count; ) {
-      int k = draw[t] - 1;
+
+  // Bucket the (iteration, draw) pairs by drawn row with a counting sort; within a bucket iterations ascend.
+  std::vector<int> start(n + 1, 0);
+  for (int i = 0; i < niter; i++)
+    for (int t = 0; t < tf_count; t++) start[background_peaks(peak_set[t] - 1, i)]++;  // 1-based draw d counts into slot d = (k = d - 1) + 1
+  for (int k = 0; k < n; k++) start[k + 1] += start[k];
+  std::vector<int> fill(start.begin(), start.end());
+  std::vector<int> entry((size_t) niter * tf_count);
+  for (int i = 0; i < niter; i++)
+    for (int t = 0; t < tf_count; t++) entry[fill[background_peaks(peak_set[t] - 1, i) - 1]++] = i;
+
+  double* acc = sampled.begin();
+  std::vector<int> its;
+  std::vector<double> mults;
+  for (int k = 0; k < n; k++) {
+    const int lo = start[k], hi = start[k + 1];
+    if (lo == hi) continue;
+    its.clear();
+    mults.clear();
+    for (int q = lo; q < hi; ) {
       int m = 1;
-      while (t + m < tf_count && draw[t + m] - 1 == k) m++;
-      const double mult = m;
-      for (int p = csr_p[k]; p < csr_p[k + 1]; p++) buf[csr_j[p]] += mult * csr_x[p];
-      e += mult * expectation[k];
-      ov += mult * member[k];
-      t += m;
+      while (q + m < hi && entry[q + m] == entry[q]) m++;
+      its.push_back(entry[q]);
+      mults.push_back((double) m);
+      q += m;
     }
-    for (int j = 0; j < ncells; j++) sampled(i, j) = buf[j];
-    sampled_expected[i] = e;
-    overlap[i] = ov;
+    const int nd = (int) its.size();
+    for (int d = 0; d < nd; d++) {
+      sampled_expected[its[d]] += mults[d] * expectation[k];
+      overlap[its[d]] += mults[d] * member[k];
+    }
+    for (int p = csr_p[k]; p < csr_p[k + 1]; p++) {
+      double* col = acc + (size_t) csr_j[p] * niter;
+      const double x = csr_x[p];
+      for (int d = 0; d < nd; d++) col[its[d]] += mults[d] * x;
+    }
   }
   return List::create(_["observed"] = observed, _["expected"] = expected,
                       _["sampled"] = sampled,
