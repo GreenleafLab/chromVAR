@@ -85,6 +85,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// row_sds_perm_t
+NumericVector row_sds_perm_t(arma::mat& Xt, bool na_rm);
+RcppExport SEXP _chromVAR_row_sds_perm_t(SEXP XtSEXP, SEXP na_rmSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type Xt(XtSEXP);
+    Rcpp::traits::input_parameter< bool >::type na_rm(na_rmSEXP);
+    rcpp_result_gen = Rcpp::wrap(row_sds_perm_t(Xt, na_rm));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ProbSampleReplace
 arma::urowvec ProbSampleReplace(int size, arma::vec prob);
 RcppExport SEXP _chromVAR_ProbSampleReplace(SEXP sizeSEXP, SEXP probSEXP) {
@@ -147,6 +159,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_chromVAR_compute_pwm_dist2", (DL_FUNC) &_chromVAR_compute_pwm_dist2, 3},
     {"_chromVAR_row_sds", (DL_FUNC) &_chromVAR_row_sds, 2},
     {"_chromVAR_row_sds_perm", (DL_FUNC) &_chromVAR_row_sds_perm, 2},
+    {"_chromVAR_row_sds_perm_t", (DL_FUNC) &_chromVAR_row_sds_perm_t, 2},
     {"_chromVAR_ProbSampleReplace", (DL_FUNC) &_chromVAR_ProbSampleReplace, 2},
     {"_chromVAR_bg_sample_helper", (DL_FUNC) &_chromVAR_bg_sample_helper, 4},
     {"_chromVAR_euc_dist", (DL_FUNC) &_chromVAR_euc_dist, 1},

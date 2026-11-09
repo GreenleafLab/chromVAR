@@ -32,6 +32,31 @@ NumericVector row_sds_perm( arma::mat& X, bool na_rm = false) {
   return row_sds(shuffled, na_rm); 
  }
  
+// Same bootstrap as row_sds_perm, from the transpose of X (cells x rows): each row is one contiguous column.
+// [[Rcpp::export]]
+NumericVector row_sds_perm_t( arma::mat& Xt, bool na_rm = false) {
+  const arma::uword ncells = Xt.n_rows;
+  arma::uvec tmp = arma::linspace<arma::uvec>(0, ncells - 1, ncells);
+  arma::uvec ix = RcppArmadillo::sample(tmp, ncells, true);
+  arma::vec res(Xt.n_cols);
+  arma::vec buf(ncells);
+  for (arma::uword j = 0; j < Xt.n_cols; j++) {
+    const double* col = Xt.colptr(j);
+    arma::uword m = 0;
+    if (na_rm) {
+      for (arma::uword c = 0; c < ncells; c++) {
+        const double v = col[ix[c]];
+        if (arma::arma_isfinite(v)) buf[m++] = v;
+      }
+      res(j) = (m > 1) ? arma::stddev(arma::vec(buf.memptr(), m, false, true)) : arma::datum::nan;
+    } else {
+      for (arma::uword c = 0; c < ncells; c++) buf[c] = col[ix[c]];
+      res(j) = arma::stddev(buf);
+    }
+  }
+  return NumericVector(res.begin(), res.end());
+}
+
  //adapted from RcppArmadillo sample function
  //Method for sampling WITH REPLACEMENT with large vector of probabilities
  // [[Rcpp::export]]

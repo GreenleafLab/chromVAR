@@ -25,6 +25,10 @@ row_sds_perm <- function(X, na_rm = FALSE) {
     .Call(`_chromVAR_row_sds_perm`, X, na_rm)
 }
 
+row_sds_perm_t <- function(Xt, na_rm = FALSE) {
+    .Call(`_chromVAR_row_sds_perm_t`, Xt, na_rm)
+}
+
 ProbSampleReplace <- function(size, prob) {
     .Call(`_chromVAR_ProbSampleReplace`, size, prob)
 }
