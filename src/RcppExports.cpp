@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // pwm_euclidean
 double pwm_euclidean(arma::mat mat1, arma::mat mat2);
 RcppExport SEXP _chromVAR_pwm_euclidean(SEXP mat1SEXP, SEXP mat2SEXP) {
@@ -117,6 +122,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// deviations_kernel
+List deviations_kernel(const IntegerVector& peak_set, const IntegerMatrix& background_peaks, const IntegerVector& csr_p, const IntegerVector& csr_j, const NumericVector& csr_x, const NumericVector& expectation, int ncells);
+RcppExport SEXP _chromVAR_deviations_kernel(SEXP peak_setSEXP, SEXP background_peaksSEXP, SEXP csr_pSEXP, SEXP csr_jSEXP, SEXP csr_xSEXP, SEXP expectationSEXP, SEXP ncellsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const IntegerVector& >::type peak_set(peak_setSEXP);
+    Rcpp::traits::input_parameter< const IntegerMatrix& >::type background_peaks(background_peaksSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type csr_p(csr_pSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type csr_j(csr_jSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type csr_x(csr_xSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type expectation(expectationSEXP);
+    Rcpp::traits::input_parameter< int >::type ncells(ncellsSEXP);
+    rcpp_result_gen = Rcpp::wrap(deviations_kernel(peak_set, background_peaks, csr_p, csr_j, csr_x, expectation, ncells));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_chromVAR_pwm_euclidean", (DL_FUNC) &_chromVAR_pwm_euclidean, 2},
@@ -128,6 +150,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_chromVAR_ProbSampleReplace", (DL_FUNC) &_chromVAR_ProbSampleReplace, 2},
     {"_chromVAR_bg_sample_helper", (DL_FUNC) &_chromVAR_bg_sample_helper, 4},
     {"_chromVAR_euc_dist", (DL_FUNC) &_chromVAR_euc_dist, 1},
+    {"_chromVAR_deviations_kernel", (DL_FUNC) &_chromVAR_deviations_kernel, 7},
     {NULL, NULL, 0}
 };
 

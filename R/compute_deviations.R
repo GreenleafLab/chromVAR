@@ -388,7 +388,8 @@ compute_deviations_core <- function(counts_mat,
                       compute_deviations_single,
                       counts_mat = counts_mat,
                       background_peaks = background_peaks,
-                      expectation = expectation)
+                      expectation = expectation,
+                      counts_csr = counts_row_major(counts_mat))
 
   z <- t(vapply(results, function(x) x[["z"]], rep(0, ncol(counts_mat))))
   dev <- t(vapply(results, function(x) x[["dev"]], rep(0, ncol(counts_mat))))
@@ -448,19 +449,29 @@ compute_expectations_core <- function(object, norm = FALSE, group = NULL) {
 }
 
 
+# Row-major (CSR) copy of a dgCMatrix and its column sums, for deviations_kernel; NULL for other classes.
+counts_row_major <- function(counts_mat) {
+  if (!is(counts_mat, "dgCMatrix")) return(NULL)
+  csr <- as(counts_mat, "RsparseMatrix")
+  list(p = csr@p, j = csr@j, x = csr@x,
+       fragments_per_sample = colSums(counts_mat))
+}
+
 compute_deviations_single <- function(peak_set,
                                       counts_mat,
                                       background_peaks,
                                       expectation = NULL,
                                       intermediate_results = FALSE,
-                                      threshold = 1) {
+                                      threshold = 1,
+                                      counts_csr = NULL) {
 
   if (length(peak_set) == 0) {
     return(list(z = rep(NA, ncol(counts_mat)), dev = rep(NA, ncol(counts_mat)),
                 matches = 0, overlap = NA))
   }
 
-  fragments_per_sample <- colSums(counts_mat)
+  fragments_per_sample <- if (is.null(counts_csr)) colSums(counts_mat) else
+    counts_csr$fragments_per_sample
 
   ### counts_mat should already be normed!
   tf_count <- length(peak_set)
@@ -476,6 +487,19 @@ compute_deviations_single <- function(peak_set,
     sampled_deviation <- (sampled - sampled_expected)/sampled_expected
     bg_overlap <- sum(background_peaks[peak_set,] == peak_set[1]) / 
       ncol(background_peaks)
+  } else if (!is.null(counts_csr)) {
+    res <- deviations_kernel(as.integer(peak_set), background_peaks,
+                             counts_csr$p, counts_csr$j, counts_csr$x,
+                             expectation, ncol(counts_mat))
+    observed <- res$observed
+    expected <- res$expected * fragments_per_sample
+    observed_deviation <- (observed - expected)/expected
+
+    sampled <- res$sampled
+    sampled_expected <- outer(res$sampled_expected, fragments_per_sample)
+    sampled_deviation <- (sampled - sampled_expected)/sampled_expected
+
+    bg_overlap <- sum(res$overlap) / ncol(background_peaks) / tf_count
   } else {
     tf_vec <- sparseMatrix(j = peak_set,
                            i = rep(1, tf_count),

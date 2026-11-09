@@ -37,3 +37,7 @@ euc_dist <- function(x) {
     .Call(`_chromVAR_euc_dist`, x)
 }
 
+deviations_kernel <- function(peak_set, background_peaks, csr_p, csr_j, csr_x, expectation, ncells) {
+    .Call(`_chromVAR_deviations_kernel`, peak_set, background_peaks, csr_p, csr_j, csr_x, expectation, ncells)
+}
+

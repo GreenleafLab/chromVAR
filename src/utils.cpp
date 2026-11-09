@@ -120,3 +120,63 @@ arma::mat euc_dist(arma::mat x) {
  
  
  
+// Sums of the counts rows drawn by one peak set and by each of its background draws.
+// Rows are visited in ascending peak index, adding multiplicity * value, the order of a CSC sparse product.
+// [[Rcpp::export]]
+List deviations_kernel(const IntegerVector& peak_set,
+                       const IntegerMatrix& background_peaks,
+                       const IntegerVector& csr_p,
+                       const IntegerVector& csr_j,
+                       const NumericVector& csr_x,
+                       const NumericVector& expectation,
+                       int ncells) {
+  const int n = expectation.size();
+  const int niter = background_peaks.ncol();
+  const int tf_count = peak_set.size();
+
+  std::vector<int> member(n, 0);
+  std::vector<int> sorted(peak_set.begin(), peak_set.end());
+  for (int t = 0; t < tf_count; t++) member[peak_set[t] - 1]++;
+  std::sort(sorted.begin(), sorted.end());
+
+  NumericVector observed(ncells);
+  double expected = 0;
+  for (int t = 0; t < tf_count; ) {
+    int k = sorted[t] - 1;
+    int m = 1;
+    while (t + m < tf_count && sorted[t + m] - 1 == k) m++;
+    const double mult = m;
+    for (int p = csr_p[k]; p < csr_p[k + 1]; p++) observed[csr_j[p]] += mult * csr_x[p];
+    expected += mult * expectation[k];
+    t += m;
+  }
+
+  NumericMatrix sampled(niter, ncells);
+  NumericVector sampled_expected(niter);
+  NumericVector overlap(niter);
+  std::vector<double> buf(ncells);
+  std::vector<int> draw(tf_count);
+  for (int i = 0; i < niter; i++) {
+    for (int t = 0; t < tf_count; t++) draw[t] = background_peaks(peak_set[t] - 1, i);
+    std::sort(draw.begin(), draw.end());
+    std::fill(buf.begin(), buf.end(), 0.0);
+    double e = 0, ov = 0;
+    for (int t = 0; t < tf_count; ) {
+      int k = draw[t] - 1;
+      int m = 1;
+      while (t + m < tf_count && draw[t + m] - 1 == k) m++;
+      const double mult = m;
+      for (int p = csr_p[k]; p < csr_p[k + 1]; p++) buf[csr_j[p]] += mult * csr_x[p];
+      e += mult * expectation[k];
+      ov += mult * member[k];
+      t += m;
+    }
+    for (int j = 0; j < ncells; j++) sampled(i, j) = buf[j];
+    sampled_expected[i] = e;
+    overlap[i] = ov;
+  }
+  return List::create(_["observed"] = observed, _["expected"] = expected,
+                      _["sampled"] = sampled,
+                      _["sampled_expected"] = sampled_expected,
+                      _["overlap"] = overlap);
+}
