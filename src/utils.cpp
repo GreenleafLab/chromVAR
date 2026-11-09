@@ -206,3 +206,31 @@ List deviations_kernel(const IntegerVector& peak_set,
                       _["sampled_expected"] = sampled_expected,
                       _["overlap"] = overlap);
 }
+
+
+// Column standard deviations of a numeric matrix, following the two-pass long double arithmetic of R's var (cov.c).
+// A column holding NA or NaN gives NA_real_, as sd(x) does.
+// [[Rcpp::export]]
+NumericVector col_sds_r(const NumericMatrix& X) {
+	const int n = X.nrow(), nc = X.ncol();
+	NumericVector out(nc);
+	for (int c = 0; c < nc; c++) {
+		const double* xx = &X[0] + (R_xlen_t) c * n;
+		bool has_na = false;
+		for (int k = 0; k < n; k++) if (ISNAN(xx[k])) { has_na = true; break; }
+		if (has_na || n < 2) { out[c] = NA_REAL; continue; }
+		long double sum = 0.0;
+		for (int k = 0; k < n; k++) sum += xx[k];
+		long double tmp = sum / n;
+		if (R_FINITE((double) tmp)) {
+			sum = 0.0;
+			for (int k = 0; k < n; k++) sum += (xx[k] - tmp);
+			tmp = tmp + sum / n;
+		}
+		const long double xm = (long double) (double) tmp;
+		sum = 0.0;
+		for (int k = 0; k < n; k++) sum += (xx[k] - xm) * (xx[k] - xm);
+		out[c] = std::sqrt((double) (sum / (n - 1)));
+	}
+	return out;
+}

@@ -45,3 +45,7 @@ deviations_kernel <- function(peak_set, background_peaks, csr_p, csr_j, csr_x, e
     .Call(`_chromVAR_deviations_kernel`, peak_set, background_peaks, csr_p, csr_j, csr_x, expectation, ncells)
 }
 
+
+col_sds_r <- function(X) {
+    .Call(`_chromVAR_col_sds_r`, X)
+}

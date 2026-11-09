@@ -134,6 +134,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// col_sds_r
+NumericVector col_sds_r(const NumericMatrix& X);
+RcppExport SEXP _chromVAR_col_sds_r(SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(col_sds_r(X));
+    return rcpp_result_gen;
+END_RCPP
+}
 // deviations_kernel
 List deviations_kernel(const IntegerVector& peak_set, const IntegerMatrix& background_peaks, const IntegerVector& csr_p, const IntegerVector& csr_j, const NumericVector& csr_x, const NumericVector& expectation, int ncells);
 RcppExport SEXP _chromVAR_deviations_kernel(SEXP peak_setSEXP, SEXP background_peaksSEXP, SEXP csr_pSEXP, SEXP csr_jSEXP, SEXP csr_xSEXP, SEXP expectationSEXP, SEXP ncellsSEXP) {
@@ -163,6 +174,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_chromVAR_ProbSampleReplace", (DL_FUNC) &_chromVAR_ProbSampleReplace, 2},
     {"_chromVAR_bg_sample_helper", (DL_FUNC) &_chromVAR_bg_sample_helper, 4},
     {"_chromVAR_euc_dist", (DL_FUNC) &_chromVAR_euc_dist, 1},
+    {"_chromVAR_col_sds_r", (DL_FUNC) &_chromVAR_col_sds_r, 1},
     {"_chromVAR_deviations_kernel", (DL_FUNC) &_chromVAR_deviations_kernel, 7},
     {NULL, NULL, 0}
 };

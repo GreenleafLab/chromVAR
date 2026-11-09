@@ -533,7 +533,11 @@ compute_deviations_single <- function(peak_set,
   fail_filter <- which(expected < threshold)
 
   mean_sampled_deviation <- colMeans(sampled_deviation)
-  sd_sampled_deviation <- apply(sampled_deviation, 2, sd)
+  sd_sampled_deviation <- if (is.matrix(sampled_deviation) &&
+                              is.double(sampled_deviation)) {
+    structure(col_sds_r(sampled_deviation),
+              names = colnames(sampled_deviation))
+  } else apply(sampled_deviation, 2, sd)
 
   normdev <- (observed_deviation - mean_sampled_deviation)
   z <- normdev/sd_sampled_deviation
