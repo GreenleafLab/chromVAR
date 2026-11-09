@@ -1,4 +1,5 @@
 // [[Rcpp::depends(RcppArmadillo)]]
+#include <type_traits>
 #include <RcppArmadillo.h>
 #include <cstdint>
 #include <cmath>
@@ -150,7 +151,7 @@ arma::mat euc_dist(arma::mat x) {
  
 // Sums of the counts rows drawn by one peak set and by each of its background draws.
 // Rows are visited in ascending peak index, adding multiplicity * value, the order of a CSC sparse product.
-template <typename J, typename X>
+template <typename J, typename X, typename A = double>
 static List deviations_kernel_impl(const IntegerVector& peak_set,
                        const IntegerMatrix& background_peaks,
                        const IntegerVector& csr_p,
@@ -193,9 +194,13 @@ static List deviations_kernel_impl(const IntegerVector& peak_set,
   for (int i = 0; i < niter; i++)
     for (int t = 0; t < tf_count; t++) entry[fill[background_peaks(peak_set[t] - 1, i) - 1]++] = i;
 
-  double* acc = sampled.begin();
+  // A = double accumulates into the output; an integer A accumulates in a scratch buffer, converted at the end.
+  std::vector<A> acc_store;
+  A* acc;
+  if (std::is_same<A, double>::value) acc = reinterpret_cast<A*>(sampled.begin());
+  else { acc_store.assign((size_t) niter * ncells, 0); acc = acc_store.data(); }
   std::vector<int> its;
-  std::vector<double> mults;
+  std::vector<A> mults;
   for (int k = 0; k < n; k++) {
     const int lo = start[k], hi = start[k + 1];
     if (lo == hi) continue;
@@ -205,19 +210,24 @@ static List deviations_kernel_impl(const IntegerVector& peak_set,
       int m = 1;
       while (q + m < hi && entry[q + m] == entry[q]) m++;
       its.push_back(entry[q]);
-      mults.push_back((double) m);
+      mults.push_back((A) m);
       q += m;
     }
     const int nd = (int) its.size();
     for (int d = 0; d < nd; d++) {
-      sampled_expected[its[d]] += mults[d] * expectation[k];
-      overlap[its[d]] += mults[d] * member[k];
+      sampled_expected[its[d]] += (double) mults[d] * expectation[k];
+      overlap[its[d]] += (double) mults[d] * member[k];
     }
     for (int p = csr_p[k]; p < csr_p[k + 1]; p++) {
-      double* col = acc + (size_t) csr_j[p] * niter;
-      const double x = (double) csr_x[p];
+      A* col = acc + (size_t) csr_j[p] * niter;
+      const A x = (A) csr_x[p];
       for (int d = 0; d < nd; d++) col[its[d]] += mults[d] * x;
     }
+  }
+  if (!std::is_same<A, double>::value) {
+    double* out = sampled.begin();
+    const size_t tot = (size_t) niter * ncells;
+    for (size_t q = 0; q < tot; q++) out[q] = (double) acc[q];
   }
   return List::create(_["observed"] = observed, _["expected"] = expected,
                       _["sampled"] = sampled,
@@ -226,24 +236,38 @@ static List deviations_kernel_impl(const IntegerVector& peak_set,
 }
 
 
-// Rows of the CSR copy as 2-byte column indices and 4-byte float values, held in raw vectors; NULL when the
-// values are not all integers below 2^24 in magnitude or ncells > 65535, where float or uint16 would change a sum.
+// Rows of the CSR copy as 2-byte column indices and values held in raw vectors: 1-byte (uint8) when every value is an
+// integer in [0, 255], else 4-byte float; NULL when the values are not all integers below 2^24 in magnitude or
+// ncells > 65535, where float or uint16 would change a sum. The value vector carries the attribute "maxx".
 // [[Rcpp::export]]
 SEXP compact_csr(const IntegerVector& csr_j, const NumericVector& csr_x, int ncells) {
   const R_xlen_t nnz = csr_x.size();
   if (ncells > 65535 || csr_j.size() != nnz) return R_NilValue;
+  double lo = 0, hi = 0;
   for (R_xlen_t p = 0; p < nnz; p++) {
     const double v = csr_x[p];
     if (!(v == std::floor(v)) || std::fabs(v) >= 16777216.0) return R_NilValue;
+    if (v < lo) lo = v;
+    if (v > hi) hi = v;
   }
-  RawVector j((R_xlen_t) (nnz * sizeof(uint16_t))), x((R_xlen_t) (nnz * sizeof(float)));
+  const bool bytes = lo >= 0 && hi <= 255.0;
+  RawVector j((R_xlen_t) (nnz * sizeof(uint16_t))), x((R_xlen_t) (nnz * (bytes ? 1 : sizeof(float))));
   uint16_t* jp = reinterpret_cast<uint16_t*>(RAW(j));
-  float* xp = reinterpret_cast<float*>(RAW(x));
-  for (R_xlen_t p = 0; p < nnz; p++) { jp[p] = (uint16_t) csr_j[p]; xp[p] = (float) csr_x[p]; }
+  for (R_xlen_t p = 0; p < nnz; p++) jp[p] = (uint16_t) csr_j[p];
+  if (bytes) {
+    uint8_t* xp = RAW(x);
+    for (R_xlen_t p = 0; p < nnz; p++) xp[p] = (uint8_t) csr_x[p];
+  } else {
+    float* xp = reinterpret_cast<float*>(RAW(x));
+    for (R_xlen_t p = 0; p < nnz; p++) xp[p] = (float) csr_x[p];
+  }
+  x.attr("maxx") = std::max(hi, -lo);
   return List::create(_["j"] = j, _["x"] = x);
 }
 
-// deviations_kernel on the compact copy from compact_csr; same sums, bit for bit.
+// deviations_kernel on the compact copy from compact_csr; same sums, bit for bit. The value vector's length says
+// whether it is uint8 (nnz bytes) or float; uint8 values add into a uint32 accumulator when the largest possible
+// sum, tf_count * maxx, stays below 2^32 (integer sums below 2^53 are exact in double too).
 // [[Rcpp::export]]
 List deviations_kernel_compact(const IntegerVector& peak_set,
                                const IntegerMatrix& background_peaks,
@@ -252,9 +276,18 @@ List deviations_kernel_compact(const IntegerVector& peak_set,
                                const RawVector& csr_x,
                                const NumericVector& expectation,
                                int ncells) {
-  return deviations_kernel_impl<uint16_t, float>(peak_set, background_peaks, csr_p,
-      reinterpret_cast<const uint16_t*>(RAW(csr_j)), reinterpret_cast<const float*>(RAW(csr_x)),
-      expectation, ncells);
+  const uint16_t* jp = reinterpret_cast<const uint16_t*>(RAW(csr_j));
+  const R_xlen_t nnz = csr_p[csr_p.size() - 1];
+  if (csr_x.size() == nnz) {
+    const double maxx = as<double>(csr_x.attr("maxx"));
+    if ((double) peak_set.size() * maxx < 4294967296.0)
+      return deviations_kernel_impl<uint16_t, uint8_t, uint32_t>(peak_set, background_peaks, csr_p, jp,
+          RAW(csr_x), expectation, ncells);
+    return deviations_kernel_impl<uint16_t, uint8_t>(peak_set, background_peaks, csr_p, jp,
+        RAW(csr_x), expectation, ncells);
+  }
+  return deviations_kernel_impl<uint16_t, float>(peak_set, background_peaks, csr_p, jp,
+      reinterpret_cast<const float*>(RAW(csr_x)), expectation, ncells);
 }
 
 // [[Rcpp::export]]
