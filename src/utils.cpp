@@ -60,51 +60,50 @@ NumericVector row_sds_perm_t( arma::mat& Xt, bool na_rm = false) {
   return NumericVector(res.begin(), res.end());
 }
 
- //adapted from RcppArmadillo sample function
- //Method for sampling WITH REPLACEMENT with large vector of probabilities
- // [[Rcpp::export]]
- arma::urowvec ProbSampleReplace(int size, arma::vec prob){
-   int nOrig = prob.size();
-   arma::urowvec index(size);
-   double rU;
-   int ii, jj, kk; // indices, ii for loops
-   // index tables, fill with zeros
-   arma::vec HL_dat(nOrig);
-   arma::vec alias_tab(nOrig); 
-   arma::vec::iterator H, L, H0, L0;
-   H0 = H = HL_dat.begin();
-   L0 = L = HL_dat.end();
-   // fill HL_dat from beginning (small prob) and end (large prob) with indices
-   for (ii = 0; ii < nOrig; ii++) {
-     prob[ii] *= nOrig;
-     if( prob[ii] < 1.0) {
-       *(H++) = ii;
-     } else {
-       *(--L) = ii;
-     }
-   }  
-   // some of both large and small
-   if ( (H > H0) && (L < L0) ) {
-     for (kk = 0; kk < nOrig; kk++) {
-       ii = HL_dat[kk];
-       jj = *L;
-       alias_tab[ii] = jj;
-       prob[jj] += (prob[ii] - 1);
-       if (prob[jj] < 1.) L++;
-       if(L == L0) break; // now all prob >= 1
-     }
-   }
-   for (ii = 0; ii < nOrig; ii++)  prob[ii] += ii;
-   /* generate sample */
-   for (ii = 0; ii < size; ii++) {
-     rU = unif_rand() * nOrig;
-     kk = (int) rU;
-     index[ii] = (rU < prob[kk]) ? kk : alias_tab[kk];
-   }
-   return index + 1;
- }
+// Alias-method sampler working in place: prob is overwritten, the two index tables are int.
+static arma::urowvec prob_sample_replace_inplace(int size, arma::vec& prob){
+	int nOrig = prob.size();
+	arma::urowvec index(size);
+	double rU;
+	int ii, jj, kk;
+	arma::Col<int> HL_dat(nOrig);
+	arma::Col<int> alias_tab(nOrig, arma::fill::zeros);
+	int *H, *L, *H0, *L0;
+	H0 = H = HL_dat.memptr();
+	L0 = L = H0 + nOrig;
+	for (ii = 0; ii < nOrig; ii++) {
+		prob[ii] *= nOrig;
+		if( prob[ii] < 1.0) {
+			*(H++) = ii;
+		} else {
+			*(--L) = ii;
+		}
+	}
+	if ( (H > H0) && (L < L0) ) {
+		for (kk = 0; kk < nOrig; kk++) {
+			ii = HL_dat[kk];
+			jj = *L;
+			alias_tab[ii] = jj;
+			prob[jj] += (prob[ii] - 1);
+			if (prob[jj] < 1.) L++;
+			if(L == L0) break;
+		}
+	}
+	for (ii = 0; ii < nOrig; ii++)  prob[ii] += ii;
+	for (ii = 0; ii < size; ii++) {
+		rU = unif_rand() * nOrig;
+		kk = (int) rU;
+		index[ii] = (rU < prob[kk]) ? kk : alias_tab[kk];
+	}
+	return index + 1;
+}
 
-
+//adapted from RcppArmadillo sample function
+//Method for sampling WITH REPLACEMENT with large vector of probabilities
+// [[Rcpp::export]]
+arma::urowvec ProbSampleReplace(int size, arma::vec prob){
+	return prob_sample_replace_inplace(size, prob);
+}
 
 //Helper Function for background sampler
 // [[Rcpp::export]]
@@ -118,7 +117,7 @@ arma::umat bg_sample_helper(arma::uvec bin_membership, arma::mat bin_p,
     arma::vec p_tmp = bin_p.col(i);
     arma::vec p = p_tmp(bin_membership ) / bin_density(bin_membership );
     p /= arma::sum(p);
-    arma::urowvec sampled = ProbSampleReplace(niterations * ix.n_elem, p);
+    arma::urowvec sampled = prob_sample_replace_inplace(niterations * ix.n_elem, p);
     for (arma::uword j = 0; j < ix.n_elem; j++){
       out.row(ix(j)) = sampled(arma::span(j*niterations,
                  ((j+1)*niterations) - 1));
@@ -130,6 +129,38 @@ arma::umat bg_sample_helper(arma::uvec bin_membership, arma::mat bin_p,
 
 
 
+
+//Background sampler that computes the bin distance and normal density only for non-empty bins' columns
+// [[Rcpp::export]]
+arma::umat bg_sample_helper_data(arma::uvec bin_membership, arma::mat bin_data,
+                                 double w, arma::vec bin_density,
+                                 arma::uword niterations){
+	arma::uword n = bin_membership.n_elem;
+	arma::uword nbins = bin_density.n_elem;
+	arma::umat out = arma::umat(n, niterations);
+	arma::vec p_tmp(nbins);
+	for (arma::uword i = 0; i < nbins; i++){
+		arma::uvec ix = find(bin_membership == i);
+		if (ix.n_elem == 0) continue;
+		for (arma::uword j = 0; j < nbins; j++){
+			double d = 0;
+			if (j != i) {
+				double dx = bin_data(i, 0) - bin_data(j, 0);
+				double dy = bin_data(i, 1) - bin_data(j, 1);
+				d = sqrt(dx * dx + dy * dy);
+			}
+			p_tmp(j) = R::dnorm(d, 0.0, w, 0);
+		}
+		arma::vec p = p_tmp(bin_membership) / bin_density(bin_membership);
+		p /= arma::sum(p);
+		arma::urowvec sampled = ProbSampleReplace(niterations * ix.n_elem, p);
+		for (arma::uword j = 0; j < ix.n_elem; j++){
+			out.row(ix(j)) = sampled(arma::span(j*niterations,
+				((j+1)*niterations) - 1));
+		}
+	}
+	return out;
+}
 
 //computes euclidean distance between rows of matrix x
 // [[Rcpp::export]]
@@ -328,4 +359,40 @@ NumericVector col_sds_r(const NumericMatrix& X) {
 		out[c] = std::sqrt((double) (sum / (n - 1)));
 	}
 	return out;
+}
+
+// Column mean and sd of (sampled - e x f) / (e x f) where e = sampled_expected (one per row) and f = fps (one per column),
+// the elementwise arithmetic of R and its colMeans (long double sum, then / n) and col_sds_r, without the n x ncells temporaries.
+// [[Rcpp::export]]
+List deviation_moments(const NumericMatrix& sampled, const NumericVector& sampled_expected,
+                       const NumericVector& fps) {
+	const int n = sampled.nrow(), nc = sampled.ncol();
+	NumericVector mean(nc), sd(nc);
+	std::vector<double> d(n);
+	for (int c = 0; c < nc; c++) {
+		const double* xx = &sampled[0] + (R_xlen_t) c * n;
+		const double f = fps[c];
+		bool has_na = false;
+		for (int k = 0; k < n; k++) {
+			const double e = sampled_expected[k] * f;
+			d[k] = (xx[k] - e) / e;
+			if (ISNAN(d[k])) has_na = true;
+		}
+		long double sum = 0.0;
+		for (int k = 0; k < n; k++) sum += d[k];
+		sum /= n;
+		mean[c] = (double) sum;
+		if (has_na || n < 2) { sd[c] = NA_REAL; continue; }
+		long double tmp = sum;
+		if (R_FINITE((double) tmp)) {
+			sum = 0.0;
+			for (int k = 0; k < n; k++) sum += (d[k] - tmp);
+			tmp = tmp + sum / n;
+		}
+		const long double xm = (long double) (double) tmp;
+		sum = 0.0;
+		for (int k = 0; k < n; k++) sum += (d[k] - xm) * (d[k] - xm);
+		sd[c] = std::sqrt((double) (sum / (n - 1)));
+	}
+	return List::create(_["mean"] = mean, _["sd"] = sd);
 }

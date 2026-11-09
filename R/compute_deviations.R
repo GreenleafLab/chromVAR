@@ -471,6 +471,7 @@ compute_deviations_single <- function(peak_set,
                 matches = 0, overlap = NA))
   }
 
+  moments <- NULL
   fragments_per_sample <- if (is.null(counts_csr)) colSums(counts_mat) else
     counts_csr$fragments_per_sample
 
@@ -504,8 +505,13 @@ compute_deviations_single <- function(peak_set,
     observed_deviation <- (observed - expected)/expected
 
     sampled <- res$sampled
-    sampled_expected <- outer(res$sampled_expected, fragments_per_sample)
-    sampled_deviation <- (sampled - sampled_expected)/sampled_expected
+    if (intermediate_results) {
+      sampled_expected <- outer(res$sampled_expected, fragments_per_sample)
+      sampled_deviation <- (sampled - sampled_expected)/sampled_expected
+    } else {
+      moments <- deviation_moments(sampled, res$sampled_expected,
+                                   fragments_per_sample)
+    }
 
     bg_overlap <- sum(res$overlap) / ncol(background_peaks) / tf_count
   } else {
@@ -540,12 +546,17 @@ compute_deviations_single <- function(peak_set,
 
   fail_filter <- which(expected < threshold)
 
+  if (!is.null(moments)) {
+    mean_sampled_deviation <- moments$mean
+    sd_sampled_deviation <- moments$sd
+  } else {
   mean_sampled_deviation <- colMeans(sampled_deviation)
   sd_sampled_deviation <- if (is.matrix(sampled_deviation) &&
                               is.double(sampled_deviation)) {
     structure(col_sds_r(sampled_deviation),
               names = colnames(sampled_deviation))
   } else apply(sampled_deviation, 2, sd)
+  }
 
   normdev <- (observed_deviation - mean_sampled_deviation)
   z <- normdev/sd_sampled_deviation
