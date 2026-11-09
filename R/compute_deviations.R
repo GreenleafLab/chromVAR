@@ -454,6 +454,7 @@ counts_row_major <- function(counts_mat) {
   if (!is(counts_mat, "dgCMatrix")) return(NULL)
   csr <- as(counts_mat, "RsparseMatrix")
   list(p = csr@p, j = csr@j, x = csr@x,
+       compact = compact_csr(csr@j, csr@x, ncol(counts_mat)),
        fragments_per_sample = colSums(counts_mat))
 }
 
@@ -488,9 +489,16 @@ compute_deviations_single <- function(peak_set,
     bg_overlap <- sum(background_peaks[peak_set,] == peak_set[1]) / 
       ncol(background_peaks)
   } else if (!is.null(counts_csr)) {
-    res <- deviations_kernel(as.integer(peak_set), background_peaks,
-                             counts_csr$p, counts_csr$j, counts_csr$x,
-                             expectation, ncol(counts_mat))
+    res <- if (is.null(counts_csr$compact)) {
+      deviations_kernel(as.integer(peak_set), background_peaks,
+                        counts_csr$p, counts_csr$j, counts_csr$x,
+                        expectation, ncol(counts_mat))
+    } else {
+      deviations_kernel_compact(as.integer(peak_set), background_peaks,
+                                counts_csr$p, counts_csr$compact$j,
+                                counts_csr$compact$x, expectation,
+                                ncol(counts_mat))
+    }
     observed <- res$observed
     expected <- res$expected * fragments_per_sample
     observed_deviation <- (observed - expected)/expected

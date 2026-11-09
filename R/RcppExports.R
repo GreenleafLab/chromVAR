@@ -41,11 +41,19 @@ euc_dist <- function(x) {
     .Call(`_chromVAR_euc_dist`, x)
 }
 
+compact_csr <- function(csr_j, csr_x, ncells) {
+    .Call(`_chromVAR_compact_csr`, csr_j, csr_x, ncells)
+}
+
+deviations_kernel_compact <- function(peak_set, background_peaks, csr_p, csr_j, csr_x, expectation, ncells) {
+    .Call(`_chromVAR_deviations_kernel_compact`, peak_set, background_peaks, csr_p, csr_j, csr_x, expectation, ncells)
+}
+
 deviations_kernel <- function(peak_set, background_peaks, csr_p, csr_j, csr_x, expectation, ncells) {
     .Call(`_chromVAR_deviations_kernel`, peak_set, background_peaks, csr_p, csr_j, csr_x, expectation, ncells)
 }
 
-
 col_sds_r <- function(X) {
     .Call(`_chromVAR_col_sds_r`, X)
 }
+
