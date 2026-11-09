@@ -249,10 +249,30 @@ static List deviations_kernel_impl(const IntegerVector& peak_set,
       sampled_expected[its[d]] += (double) mults[d] * expectation[k];
       overlap[its[d]] += (double) mults[d] * member[k];
     }
-    for (int p = csr_p[k]; p < csr_p[k + 1]; p++) {
-      A* col = acc + (size_t) csr_j[p] * niter;
-      const A x = (A) csr_x[p];
-      for (int d = 0; d < nd; d++) col[its[d]] += mults[d] * x;
+    const int pa = csr_p[k], pb = csr_p[k + 1];
+    if (nd == 1) {
+      const int it0 = its[0];
+      const A m0 = mults[0];
+      if (m0 == (A) 1) {
+        for (int p = pa; p < pb; p++) acc[(size_t) csr_j[p] * niter + it0] += (A) csr_x[p];
+      } else {
+        for (int p = pa; p < pb; p++) acc[(size_t) csr_j[p] * niter + it0] += m0 * (A) csr_x[p];
+      }
+    } else if (nd == 2) {
+      const int it0 = its[0], it1 = its[1];
+      const A m0 = mults[0], m1 = mults[1];
+      for (int p = pa; p < pb; p++) {
+        A* col = acc + (size_t) csr_j[p] * niter;
+        const A x = (A) csr_x[p];
+        col[it0] += m0 * x;
+        col[it1] += m1 * x;
+      }
+    } else {
+      for (int p = pa; p < pb; p++) {
+        A* col = acc + (size_t) csr_j[p] * niter;
+        const A x = (A) csr_x[p];
+        for (int d = 0; d < nd; d++) col[its[d]] += mults[d] * x;
+      }
     }
   }
   if (!std::is_same<A, double>::value) {
