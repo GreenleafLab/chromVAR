@@ -189,10 +189,23 @@ static List deviations_kernel_impl(const IntegerVector& peak_set,
                        const J* csr_j,
                        const X* csr_x,
                        const NumericVector& expectation,
-                       int ncells) {
+                       int ncells,
+                       R_xlen_t nnz_j, R_xlen_t nnz_x) {
   const int n = expectation.size();
   const int niter = background_peaks.ncol();
   const int tf_count = peak_set.size();
+
+  // Input checks, run once per call: every index below is in range afterwards.
+  if (ncells < 0 || csr_p.size() != n + 1 || background_peaks.nrow() != n)
+    stop("deviations kernel: dimensions of the inputs disagree");
+  if (csr_p[0] != 0) stop("deviations kernel: invalid row pointers");
+  for (int k = 0; k < n; k++)
+    if (csr_p[k + 1] < csr_p[k]) stop("deviations kernel: invalid row pointers");
+  if ((R_xlen_t) csr_p[n] > nnz_j || (R_xlen_t) csr_p[n] > nnz_x)
+    stop("deviations kernel: row pointers exceed the stored values");
+  for (int t = 0; t < tf_count; t++)
+    if (peak_set[t] == NA_INTEGER || peak_set[t] < 1 || peak_set[t] > n)
+      stop("deviations kernel: peak index out of range");
 
   std::vector<int> member(n, 0);
   std::vector<int> sorted(peak_set.begin(), peak_set.end());
@@ -216,9 +229,16 @@ static List deviations_kernel_impl(const IntegerVector& peak_set,
   NumericVector overlap(niter);
 
   // Bucket the (iteration, draw) pairs by drawn row with a counting sort; within a bucket iterations ascend.
-  std::vector<int> start(n + 1, 0);
+  std::vector<int> start(n + 1, 0);  // 1-based draw d counts into slot d
+  int vmin = n, vmax = 1;  // NA_integer_ is INT_MIN, below 1
   for (int i = 0; i < niter; i++)
-    for (int t = 0; t < tf_count; t++) start[background_peaks(peak_set[t] - 1, i)]++;  // 1-based draw d counts into slot d = (k = d - 1) + 1
+    for (int t = 0; t < tf_count; t++) {
+      const int v = background_peaks(peak_set[t] - 1, i);
+      vmin = std::min(vmin, v);
+      vmax = std::max(vmax, v);
+      start[(unsigned) (v - 1) < (unsigned) n ? v : 0]++;  // an invalid draw lands in slot 0 and is rejected below
+    }
+  if (vmin < 1 || vmax > n) stop("background_peaks must hold integers from 1 to the number of peaks");
   for (int k = 0; k < n; k++) start[k + 1] += start[k];
   std::vector<int> fill(start.begin(), start.end());
   std::vector<int> entry((size_t) niter * tf_count);
@@ -328,17 +348,22 @@ List deviations_kernel_compact(const IntegerVector& peak_set,
                                const NumericVector& expectation,
                                int ncells) {
   const uint16_t* jp = reinterpret_cast<const uint16_t*>(RAW(csr_j));
+  if (csr_p.size() < 1) stop("deviations kernel: row pointers exceed the stored values");
   const R_xlen_t nnz = csr_p[csr_p.size() - 1];
+  if (nnz < 0 || csr_j.size() < 2 * nnz || csr_x.size() < nnz)
+    stop("deviations kernel: row pointers exceed the stored values");
   if (csr_x.size() == nnz) {
     const double maxx = as<double>(csr_x.attr("maxx"));
     if ((double) peak_set.size() * maxx < 4294967296.0)
       return deviations_kernel_impl<uint16_t, uint8_t, uint32_t>(peak_set, background_peaks, csr_p, jp,
-          RAW(csr_x), expectation, ncells);
+          RAW(csr_x), expectation, ncells, nnz, nnz);
     return deviations_kernel_impl<uint16_t, uint8_t>(peak_set, background_peaks, csr_p, jp,
-        RAW(csr_x), expectation, ncells);
+        RAW(csr_x), expectation, ncells, nnz, nnz);
   }
+  if (csr_x.size() < nnz * (R_xlen_t) sizeof(float))
+    stop("deviations kernel: row pointers exceed the stored values");
   return deviations_kernel_impl<uint16_t, float>(peak_set, background_peaks, csr_p, jp,
-      reinterpret_cast<const float*>(RAW(csr_x)), expectation, ncells);
+      reinterpret_cast<const float*>(RAW(csr_x)), expectation, ncells, nnz, nnz);
 }
 
 // [[Rcpp::export]]
@@ -350,7 +375,7 @@ List deviations_kernel(const IntegerVector& peak_set,
                        const NumericVector& expectation,
                        int ncells) {
   return deviations_kernel_impl<int, double>(peak_set, background_peaks, csr_p,
-      csr_j.begin(), csr_x.begin(), expectation, ncells);
+      csr_j.begin(), csr_x.begin(), expectation, ncells, csr_j.size(), csr_x.size());
 }
 
 
