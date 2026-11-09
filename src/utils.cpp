@@ -111,6 +111,7 @@ arma::umat bg_sample_helper(arma::uvec bin_membership, arma::mat bin_p,
   arma::umat out = arma::umat(n, niterations);
   for (arma::uword i = 0; i < bin_density.n_elem; i++){
     arma::uvec ix = find(bin_membership == i);
+	if (ix.n_elem == 0) continue;
     arma::vec p_tmp = bin_p.col(i);
     arma::vec p = p_tmp(bin_membership ) / bin_density(bin_membership );
     p /= arma::sum(p);
