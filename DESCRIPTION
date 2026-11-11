@@ -50,7 +50,8 @@ Suggests:
     knitr,
     rmarkdown,
     pheatmap,
-    motifmatchr
+    motifmatchr,
+    withr
 biocViews: SingleCell, Sequencing, GeneRegulation, ImmunoOncology
 LazyData: TRUE
 LinkingTo: Rcpp, RcppArmadillo
