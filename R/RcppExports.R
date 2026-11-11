@@ -25,6 +25,10 @@ row_sds_perm <- function(X, na_rm = FALSE) {
     .Call(`_chromVAR_row_sds_perm`, X, na_rm)
 }
 
+row_sds_perm_t <- function(Xt, na_rm = FALSE) {
+    .Call(`_chromVAR_row_sds_perm_t`, Xt, na_rm)
+}
+
 ProbSampleReplace <- function(size, prob) {
     .Call(`_chromVAR_ProbSampleReplace`, size, prob)
 }
@@ -33,7 +37,31 @@ bg_sample_helper <- function(bin_membership, bin_p, bin_density, niterations) {
     .Call(`_chromVAR_bg_sample_helper`, bin_membership, bin_p, bin_density, niterations)
 }
 
+bg_sample_helper_data <- function(bin_membership, bin_data, w, bin_density, niterations) {
+    .Call(`_chromVAR_bg_sample_helper_data`, bin_membership, bin_data, w, bin_density, niterations)
+}
+
 euc_dist <- function(x) {
     .Call(`_chromVAR_euc_dist`, x)
+}
+
+compact_csr <- function(csr_j, csr_x, ncells) {
+    .Call(`_chromVAR_compact_csr`, csr_j, csr_x, ncells)
+}
+
+deviations_kernel_compact <- function(peak_set, background_peaks, csr_p, csr_j, csr_x, expectation, ncells) {
+    .Call(`_chromVAR_deviations_kernel_compact`, peak_set, background_peaks, csr_p, csr_j, csr_x, expectation, ncells)
+}
+
+deviations_kernel <- function(peak_set, background_peaks, csr_p, csr_j, csr_x, expectation, ncells) {
+    .Call(`_chromVAR_deviations_kernel`, peak_set, background_peaks, csr_p, csr_j, csr_x, expectation, ncells)
+}
+
+col_sds_r <- function(X) {
+    .Call(`_chromVAR_col_sds_r`, X)
+}
+
+deviation_moments <- function(sampled, sampled_expected, fps) {
+    .Call(`_chromVAR_deviation_moments`, sampled, sampled_expected, fps)
 }
 

@@ -141,15 +141,12 @@ get_background_peaks_core <- function(object,
                                                          bins2), ncol = 2, 
                                                        byrow = FALSE)))
   
-  bin_dist <- euc_dist(bin_data)
-  bin_p <- dnorm(bin_dist, 0, w)
-  
   bin_membership <- nabor::knn(bin_data, query = trans_norm_mat, k = 1)$nn.idx
   
   bin_density <- tabulate2(bin_membership, min_val = 1, max_val = bs^2)
   
-  background_peaks <- bg_sample_helper(bin_membership - 1, bin_p, bin_density, 
-                                       niterations)
+  background_peaks <- bg_sample_helper_data(bin_membership - 1, bin_data, w,
+                                            bin_density, niterations)
   
   return(background_peaks)
   

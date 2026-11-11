@@ -54,10 +54,10 @@ computeVariability <- function(object,
     stopifnot(all(bootstrap_quantiles < 1))
     stopifnot(bootstrap_quantiles[2] > bootstrap_quantiles[1])
     
+    z_t <- t(assays(object)$z)
     boot_sd <- do.call(rbind, bplapply(seq_len(bootstrap_samples), 
                                        function(x) 
-                                         row_sds_perm(assays(object)$z, 
-                                                                na.rm)))
+                                         row_sds_perm_t(z_t, na.rm)))
     sd_error <- apply(boot_sd, 2, quantile_helper, 
                       quantiles = bootstrap_quantiles, 
                       na.rm = na.rm)
